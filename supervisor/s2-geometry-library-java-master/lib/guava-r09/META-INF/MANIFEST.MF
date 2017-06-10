@@ -1,0 +1,7 @@
+Manifest-Version: 1.0
+Ant-Version: Apache Ant @VERSION@
+Created-By: 10.0-b19 (Sun Microsystems Inc.)
+Implementation-Vendor: Google Inc.
+Implementation-Title: Guava
+Implementation-Version: r09
+

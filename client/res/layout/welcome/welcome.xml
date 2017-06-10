@@ -1,0 +1,22 @@
+<touch key="set_ip"/>
+<touch key="search_around"/>
+<touch key="search_ip"/>
+<controller name="welcome_controller"/>
+<view width="match_parent" height="match_parent" type="relative" align="center" color="#000000">
+    <image src="res/images/paris_france_eiffel_tower_9662_750x1334.jpg" width="750" height="1334" scale="0.5" align="center"/>
+    <view width="match_parent" height="match_parent" color="#ffffff" alpha="0.75" align="center"/>
+    <link src="res/layout/welcome/search_box.xml" align="center" width="300" bind_touch="search=search_ip" hash="search_box_view"/>
+    <link src="res/layout/welcome/search_around.xml" align="center" width="300" visible="false" hash="search_around_view"/>
+    <view width="300" height="50" align="bottom|center" type="size_horizontal" margin_bottom="10">
+        <view width="fill_parent" height="50" clip="true" round="4" margin_right="10"
+            type="relative" color="#F64747" border="#F64747" touch="true" touch_delegate="set_ip" hash="set_ip_button">
+            <label align="center" text_color="#ffffff" width="match_parent"
+                height="10" font="Arial" font_size="16" text_align="center" multiline="false">Nhập ip</label>
+        </view>
+        <view width="fill_parent" height="50" clip="true" round="4" type="relative" alpha="0.35"
+             color="#2980b9" border="#2980b9" touch="true" touch_delegate="search_around" hash="search_around_button">
+            <label align="center" text_color="#ffffff" width="match_parent"
+                height="10" font="Arial" font_size="16" text_align="center" multiline="false">Tìm xung quanh</label>
+        </view>
+    </view>
+</view>

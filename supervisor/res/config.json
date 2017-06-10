@@ -1,0 +1,9 @@
+{
+        "service_port"  : 9999,
+        "service_root"  : "./",
+        "host"          : "127.0.0.1",
+        "user"          : "root",
+        "pass"          : "123456",
+        "db"            : "testdb",
+        "gc_time"       : 5.0
+}

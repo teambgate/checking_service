@@ -1,0 +1,56 @@
+{
+        "request" : "put",
+        "path"  : "/root",
+        "data"  : {
+                "mappings" : {
+                        "position": {
+
+                        },
+                        "superior" : {
+                                "_parent" : {
+                                        "type" : "position"
+                                }
+                        },
+                        "user" : {
+                                "_parent" : {
+                                        "type" : "position"
+                                }
+                        },
+                        "role" : {
+                                "_parent" : {
+                                        "type" : "user"
+                                }
+                        },
+                        "work" : {
+                                "_parent" : {
+                                        "type" : "user"
+                                }
+                        },
+                        "job" : {
+                                "_parent" : {
+                                        "type" : "user"
+                                }
+                        },
+                        "report" : {
+                                "_parent" : {
+                                        "type" : "user"
+                                }
+                        },
+                        "device" : {
+                                "_parent" : {
+                                        "type" : "user"
+                                }
+                        },
+                        "check" : {
+                                "_parent" : {
+                                        "type" : "user"
+                                }
+                        },
+                        "dish" : {
+                                "_parent" : {
+                                        "type" : "user"
+                                }
+                        }
+                }
+        }
+}

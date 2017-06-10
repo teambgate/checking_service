@@ -1,0 +1,44 @@
+<controller name="register_controller"/>
+<view width="match_parent" height="match_parent" type="relative" align="center" color="#000000">
+    <image src="res/images/paris_france_eiffel_tower_9662_750x1334.jpg" width="750" height="1334" scale="0.5" align="center"/>
+    <view width="match_parent" height="match_parent" color="#ffffff" alpha="0.75" align="center"/>
+    <view width="300" height="50" type="relative" align="top|center" margin_top="40" border="#d1d1d1" color="#ffffffe1" round="4">
+        <label align="center" text_color="#000000" width="match_parent"
+            height="10" font="Arial" font_size="22"
+            text_align="center" multiline="false">B-GATE</label>
+    </view>
+    <view width="300" height="wrap_content" type="vertical" align="center">
+        <view width="300" height="wrap_content" type="vertical" align="center" border="#d1d1d1" color="#ffffffe1" round="4">
+            <label align="center" text_color="#000000" width="match_parent"
+                height="10" font="Arial" font_size="18"
+                text_align="center" multiline="false" margin_top="5">Mã máy của bạn</label>
+            <view width="match_parent" height="0.5" align="center" color="#ECF0F1"/>
+            <label align="center" text_color="#000000" width="match_parent"
+                height="10" font="Arial" font_size="14"  padding_left="20"
+                text_align="center" multiline="true" margin_top="10" margin_bottom="10">iPhone6_AJDnioSDAISDyhnAOSIDHAIO123ASD</label>
+        </view>
+        <view width="match_parent" height="50" type="relative" align="center">
+            <label align="center" text_color="#ffffff" width="match_parent"
+                height="10" font="Arial" font_size="18"
+                text_align="center" multiline="false">🌐</label>
+            <view align="center|out_bottom" width="match_parent" height="wrap_content"
+                type="vertical" border="#F64747" color="#ffffffe1" round="4">
+                <label align="center" text_color="#F64747" width="match_parent"
+                    height="10" font="Arial" font_size="14"  padding_left="20"
+                    text_align="center" multiline="true" margin_top="5">Mã máy của bạn chưa được xác thực!</label>
+            </view>
+        </view>
+    </view>
+    <view width="300" height="50" align="bottom|center" type="size_horizontal" margin_bottom="10">
+        <view width="fill_parent" height="50" clip="true" round="4" margin_right="10"
+            type="relative" color="#F64747" border="#F64747" touch="true">
+            <label align="center" text_color="#ffffff" width="match_parent"
+                height="10" font="Arial" font_size="16" text_align="center" multiline="false">Quay lại</label>
+        </view>
+        <view width="fill_parent" height="50" clip="true" round="4" type="relative"
+            color="#2980b9" border="#2980b9" touch="true">
+            <label align="center" text_color="#ffffff" width="match_parent"
+                height="10" font="Arial" font_size="16" text_align="center" multiline="false">Đăng nhập</label>
+        </view>
+    </view>
+</view>

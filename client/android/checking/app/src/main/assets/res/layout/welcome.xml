@@ -1,0 +1,5 @@
+<touch key="open"/>
+<controller name="welcome_controller"/>
+<view width="match_parent" height="match_parent" type="relative" align="center">
+
+</view>

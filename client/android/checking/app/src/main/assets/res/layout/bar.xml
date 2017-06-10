@@ -1,0 +1,12 @@
+<touch key="choose_item"/>
+<listview type="vertical" touch="true" hash="list">
+    <image touch="true" intercept_vertical="list" touch_delegate="choose_item" src="res/Fotolia_89777343_Subscription_Monthly_M.jpg" margin_bottom="20" width="match_parent" height="350" align="center"/>
+    <image src="res/Fotolia_89777343_Subscription_Monthly_M.jpg" margin_bottom="20" width="match_parent" height="350" align="center"/>
+    <image src="res/Fotolia_89777343_Subscription_Monthly_M.jpg" margin_bottom="20" width="match_parent" height="350" align="center"/>
+    <image src="res/Fotolia_89777343_Subscription_Monthly_M.jpg" margin_bottom="20" width="match_parent" height="350" align="center"/>
+    <image src="res/Fotolia_89777343_Subscription_Monthly_M.jpg" margin_bottom="20" width="match_parent" height="350" align="center"/>
+    <image src="res/Fotolia_89777343_Subscription_Monthly_M.jpg" margin_bottom="20" width="match_parent" height="350" align="center"/>
+    <image src="res/Fotolia_89777343_Subscription_Monthly_M.jpg" margin_bottom="20" width="match_parent" height="350" align="center"/>
+    <image src="res/Fotolia_89777343_Subscription_Monthly_M.jpg" margin_bottom="20" width="match_parent" height="350" align="center"/>
+    <image src="res/Fotolia_89777343_Subscription_Monthly_M.jpg" margin_bottom="20" width="match_parent" height="350" align="center"/>
+</listview>

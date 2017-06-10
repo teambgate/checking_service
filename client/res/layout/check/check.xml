@@ -1,0 +1,53 @@
+<controller name="check_controller"/>
+<view width="match_parent" height="match_parent" type="relative" align="center" color="#000000">
+    <image src="res/images/paris_france_eiffel_tower_9662_750x1334.jpg" width="750" height="1334" scale="0.5" align="center"/>
+    <view width="match_parent" height="match_parent" color="#ffffff" alpha="0.75" align="center"/>
+    <listview width="match_parent" height="match_parent" type="vertical" align="center" clip="false" touch="true">
+        <view width="300" height="100" type="size_horizontal" align="center" margin_top="40">
+            <view width="190" height="100" margin_right="10" border="#d1d1d1" color="#ffffffe1" round="4" type="size_vertical" clip="true">
+                <view width="match_parent" height="22" color="#2ECC71" type="relative">
+                    <label align="center" text_color="#ffffff" width="match_parent"
+                        height="10" font="Arial" font_size="14" text_align="center" multiline="false">Có mặt</label>
+                </view>
+                <view width="match_parent" height="fill_parent" type="relative">
+                    <label align="center" text_color="#000000" width="match_parent"
+                        height="10" font="Arial" font_size="50" text_align="center" multiline="false">08:00</label>
+                </view>
+            </view>
+            <view width="fill_parent" height="100" type="relative">
+                <view align="center" width="match_parent" height="100" border="#d1d1d1" color="#ffffffe1" round="4" type="size_vertical" clip="true">
+                    <view width="match_parent" height="22" color="#2980b9" type="relative">
+                        <label align="center" text_color="#ffffff" width="match_parent"
+                            height="10" font="Arial" font_size="14" text_align="center" multiline="false">Ra về</label>
+                    </view>
+                    <view width="match_parent" height="fill_parent" type="relative">
+                        <label align="center" text_color="#000000" width="match_parent"
+                            height="10" font="Arial" font_size="50" text_align="center" multiline="false">18:00</label>
+                    </view>
+                </view>
+                <view width="match_parent" align="center" height="100" clip="true" round="4" type="relative"
+                    color="#2980b9" border="#2980b9" touch="true">
+                    <label align="center" text_color="#ffffff" width="match_parent"
+                        height="10" font="Arial" font_size="22" text_align="center" multiline="false">Ra về</label>
+                </view>
+            </view>
+        </view>
+        <view width="300" height="340" align="center" margin_top="10" type="size_vertical" border="#d1d1d1" color="#ffffffe1" round="4">
+            <!-- month year view -->
+            <view width="match_parent" height="40" type="size_horizontal">
+                <label align="center" text_color="#000000" width="fill_parent"
+                    height="10" font="Arial" font_size="14" text_align="center" multiline="false">Tháng 6</label>
+                <label align="center" text_color="#000000" width="fill_parent"
+                    height="10" font="Arial" font_size="14" text_align="center" multiline="false">Năm 2017</label>
+            </view>
+            <view width="match_parent" height="0.5" color="#ECF0F1"/>
+            <view width="match_parent" height="fill_parent" type="relative">
+                <view width="match_parent" height="match_parent" type="relative" align="center">
+                    <!-- calendar view-->
+                    <link src="res/layout/check/calendar.xml"/>
+                </view>
+                <link src="res/layout/check/choose_month_year.xml" visible="false"/>
+            </view>
+        </view>
+    </listview>
+</view>

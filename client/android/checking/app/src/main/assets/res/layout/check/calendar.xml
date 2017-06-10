@@ -1,0 +1,218 @@
+<view width="match_parent" height="match_parent" align="center" type="size_vertical">
+    <view width="match_parent" height="fill_parent" type="size_horizontal">
+        <view width="fill_parent" height="match_parent" type="relative">
+            <label align="center" text_color="#000000" width="match_parent"
+                height="10" font="Arial" font_size="10" text_align="center" multiline="false">M</label>
+        </view>
+        <view width="fill_parent" height="match_parent" type="relative">
+            <label align="center" text_color="#000000" width="match_parent"
+                height="10" font="Arial" font_size="10" text_align="center" multiline="false">T</label>
+        </view>
+        <view width="fill_parent" height="match_parent" type="relative">
+            <label align="center" text_color="#000000" width="match_parent"
+                height="10" font="Arial" font_size="10" text_align="center" multiline="false">W</label>
+        </view>
+        <view width="fill_parent" height="match_parent" type="relative">
+            <label align="center" text_color="#000000" width="match_parent"
+                height="10" font="Arial" font_size="10" text_align="center" multiline="false">T</label>
+        </view>
+        <view width="fill_parent" height="match_parent" type="relative">
+            <label align="center" text_color="#000000" width="match_parent"
+                height="10" font="Arial" font_size="10" text_align="center" multiline="false">F</label>
+        </view>
+        <view width="fill_parent" height="match_parent" type="relative">
+            <label align="center" text_color="#000000" width="match_parent"
+                height="10" font="Arial" font_size="10" text_align="center" multiline="false">S</label>
+        </view>
+        <view width="fill_parent" height="match_parent" type="relative">
+            <label align="center" text_color="#000000" width="match_parent"
+                height="10" font="Arial" font_size="10" text_align="center" multiline="false">S</label>
+        </view>
+    </view>
+    <view width="match_parent" height="fill_parent" type="size_horizontal">
+        <view width="fill_parent" height="match_parent" type="relative">
+            <label align="center" text_color="#000000" width="match_parent"
+                height="10" font="Arial" font_size="14" text_align="center" multiline="false"></label>
+        </view>
+        <view width="fill_parent" height="match_parent" type="relative">
+            <label align="center" text_color="#000000" width="match_parent"
+                height="10" font="Arial" font_size="14" text_align="center" multiline="false"></label>
+        </view>
+        <view width="fill_parent" height="match_parent" type="relative">
+            <label align="center" text_color="#000000" width="match_parent"
+                height="10" font="Arial" font_size="14" text_align="center" multiline="false"></label>
+        </view>
+        <view width="fill_parent" height="match_parent" type="relative">
+            <label align="center" text_color="#000000" width="match_parent"
+                height="10" font="Arial" font_size="14" text_align="center" multiline="false">1</label>
+        </view>
+        <view width="fill_parent" height="match_parent" type="relative">
+            <label align="center" text_color="#000000" width="match_parent"
+                height="10" font="Arial" font_size="14" text_align="center" multiline="false">2</label>
+        </view>
+        <view width="fill_parent" height="match_parent" type="relative">
+            <label align="center" text_color="#000000" width="match_parent"
+                height="10" font="Arial" font_size="14" text_align="center" multiline="false">3</label>
+        </view>
+        <view width="fill_parent" height="match_parent" type="relative">
+            <label align="center" text_color="#000000" width="match_parent"
+                height="10" font="Arial" font_size="14" text_align="center" multiline="false">4</label>
+        </view>
+    </view>
+    <view width="match_parent" height="fill_parent" type="size_horizontal">
+        <view width="fill_parent" height="match_parent" type="relative">
+            <label align="center" text_color="#000000" width="match_parent"
+                height="10" font="Arial" font_size="14" text_align="center" multiline="false">5</label>
+        </view>
+        <view width="fill_parent" height="match_parent" type="relative">
+            <label align="center" text_color="#000000" width="match_parent"
+                height="10" font="Arial" font_size="14" text_align="center" multiline="false">6</label>
+        </view>
+        <view width="fill_parent" height="match_parent" type="relative">
+            <label align="center" text_color="#000000" width="match_parent"
+                height="10" font="Arial" font_size="14" text_align="center" multiline="false">7</label>
+        </view>
+        <view width="fill_parent" height="match_parent" type="relative">
+            <label align="center" text_color="#000000" width="match_parent"
+                height="10" font="Arial" font_size="14" text_align="center" multiline="false">8</label>
+        </view>
+        <view width="fill_parent" height="match_parent" type="relative">
+            <label align="center" text_color="#000000" width="match_parent"
+                height="10" font="Arial" font_size="14" text_align="center" multiline="false">9</label>
+        </view>
+        <view width="fill_parent" height="match_parent" type="relative">
+            <label align="center" text_color="#000000" width="match_parent"
+                height="10" font="Arial" font_size="14" text_align="center" multiline="false">10</label>
+        </view>
+        <view width="fill_parent" height="match_parent" type="relative">
+            <label align="center" text_color="#000000" width="match_parent"
+                height="10" font="Arial" font_size="14" text_align="center" multiline="false">11</label>
+        </view>
+    </view>
+    <view width="match_parent" height="fill_parent" type="size_horizontal">
+        <view width="fill_parent" height="match_parent" type="relative">
+            <label align="center" text_color="#000000" width="match_parent"
+                height="10" font="Arial" font_size="14" text_align="center" multiline="false">12</label>
+        </view>
+        <view width="fill_parent" height="match_parent" type="relative">
+            <label align="center" text_color="#000000" width="match_parent"
+                height="10" font="Arial" font_size="14" text_align="center" multiline="false">13</label>
+        </view>
+        <view width="fill_parent" height="match_parent" type="relative">
+            <label align="center" text_color="#000000" width="match_parent"
+                height="10" font="Arial" font_size="14" text_align="center" multiline="false">14</label>
+        </view>
+        <view width="fill_parent" height="match_parent" type="relative">
+            <label align="center" text_color="#000000" width="match_parent"
+                height="10" font="Arial" font_size="14" text_align="center" multiline="false">15</label>
+        </view>
+        <view width="fill_parent" height="match_parent" type="relative">
+            <label align="center" text_color="#000000" width="match_parent"
+                height="10" font="Arial" font_size="14" text_align="center" multiline="false">16</label>
+        </view>
+        <view width="fill_parent" height="match_parent" type="relative">
+            <label align="center" text_color="#000000" width="match_parent"
+                height="10" font="Arial" font_size="14" text_align="center" multiline="false">17</label>
+        </view>
+        <view width="fill_parent" height="match_parent" type="relative">
+            <label align="center" text_color="#000000" width="match_parent"
+                height="10" font="Arial" font_size="14" text_align="center" multiline="false">18</label>
+        </view>
+    </view>
+    <view width="match_parent" height="fill_parent" type="size_horizontal">
+        <view width="fill_parent" height="match_parent" type="relative">
+            <label align="center" text_color="#000000" width="match_parent"
+                height="10" font="Arial" font_size="14" text_align="center" multiline="false">19</label>
+        </view>
+        <view width="fill_parent" height="match_parent" type="relative">
+            <label align="center" text_color="#000000" width="match_parent"
+                height="10" font="Arial" font_size="14" text_align="center" multiline="false">20</label>
+        </view>
+        <view width="fill_parent" height="match_parent" type="relative">
+            <label align="center" text_color="#000000" width="match_parent"
+                height="10" font="Arial" font_size="14" text_align="center" multiline="false">21</label>
+        </view>
+        <view width="fill_parent" height="match_parent" type="relative">
+            <label align="center" text_color="#000000" width="match_parent"
+                height="10" font="Arial" font_size="14" text_align="center" multiline="false">22</label>
+        </view>
+        <view width="fill_parent" height="match_parent" type="relative">
+            <label align="center" text_color="#000000" width="match_parent"
+                height="10" font="Arial" font_size="14" text_align="center" multiline="false">23</label>
+        </view>
+        <view width="fill_parent" height="match_parent" type="relative">
+            <label align="center" text_color="#000000" width="match_parent"
+                height="10" font="Arial" font_size="14" text_align="center" multiline="false">24</label>
+        </view>
+        <view width="fill_parent" height="match_parent" type="relative">
+            <label align="center" text_color="#000000" width="match_parent"
+                height="10" font="Arial" font_size="14" text_align="center" multiline="false">25</label>
+        </view>
+    </view>
+    <view width="match_parent" height="fill_parent" type="size_horizontal">
+        <view width="fill_parent" height="match_parent" type="relative">
+            <view width="32" height="32" align="center" border="#2980b9" round="16" margin_bottom="1"/>
+            <view width="24" height="24" align="center" color="#2ECC71" round="12" margin_bottom="1"/>
+            <label align="center" text_color="#ffffff" width="match_parent"
+                height="10" font="Arial" font_size="14" text_align="center" multiline="false">26</label>
+        </view>
+        <view width="fill_parent" height="match_parent" type="relative">
+            <view width="24" height="24" align="center" color="#2ECC71" round="12" margin_bottom="1"/>
+            <label align="center" text_color="#ffffff" width="match_parent"
+                height="10" font="Arial" font_size="14" text_align="center" multiline="false">27</label>
+        </view>
+        <view width="fill_parent" height="match_parent" type="relative">
+            <view width="24" height="24" align="center" color="#2ECC71" round="12" margin_bottom="1"/>
+            <label align="center" text_color="#ffffff" width="match_parent"
+                height="10" font="Arial" font_size="14" text_align="center" multiline="false">28</label>
+        </view>
+        <view width="fill_parent" height="match_parent" type="relative">
+            <view width="24" height="24" align="center" color="#2ECC71" round="12" margin_bottom="1"/>
+            <label align="center" text_color="#ffffff" width="match_parent"
+                height="10" font="Arial" font_size="14" text_align="center" multiline="false">29</label>
+        </view>
+        <view width="fill_parent" height="match_parent" type="relative">
+            <view width="24" height="24" align="center" color="#F64747" round="12" margin_bottom="1"/>
+            <label align="center" text_color="#ffffff" width="match_parent"
+                height="10" font="Arial" font_size="14" text_align="center" multiline="false">30</label>
+        </view>
+        <view width="fill_parent" height="match_parent" type="relative">
+            <label align="center" text_color="#000000" width="match_parent"
+                height="10" font="Arial" font_size="14" text_align="center" multiline="false"></label>
+        </view>
+        <view width="fill_parent" height="match_parent" type="relative">
+            <label align="center" text_color="#000000" width="match_parent"
+                height="10" font="Arial" font_size="14" text_align="center" multiline="false"></label>
+        </view>
+    </view>
+    <view width="match_parent" height="fill_parent" type="size_horizontal">
+        <view width="fill_parent" height="match_parent" type="relative">
+            <label align="center" text_color="#000000" width="match_parent"
+                height="10" font="Arial" font_size="14" text_align="center" multiline="false"></label>
+        </view>
+        <view width="fill_parent" height="match_parent" type="relative">
+            <label align="center" text_color="#000000" width="match_parent"
+                height="10" font="Arial" font_size="14" text_align="center" multiline="false"></label>
+        </view>
+        <view width="fill_parent" height="match_parent" type="relative">
+            <label align="center" text_color="#000000" width="match_parent"
+                height="10" font="Arial" font_size="14" text_align="center" multiline="false"></label>
+        </view>
+        <view width="fill_parent" height="match_parent" type="relative">
+            <label align="center" text_color="#000000" width="match_parent"
+                height="10" font="Arial" font_size="14" text_align="center" multiline="false"></label>
+        </view>
+        <view width="fill_parent" height="match_parent" type="relative">
+            <label align="center" text_color="#000000" width="match_parent"
+                height="10" font="Arial" font_size="14" text_align="center" multiline="false"></label>
+        </view>
+        <view width="fill_parent" height="match_parent" type="relative">
+            <label align="center" text_color="#000000" width="match_parent"
+                height="10" font="Arial" font_size="14" text_align="center" multiline="false"></label>
+        </view>
+        <view width="fill_parent" height="match_parent" type="relative">
+            <label align="center" text_color="#000000" width="match_parent"
+                height="10" font="Arial" font_size="14" text_align="center" multiline="false"></label>
+        </view>
+    </view>
+</view>

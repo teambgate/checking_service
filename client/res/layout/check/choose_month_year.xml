@@ -1,0 +1,99 @@
+<view width="match_parent" height="match_parent" type="relative" align="center" visible="true">
+    <!-- choose month view-->
+    <listview type="vertical" align="left|center" margin_left="10" width="135"
+        height="match_parent" padding_top="20" border="#d1d1d1" color="#ffffffe1" round="4" clip="true" touch="true">
+        <view width="match_parent" height="50" type="relative" align="center">
+            <label align="center" text_color="#000000" width="match_parent"
+                height="10" font="Arial" font_size="30" text_align="center" multiline="false">1</label>
+        </view>
+        <view width="match_parent" height="50" type="relative" align="center">
+            <label align="center" text_color="#000000" width="match_parent"
+                height="10" font="Arial" font_size="30" text_align="center" multiline="false">2</label>
+        </view>
+        <view width="match_parent" height="50" type="relative" align="center">
+            <label align="center" text_color="#000000" width="match_parent"
+                height="10" font="Arial" font_size="30" text_align="center" multiline="false">3</label>
+        </view>
+        <view width="match_parent" height="50" type="relative" align="center">
+            <label align="center" text_color="#000000" width="match_parent"
+                height="10" font="Arial" font_size="30" text_align="center" multiline="false">4</label>
+        </view>
+        <view width="match_parent" height="50" type="relative" align="center">
+            <label align="center" text_color="#000000" width="match_parent"
+                height="10" font="Arial" font_size="30" text_align="center" multiline="false">5</label>
+        </view>
+        <view width="match_parent" height="50" type="relative" align="center" color="#FDE3A7">
+            <label align="center" text_color="#000000" width="match_parent"
+                height="10" font="Arial" font_size="30" text_align="center" multiline="false">6</label>
+        </view>
+        <view width="match_parent" height="50" type="relative" align="center">
+            <label align="center" text_color="#000000" width="match_parent"
+                height="10" font="Arial" font_size="30" text_align="center" multiline="false">7</label>
+        </view>
+        <view width="match_parent" height="50" type="relative" align="center">
+            <label align="center" text_color="#000000" width="match_parent"
+                height="10" font="Arial" font_size="30" text_align="center" multiline="false">8</label>
+        </view>
+        <view width="match_parent" height="50" type="relative" align="center">
+            <label align="center" text_color="#000000" width="match_parent"
+                height="10" font="Arial" font_size="30" text_align="center" multiline="false">9</label>
+        </view>
+        <view width="match_parent" height="50" type="relative" align="center">
+            <label align="center" text_color="#000000" width="match_parent"
+                height="10" font="Arial" font_size="30" text_align="center" multiline="false">10</label>
+        </view>
+        <view width="match_parent" height="50" type="relative" align="center">
+            <label align="center" text_color="#000000" width="match_parent"
+                height="10" font="Arial" font_size="30" text_align="center" multiline="false">11</label>
+        </view>
+        <view width="match_parent" height="50" type="relative" align="center">
+            <label align="center" text_color="#000000" width="match_parent"
+                height="10" font="Arial" font_size="30" text_align="center" multiline="false">12</label>
+        </view>
+    </listview>
+        <!-- choose year view-->
+    <listview type="vertical" align="right|center" margin_right="10" width="135"
+    height="match_parent" padding_top="20" border="#d1d1d1"
+    color="#ffffffe1" round="4" touch="true" clip="true">
+        <view width="match_parent" height="50" type="relative" align="center">
+        <label align="center" text_color="#000000" width="match_parent"
+            height="10" font="Arial" font_size="30" text_align="center" multiline="false">2011</label>
+    </view>
+        <view width="match_parent" height="50" type="relative" align="center">
+            <label align="center" text_color="#000000" width="match_parent"
+                height="10" font="Arial" font_size="30" text_align="center" multiline="false">2012</label>
+        </view>
+        <view width="match_parent" height="50" type="relative" align="center">
+            <label align="center" text_color="#000000" width="match_parent"
+                height="10" font="Arial" font_size="30" text_align="center" multiline="false">2013</label>
+        </view>
+        <view width="match_parent" height="50" type="relative" align="center">
+            <label align="center" text_color="#000000" width="match_parent"
+                height="10" font="Arial" font_size="30" text_align="center" multiline="false">2014</label>
+        </view>
+        <view width="match_parent" height="50" type="relative" align="center">
+            <label align="center" text_color="#000000" width="match_parent"
+                height="10" font="Arial" font_size="30" text_align="center" multiline="false">2015</label>
+        </view>
+        <view width="match_parent" height="50" type="relative" align="center">
+            <label align="center" text_color="#000000" width="match_parent"
+                height="10" font="Arial" font_size="30" text_align="center" multiline="false">2016</label>
+        </view>
+        <view width="match_parent" height="50" type="relative" align="center" color="#FDE3A7">
+            <label align="center" text_color="#000000" width="match_parent"
+                height="10" font="Arial" font_size="30" text_align="center" multiline="false">2017</label>
+        </view>
+        <view width="match_parent" height="50" type="relative" align="center">
+            <label align="center" text_color="#000000" width="match_parent"
+                height="10" font="Arial" font_size="30" text_align="center" multiline="false">2019</label>
+        </view>
+        <view width="match_parent" height="50" type="relative" align="center">
+            <label align="center" text_color="#000000" width="match_parent"
+                height="10" font="Arial" font_size="30" text_align="center" multiline="false">2020</label>
+        </view>
+        <view width="match_parent" height="50" type="relative" align="center">
+            <label align="center" text_color="#000000" width="match_parent"
+                height="10" font="Arial" font_size="30" text_align="center" multiline="false">2021</label>
+        </view>
+    </listview>
+</view>

@@ -1,0 +1,3 @@
+<view width="match_parent" height="match_parent" type="size_vertical" align="center">
+    <view width="match_parent" height="match_parent" color="#ff0000"/>
+</view>

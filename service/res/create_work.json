@@ -1,0 +1,10 @@
+{
+        "request" : "post",
+        "path"  : "/root/work?parent=AVwwh53qY6jO9cMsXxUT",
+        "data"  : {
+                "type"          : "full_time",
+                "begin"         : "1970-01-01",
+                "end"           : "9999-01-01",
+                "time_on"       : "08:30"
+        }
+}
