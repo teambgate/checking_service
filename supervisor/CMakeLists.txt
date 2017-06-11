@@ -38,15 +38,26 @@ add_subdirectory(../../cherry/xml ../${OUT}/xml)
 add_subdirectory(../../cherry/server ../${OUT}/server)
 add_subdirectory(../../cherry/smartfox ../${OUT}/smartfox)
 
+
+if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+
+elseif (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+        include_directories(/usr/lib/jvm/java-8-oracle/include/)
+        include_directories(/usr/lib/jvm/java-8-oracle/include/linux)
+        link_directories(/usr/lib/jvm/java-8-oracle/jre/lib/amd64/server)
+elseif (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+        include_directories(/System/Library/Frameworks/JavaVM.framework/Headers)
+elseif (CMAKE_SYSTEM_NAME MATCHES "CYGWIN")
+        include_directories(/cygdrive/c/Program\ Files/Java/jdk1.8.0_77/include/win32)
+        link_directories(/cygdrive/c/Program\ Files/Java/jdk1.8.0_77/jre/bin/server)
+endif()
+
 include_directories(../../cherry/include)
 include_directories(../../cherry/smartfox/include)
 include_directories(../common/include)
 include_directories(include)
-include_directories(/System/Library/Frameworks/JavaVM.framework/Headers)
-#include_directories(/cygdrive/c/Program\ Files/Java/jdk1.8.0_77/include/win32)
-include_directories(/usr/include/mysql)
 
-#link_directories(/cygdrive/c/Program\ Files/Java/jdk1.8.0_77/jre/bin/server)
+include_directories(/usr/include/mysql)
 
 if(MACOSX)
         file(GLOB_RECURSE SOURCES "src/*.c" "src/*.m" "../common/src/*.c")

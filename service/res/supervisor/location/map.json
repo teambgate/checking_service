@@ -1,0 +1,14 @@
+{
+        "request" : "put",
+        "path"  : "/supervisor/_mapping/location",
+        "data"  : {
+                "_parent" : {
+                        "type" : "service"
+                },
+                "properties" : {
+                        "latlng" : {
+                                "type" : "geo_point"
+                        }
+                }
+        }
+}

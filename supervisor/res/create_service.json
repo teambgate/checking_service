@@ -1,0 +1,9 @@
+{
+        "request" : "post",
+        "path"  : "/root/service",
+        "data"  : {
+                "name"          : "BGATE Corp",
+                "dob"           : "1991-10-16",
+                "job"           : "Programmer"
+        }
+}

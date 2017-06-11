@@ -1,0 +1,24 @@
+{
+        "request" : "get",
+        "path"  : "/supervisor/service/_search",
+        "data"  : {
+                "query": {
+                        "has_child": {
+                                "type": "location",
+                                "query" : {
+                                        "filtered" : {
+                                                "filter" : {
+                                                    "geo_distance" : {
+                                                        "distance" : "10m",
+                                                        "latlng" : {
+                                                            "lat" : 0,
+                                                            "lon" : 0
+                                                        }
+                                                    }
+                                                }
+                                        }
+                                }
+                        }
+                }
+        }
+}

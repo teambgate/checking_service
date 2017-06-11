@@ -1,0 +1,8 @@
+{
+        "request" : "put",
+        "path"  : "/supervisor",
+        "data"  : {
+                "mappings" : {
+                }
+        }
+}

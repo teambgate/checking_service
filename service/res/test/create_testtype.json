@@ -1,0 +1,14 @@
+{
+        "request" : "post",
+        "path"  : "/supervisor/test?parent=AVyWiZwJuctpbDDNvlyR",
+        "data"  : {
+                "location" : {
+                        "lat"   : 200,
+                        "lon"   : 200
+                },
+                "farlocation" : {
+                        "lat"   : 200,
+                        "lon"   : 200
+                },
+        }
+}

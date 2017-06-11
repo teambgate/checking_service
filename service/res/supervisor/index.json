@@ -1,0 +1,9 @@
+{
+        "request" : "post",
+        "path"  : "/supervisor/location/__ID__/_update?version=__VERSION_NUMBER__",
+        "data"  : {
+                "doc" :{
+                        "device_id"          : "Manh Ubuntu HP XS78ASOP9"
+                }
+        }
+}

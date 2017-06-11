@@ -42,7 +42,7 @@ start:;
         {
                 // struct sfs_object *data = sfs_object_alloc();
                 // sfs_object_set_string(data, qskey(&__key_version__), qlkey("1"));
-                // sfs_object_set_string(data, qskey(&__key_cmd__), qskey(&__cmd_register_service__));
+                // sfs_object_set_string(data, qskey(&__key_cmd__), qskey(&__cmd_get_service__));
                 // sfs_object_set_int(data, qskey(&__key_id__), 1);
                 // sfs_object_set_string(data, qskey(&__key_pass__), qlkey("123456"));
                 // sfs_object_set_string(data, qskey(&__key_ip__), qlkey("192.168.1.248"));
@@ -65,6 +65,8 @@ start:;
                         sfs_object_set_string(data, qskey(&__key_cmd__), qskey(&__cmd_get__));
                 } else if(strcmp(request->ptr, "put") == 0) {
                         sfs_object_set_string(data, qskey(&__key_cmd__), qskey(&__cmd_put__));
+                } else if(strcmp(request->ptr, "delete") == 0) {
+                        sfs_object_set_string(data, qskey(&__key_cmd__), qskey(&__cmd_delete__));
                 }
 
 

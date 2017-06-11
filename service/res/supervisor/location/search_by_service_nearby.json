@@ -1,0 +1,19 @@
+{
+        "request" : "get",
+        "path"  : "/supervisor/location/_search?routing=__SERVICE_ID__",
+        "data"  : {
+                "query" : {
+                        "filtered" : {
+                                "filter" : {
+                                    "geo_distance" : {
+                                        "distance" : "10m",
+                                        "latlng" : {
+                                            "lat" : 0,
+                                            "lon" : 0
+                                        }
+                                    }
+                                }
+                        }
+                }
+        }
+}

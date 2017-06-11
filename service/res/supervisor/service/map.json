@@ -1,0 +1,7 @@
+{
+        "request" : "put",
+        "path"  : "/supervisor/_mapping/service",
+        "data"  : {
+                
+        }
+}

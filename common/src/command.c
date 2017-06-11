@@ -16,6 +16,7 @@
 struct string __cmd_get__               = SET_STRING("get")
 struct string __cmd_post__              = SET_STRING("post")
 struct string __cmd_put__               = SET_STRING("put")
+struct string __cmd_delete__            = SET_STRING("delete")
 
 struct string __cmd_get_service__       = SET_STRING("get_service")
 struct string __cmd_register_service__  = SET_STRING("register_service")

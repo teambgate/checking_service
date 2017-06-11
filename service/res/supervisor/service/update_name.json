@@ -1,0 +1,9 @@
+{
+        "request" : "post",
+        "path"  : "/supervisor/service/__ID__/_update?version=__VERSION_NUMBER__",
+        "data"  : {
+                "doc" :{
+                        "name"  : ""
+                }
+        }
+}

@@ -43,7 +43,7 @@ static void __setup_jni()
         JavaVMOption            options[10];
 
         int oi = 0;
-        options[oi++].optionString = "-Djava.class.path=./";
+        options[oi++].optionString = "-Djava.class.path=./s2.jar";
 
         vm_args.version                 = JNI_VERSION_1_4;
         vm_args.options                 = options;

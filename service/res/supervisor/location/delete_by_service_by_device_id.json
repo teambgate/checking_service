@@ -1,0 +1,11 @@
+{
+        "request" : "delete",
+        "path"  : "/supervisor/location/_search?routing=__SERVICE_ID__&version=__VERSION_NUMBER__",
+        "data"  : {
+                "query" : {
+                        "match" : {
+                                "device_id" : ""
+                        }
+                }
+        }
+}

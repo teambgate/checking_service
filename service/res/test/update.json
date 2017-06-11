@@ -1,0 +1,9 @@
+{
+        "request" : "post",
+        "path"  : "/supervisor/service/AVyWiZwJuctpbDDNvlyR/_update",
+        "data"  : {
+                "doc" :{
+                        "name"          : "BTX"
+                }
+        }
+}

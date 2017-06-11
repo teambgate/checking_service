@@ -19,6 +19,7 @@
 extern struct string __cmd_get__;
 extern struct string __cmd_post__;
 extern struct string __cmd_put__;
+extern struct string __cmd_delete__;
 
 extern struct string __cmd_get_service__;
 extern struct string __cmd_register_service__;
