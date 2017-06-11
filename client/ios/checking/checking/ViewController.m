@@ -84,7 +84,7 @@ struct native_view *__root;
     
     //    native_view_free(nv);
     //    cache_free();
-    //    dim_memory();
+    //    dim_memory();	
 }
 
 - (void)handleDisplayLink:(CADisplayLink *)displayLink

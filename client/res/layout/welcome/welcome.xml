@@ -3,7 +3,7 @@
 <touch key="search_ip"/>
 <controller name="welcome_controller"/>
 <view width="match_parent" height="match_parent" type="relative" align="center" color="#000000">
-    <image src="res/images/paris_france_eiffel_tower_9662_750x1334.jpg" width="750" height="1334" scale="0.5" align="center"/>
+    <image src="res/images/paris_france_eiffel_tower_9662_750x1334.jpg" width="750" height="1334" width="match_parent" height="wrap_content" align="center"/>
     <view width="match_parent" height="match_parent" color="#ffffff" alpha="0.75" align="center"/>
     <link src="res/layout/welcome/search_box.xml" align="center" width="300" bind_touch="search=search_ip" hash="search_box_view"/>
     <link src="res/layout/welcome/search_around.xml" align="center" width="300" visible="false" hash="search_around_view"/>

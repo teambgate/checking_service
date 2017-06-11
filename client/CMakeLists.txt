@@ -39,9 +39,11 @@ endif()
 
 add_subdirectory(../../cherry/kernel ../${OUT}/kernel)
 add_subdirectory(../../cherry/xml ../${OUT}/xml)
+add_subdirectory(../../cherry/smartfox ../${OUT}/smartfox)
 add_subdirectory(../../native_ui ../${OUT}/native_ui)
 
 include_directories(../../cherry/include)
+include_directories(../../cherry/smartfox/include)
 include_directories(../../native_ui/include)
 include_directories(include)
 
@@ -51,7 +53,7 @@ else()
         file(GLOB_RECURSE SOURCES "src/*.c")
 endif()
 
-set(PROJECT_LINK_LIBS kernel xml native_ui)
+set(PROJECT_LINK_LIBS kernel xml native_ui smartfox)
 
 add_library(checking_client STATIC ${SOURCES})
 target_link_libraries(checking_client ${PROJECT_LINK_LIBS})

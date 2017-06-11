@@ -16,6 +16,7 @@
 #include <native_ui/action.h>
 #include <native_ui/touch_handle.h>
 #include <native_ui/parser.h>
+#include <smartfox/data.h>
 #include <cherry/stdio.h>
 #include <native_ui/view.h>
 #include <cherry/math/math.h>
@@ -70,13 +71,100 @@ void welcome_controller_on_removed(struct native_view_controller *p)
 
 static void __set_state(struct native_view_controller *p, u8 state)
 {
+        struct native_view *view = native_view_controller_get_view(p);
+        struct native_view_parser *parser = native_view_get_parser(view);
+
+        struct native_view *set_ip_button = native_view_parser_get_hash_view(parser, qlkey("set_ip_button"));
+        struct native_view *search_around_button = native_view_parser_get_hash_view(parser, qlkey("search_around_button"));
+        struct native_view *search_box_view = native_view_parser_get_hash_view(parser, qlkey("search_box_view"));
+        struct native_view *search_around_view = native_view_parser_get_hash_view(parser, qlkey("search_around_view"));
+
         struct welcome_controller_data *data = (struct welcome_controller_data *)p->custom_data;
-        switch (data->state) {
-                case WELCOME_SEARCHING_IP:
+        switch (state) {
+                case WELCOME_SHOW_SEARCH_IP:
+                        native_view_clear_all_actions(set_ip_button);
+                        native_view_clear_all_actions(search_around_button);
+                        native_view_run_action(set_ip_button,
+                                native_view_alpha_to(set_ip_button,
+                                        1.0f,
+                                        0.25, NATIVE_UI_EASE_QUADRATIC_IN_OUT, 0),
+                                NULL);
+                        native_view_run_action(search_around_button,
+                                native_view_alpha_to(search_around_button,
+                                        0.35f,
+                                        0.25, NATIVE_UI_EASE_QUADRATIC_IN_OUT, 0),
+                                NULL);
+                        break;
+                case WELCOME_SHOW_SEARCH_AROUND:
+                        native_view_clear_all_actions(set_ip_button);
+                        native_view_clear_all_actions(search_around_button);
+                        native_view_run_action(set_ip_button,
+                                native_view_alpha_to(set_ip_button,
+                                        0.35f,
+                                        0.25, NATIVE_UI_EASE_QUADRATIC_IN_OUT, 0),
+                                NULL);
+                        native_view_run_action(search_around_button,
+                                native_view_alpha_to(search_around_button,
+                                        1.0f,
+                                        0.25, NATIVE_UI_EASE_QUADRATIC_IN_OUT, 0),
+                                NULL);
                         break;
                 default:
                         break;
         }
+
+        if(data->state != state) {
+                switch (state) {
+                        case WELCOME_SHOW_SEARCH_IP:
+                                native_view_clear_all_actions(search_box_view);
+                                native_view_clear_all_actions(search_around_view);
+                                native_view_run_action(search_box_view,
+                                        native_ui_action_sequence(
+                                                native_view_show(search_box_view),
+                                                native_view_alpha_to(search_box_view,
+                                                        1.0f, 0.25f, NATIVE_UI_EASE_QUADRATIC_IN_OUT, 0),
+                                                NULL
+                                        ),
+                                        NULL
+                                );
+                                native_view_run_action(search_around_view,
+                                        native_ui_action_sequence(
+                                                native_view_alpha_to(search_around_view,
+                                                        0.0f, 0.25f, NATIVE_UI_EASE_QUADRATIC_IN_OUT, 0),
+                                                native_view_hide(search_around_view),
+                                                NULL
+                                        ),
+                                        NULL
+                                );
+                                break;
+                        case WELCOME_SHOW_SEARCH_AROUND:
+                                native_view_clear_all_actions(search_box_view);
+                                native_view_clear_all_actions(search_around_view);
+                                native_view_run_action(search_box_view,
+                                        native_ui_action_sequence(
+                                                native_view_alpha_to(search_box_view,
+                                                        0.0f, 0.25f, NATIVE_UI_EASE_QUADRATIC_IN_OUT, 0),
+                                                native_view_hide(search_box_view),
+                                                NULL
+                                        ),
+                                        NULL
+                                );
+                                native_view_run_action(search_around_view,
+                                        native_ui_action_sequence(
+                                                native_view_show(search_around_view),
+                                                native_view_alpha_to(search_around_view,
+                                                        1.0f, 0.25f, NATIVE_UI_EASE_QUADRATIC_IN_OUT, 0),
+                                                NULL
+                                        ),
+                                        NULL
+                                );
+                                break;
+                        default:
+                                break;
+                }
+        }
+
+        data->state = state;
 }
 
 void welcome_controller_on_touch_set_ip(struct native_view_controller *p, struct native_view *sender, u8 type)
@@ -93,31 +181,14 @@ void welcome_controller_on_touch_set_ip(struct native_view_controller *p, struct
                         __set_state(p, WELCOME_SHOW_SEARCH_IP);
                         break;
                 case NATIVE_UI_TOUCH_CANCELLED:
-                        native_view_clear_all_actions(sender);
-                        switch (data->state) {
-                                case WELCOME_SHOW_SEARCH_IP:
-                                case WELCOME_SEARCHING_IP:
-                                        native_view_run_action(sender,
-                                                native_view_alpha_to(sender,
-                                                        1.0f,
-                                                        0.25, NATIVE_UI_EASE_QUADRATIC_IN_OUT, 0),
-                                                NULL);
-                                        break;
-                                case WELCOME_SHOW_SEARCH_AROUND:
-                                case WELCOME_SEARCHING_AROUND:
-                                        native_view_run_action(sender,
-                                                native_view_alpha_to(sender,
-                                                        0.35f,
-                                                        0.25, NATIVE_UI_EASE_QUADRATIC_IN_OUT, 0),
-                                                NULL);
-                                        break;
-                        }
+                        __set_state(p, data->state);
                         break;
         }
 }
 
 void welcome_controller_on_touch_search_around(struct native_view_controller *p, struct native_view *sender, u8 type)
 {
+        struct welcome_controller_data *data = (struct welcome_controller_data *)p->custom_data;
         switch(type) {
                 case NATIVE_UI_TOUCH_BEGAN:
                         native_view_clear_all_actions(sender);
@@ -126,11 +197,10 @@ void welcome_controller_on_touch_search_around(struct native_view_controller *p,
                                NULL);
                         break;
                 case NATIVE_UI_TOUCH_ENDED:
+                        __set_state(p, WELCOME_SHOW_SEARCH_AROUND);
+                        break;
                 case NATIVE_UI_TOUCH_CANCELLED:
-                        native_view_clear_all_actions(sender);
-                        native_view_run_action(sender,
-                                native_view_alpha_to(sender, 1.0f, 0.25, NATIVE_UI_EASE_QUADRATIC_IN_OUT, 0),
-                                NULL);
+                        __set_state(p, data->state);
                         break;
         }
 }
