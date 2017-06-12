@@ -58,6 +58,15 @@ struct cs_requester {
         pthread_mutex_t         run_mutex;
         pthread_cond_t          run_cond;
 
+        pthread_mutex_t         write_mutex;
+        pthread_cond_t          write_cond;
+
+        pthread_mutex_t         read_mutex;
+        pthread_cond_t          read_cond;
+
+        struct string           *host;
+        u16                     port;
+
         struct timeval          t1, t2;
 };
 

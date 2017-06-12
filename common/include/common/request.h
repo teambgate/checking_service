@@ -27,4 +27,6 @@ struct cs_requester *cs_requester_alloc();
 
 int cs_requester_connect(struct cs_requester *p, char *host, u16 port);
 
+int cs_requester_reconnect(struct cs_requester *p);
+
 void cs_requester_free(struct cs_requester *p);

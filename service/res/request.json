@@ -1,6 +1,9 @@
 {
-        "request" : "get",
-        "path"  : "/supervisor/location/_search",
+        "request" : "post",
+        "path"  : "/supervisor/location/AVyaSXXFkPvrdht7cR7g/_update?routing=AVyaHn5YkPvrdht7cR7a&version=1",
         "data"  : {
+                "doc" :{
+                        "port"          : 9999
+                }
         }
 }

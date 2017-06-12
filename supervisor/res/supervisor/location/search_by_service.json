@@ -1,0 +1,7 @@
+{
+        "request" : "get",
+        "path"  : "/supervisor/location/_search?routing=__SERVICE_ID__",
+        "data"  : {
+
+        }
+}

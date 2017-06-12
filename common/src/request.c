@@ -65,6 +65,7 @@ struct cs_request *cs_request_alloc(struct cs_requester *p, struct sfs_object *d
         num._generic_integer    = p->total++;
         sfs_object_set(r->data, qskey(&__key_request_id__), SFS_LONG, qpkey(num));
 
+        u8 flag = list_singular(&p->list);
         // pthread_mutex_lock(&p->lock);
         list_add_tail(&r->head, &p->list);
         // pthread_mutex_unlock(&p->lock);
@@ -77,6 +78,7 @@ struct cs_request *cs_request_alloc(struct cs_requester *p, struct sfs_object *d
         pthread_mutex_unlock(&p->wait_lock);
 
         pthread_cond_signal(&p->run_cond);
+
         pthread_mutex_unlock(&p->run_mutex);
 
         return r;
@@ -123,6 +125,22 @@ get_head:;
 
                 goto get_head;
         }
+
+        while(!cs_requester_reconnect(p)) {
+                sleep(1);
+                if((*send_valid) == 0) {
+                        pthread_mutex_unlock(&p->run_mutex);
+                        goto finish;
+                }
+        }
+
+        /*
+         * enable read
+         */
+        pthread_mutex_lock(&p->read_mutex);
+        pthread_cond_signal(&p->read_cond);
+        pthread_mutex_unlock(&p->read_mutex);
+
         struct cs_request *r    = (struct cs_request *)
                 ((char *)head - offsetof(struct cs_request, head));
         struct string *d        = sfs_object_to_json(r->data);
@@ -147,6 +165,18 @@ head_done:;
         pthread_mutex_unlock(&p->run_mutex);
 
 check_life_time:;
+        /*
+         * wait until server disconnect this socket
+         */
+        pthread_mutex_lock(&p->write_mutex);
+        pthread_cond_wait(&p->write_cond, &p->write_mutex);
+
+        if((*send_valid) == 0) {
+                pthread_mutex_unlock(&p->write_mutex);
+                goto finish;
+        }
+        pthread_mutex_unlock(&p->write_mutex);
+
         goto process_request;
 
 finish:
@@ -164,6 +194,15 @@ static void *cs_requester_read(struct cs_requester *p)
         char *recvbuf           = smalloc(sizeof(char) * MAX_RECV_BUF_LEN);
         int nbytes              = 0;
 
+        pthread_mutex_lock(&p->read_mutex);
+        pthread_cond_wait(&p->read_cond, &p->read_mutex);
+
+        if((*read_valid) == 0) {
+                pthread_mutex_unlock(&p->read_mutex);
+                goto finish;
+        }
+        pthread_mutex_unlock(&p->read_mutex);
+
 process_request:;
         if((*read_valid) == 0)
                 goto finish;
@@ -173,7 +212,24 @@ process_request:;
         int msg_len = nbytes;
 
         if(nbytes <= 0) {
-                goto finish;
+                shutdown(p->listener, SHUT_RDWR);
+                close(p->listener);
+                p->listener = 0;
+                debug("client closed!\n");
+                pthread_mutex_lock(&p->write_mutex);
+                pthread_cond_signal(&p->write_cond);
+                pthread_mutex_unlock(&p->write_mutex);
+                /*
+                 * wait until server disconnect this socket
+                 */
+                pthread_mutex_lock(&p->read_mutex);
+                pthread_cond_wait(&p->read_cond, &p->read_mutex);
+                if((*read_valid) == 0) {
+                        pthread_mutex_unlock(&p->read_mutex);
+                        goto finish;
+                }
+                pthread_mutex_unlock(&p->read_mutex);
+                goto check_life_time;
         }
 
 check:;
@@ -238,6 +294,7 @@ check_life_time:;
         goto process_request;
 
 finish:
+        debug("free buf\n");
         sfree(recvbuf);
         free(read_valid);
         pthread_exit(NULL);
@@ -252,13 +309,22 @@ struct cs_requester *cs_requester_alloc()
         p->listener             = 0;
         p->buff                 = string_alloc(0);
         p->requested_len        = 0;
+        p->host                 = string_alloc(0);
+        p->port                 = 0;
         INIT_LIST_HEAD(&p->list);
         // spin_lock_init(&p->lock, 0);
 
         pthread_mutex_init(&p->run_mutex, NULL);
         pthread_mutex_init(&p->lock, NULL);
+
         pthread_mutex_init(&p->wait_lock, NULL);
         pthread_cond_init (&p->run_cond, NULL);
+
+        pthread_mutex_init(&p->write_mutex, NULL);
+        pthread_cond_init (&p->write_cond, NULL);
+
+        pthread_mutex_init(&p->read_mutex, NULL);
+        pthread_cond_init (&p->read_cond, NULL);
 
         p->waits                = map_alloc(sizeof(struct cs_response *));
 
@@ -268,6 +334,7 @@ struct cs_requester *cs_requester_alloc()
         (*p->read_valid)        = 1;
 
         gettimeofday(&p->t1, NULL);
+
         return p;
 }
 
@@ -280,8 +347,11 @@ static void *get_in_addr(struct sockaddr *sa)
     return &(((struct sockaddr_in6*)sa)->sin6_addr);
 }
 
-int cs_requester_connect(struct cs_requester *requester, char *host, u16 port)
+int cs_requester_reconnect(struct cs_requester *requester)
 {
+        char *host = requester->host->ptr;
+        u16 port = requester->port;
+
         int numbytes;
         struct addrinfo hints, *servinfo, *p;
 
@@ -329,6 +399,15 @@ int cs_requester_connect(struct cs_requester *requester, char *host, u16 port)
 
         freeaddrinfo(servinfo);
 
+        return 1;
+}
+
+int cs_requester_connect(struct cs_requester *requester, char *host, u16 port)
+{
+        requester->host->len = 0;
+        string_cat(requester->host, host, strlen(host));
+        requester->port = port;
+
         pthread_t tid[2];
         pthread_create(&tid[0], NULL, (void*(*)(void*))cs_requester_write, (void*)requester);
         pthread_create(&tid[1], NULL, (void*(*)(void*))cs_requester_read, (void*)requester);
@@ -347,6 +426,14 @@ void cs_requester_free(struct cs_requester *p)
         pthread_cond_signal(&p->run_cond);
         pthread_mutex_unlock(&p->run_mutex);
 
+        pthread_mutex_lock(&p->write_mutex);
+        pthread_cond_signal(&p->write_cond);
+        pthread_mutex_unlock(&p->write_mutex);
+
+        pthread_mutex_lock(&p->read_mutex);
+        pthread_cond_signal(&p->read_cond);
+        pthread_mutex_unlock(&p->read_mutex);
+
         struct list_head *head;
         list_for_each_secure_mutex_lock(head, &p->list, &p->lock, {
                 struct cs_request *r = (struct cs_request *)
@@ -358,10 +445,19 @@ void cs_requester_free(struct cs_requester *p)
         // spin_lock_destroy(&p->lock);
         pthread_mutex_destroy(&p->run_mutex);
         pthread_mutex_destroy(&p->lock);
+
         pthread_mutex_destroy(&p->wait_lock);
         pthread_cond_destroy(&p->run_cond);
+
+        pthread_mutex_destroy(&p->write_mutex);
+        pthread_cond_destroy(&p->write_cond);
+
+        pthread_mutex_destroy(&p->read_mutex);
+        pthread_cond_destroy(&p->read_cond);
+
         string_free(p->buff);
         shutdown(p->listener, SHUT_RDWR);
         close(p->listener);
+        string_free(p->host);
         sfree(p);
 }

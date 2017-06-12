@@ -1,0 +1,2 @@
+{"_index":"supervisor","_type":"service","_id":"AVyaHn5YkPvrdht7cR7a","_score":1,"_source":{"name":"B-GATE CORP","capacity":1}}
+{"_index":"supervisor","_type":"location","_id":"AVyaJe2SkPvrdht7cR7c","_score":1,"_routing":"AVyaHn5YkPvrdht7cR7a","_parent":"AVyaHn5YkPvrdht7cR7a","_source":{"port":0,"device_id":"Manh ubuntu","ip":"0.0.0.0","latlng":{"lon":0,"lat":0}}}

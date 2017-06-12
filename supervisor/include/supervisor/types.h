@@ -15,10 +15,7 @@
 #define __CHECKING_SERVICE_SUPERVISOR_TYPES_H__
 
 #include <cherry/server/types.h>
-#include <s2/types.h>
 #include <smartfox/types.h>
-#include <my_global.h>
-#include <mysql.h>
 
 struct supervisor;
 
@@ -27,12 +24,6 @@ typedef void(*supervisor_delegate)(struct supervisor *, int fd, struct sfs_objec
 struct client_buffer {
         struct string   *buff;
         u32             requested_len;
-};
-
-enum {
-        DB_NONE,
-        DB_CONNECTING,
-        DB_CONNECTED
 };
 
 struct supervisor {
@@ -45,10 +36,7 @@ struct supervisor {
         struct map                      *delegates;
         struct map                      *clients_datas;
 
-        MYSQL *                         db_connection;
-
         struct sfs_object               *config;
-        struct s2_helper                *s2_helper;
 };
 
 #endif

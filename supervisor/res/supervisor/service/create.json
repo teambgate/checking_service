@@ -1,0 +1,9 @@
+{
+        "request" : "post",
+        "path"  : "/supervisor/service",
+        "data"  : {
+                "name"          : "",
+                "capacity"      : 1,
+                "password"      : ""
+        }
+}

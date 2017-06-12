@@ -37,8 +37,8 @@ int main(int argc, char **argv)
         int count = 0;
 start:;
         struct cs_requester *p  = cs_requester_alloc();
-        cs_requester_connect(p, "127.0.0.1", 9898);
-        for(int i = 0; i < 1; i++)
+        cs_requester_connect(p, "localhost", 9898);
+        for(int i = 0; i < 20000; i++)
         {
                 // struct sfs_object *data = sfs_object_alloc();
                 // sfs_object_set_string(data, qskey(&__key_version__), qlkey("1"));
@@ -82,11 +82,13 @@ start:;
                 // sfs_object_set_string(obj, qskey(&__key_name__), qlkey("Johan"));
                 sfs_object_set_object(data, qskey(&__key_data__), d);
                 cs_request_alloc(p, data, callback, p);
+                sfs_object_free(obj);
+                sleep(1);
         }
-        sleep(2);
+        sleep(120);
         debug("free requester\n");
         cs_requester_free(p);
-        sleep(1);
+        sleep(3);
         cache_free();
         dim_memory();
         // count++;
