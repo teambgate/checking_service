@@ -16,7 +16,7 @@
 #include <cherry/list.h>
 #include <cherry/array.h>
 #include <cherry/map.h>
-#include <cherry/string.h>
+#include <cherry/string.h> 
 #include <cherry/stdio.h>
 #include <cherry/stdlib.h>
 #include <smartfox/data.h>
