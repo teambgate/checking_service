@@ -267,10 +267,12 @@ process_request:;
                  * wait until server disconnect this socket
                  */
                 pthread_mutex_lock(&p->read_mutex);
-                pthread_cond_wait(&p->read_cond, &p->read_mutex);
-                if((*read_valid) == 0) {
-                        pthread_mutex_unlock(&p->read_mutex);
-                        goto finish;
+                if(p->listener == 0) {
+                        pthread_cond_wait(&p->read_cond, &p->read_mutex);
+                        if((*read_valid) == 0) {
+                                pthread_mutex_unlock(&p->read_mutex);
+                                goto finish;
+                        }        
                 }
                 pthread_mutex_unlock(&p->read_mutex);
                 goto check_life_time;

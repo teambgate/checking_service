@@ -153,7 +153,7 @@ int main( int argc, char** argv )
         pthread_t tid[1];
         pthread_create(&tid[0], NULL, (void*(*)(void*))__read_input, (void*)NULL);
 
-begin:;
+// begin:;
         s = supervisor_alloc();
 
         supervisor_start(s);
@@ -162,7 +162,7 @@ begin:;
         cache_free();
         dim_memory();
 
-        goto begin;
+        // goto begin;
 
         (*jvm)->DestroyJavaVM( jvm );
         return 0;
