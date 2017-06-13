@@ -13,6 +13,9 @@
  */
 #include <common/types.h>
 
+struct sfs_object *cs_request_data_from_file(char *file, int file_type,
+        char *version, size_t version_len,
+        char *pass, size_t pass_len);
 /*
  * cs request
  */

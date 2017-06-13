@@ -24,7 +24,7 @@
 #include <common/key.h>
 #include <common/error.h>
 
-static void __response_invalid_version(struct supervisor *p, int fd, struct sfs_object *obj)
+static void __response_invalid_version(struct supervisor *p, int fd, u32 mask, struct sfs_object *obj)
 {
         struct sfs_object *res = sfs_object_alloc();
         sfs_object_set_long(res, qskey(&__key_request_id__), sfs_object_get_long(obj, qskey(&__key_request_id__), 0));
@@ -33,27 +33,27 @@ static void __response_invalid_version(struct supervisor *p, int fd, struct sfs_
         sfs_object_set_long(res, qskey(&__key_error__), ERROR_VERSION_INVALID);
 
         struct string *d        = sfs_object_to_json(res);
-        supervisor_send_to_client(p, fd, d->ptr, d->len);
+        supervisor_send_to_client(p, fd, mask, d->ptr, d->len, 0);
         string_free(d);
         sfs_object_free(res);
 }
 
 #define register_function(func)                                                                 \
-void func(struct supervisor *p, int fd, struct sfs_object *obj)                                 \
+void func(struct supervisor *p, int fd, u32 mask, struct sfs_object *obj)                                 \
 {                                                                                               \
         if(!map_has_key(obj->data, qskey(&__key_version__))) {                                  \
-                __response_invalid_version(p, fd, obj);                                         \
+                __response_invalid_version(p, fd, mask, obj);                                         \
                 return;                                                                         \
         }                                                                                       \
                                                                                                 \
         struct string *version = sfs_object_get_string(obj, qskey(&__key_version__), 0);        \
                                                                                                 \
         if(strcmp(version->ptr, "1") == 0) {                                                    \
-                func##_v1(p, fd, obj);                                                          \
+                func##_v1(p, fd, mask, obj);                                                          \
                 return;                                                                         \
         }                                                                                       \
                                                                                                 \
-        __response_invalid_version(p, fd, obj);                                                 \
+        __response_invalid_version(p, fd, mask, obj);                                                 \
 }
 
 

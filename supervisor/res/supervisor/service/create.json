@@ -4,6 +4,9 @@
         "data"  : {
                 "name"          : "",
                 "capacity"      : 1,
-                "password"      : ""
+                "user_name"     : "",
+                "user_pass"     : "",
+                "validated"     : 0,
+                "reserved"      : "2017-06-13 00:00:00"
         }
 }

@@ -19,6 +19,7 @@
 #include <cherry/stdio.h>
 #include <cherry/array.h>
 #include <cherry/map.h>
+#include <cherry/list.h>
 #include <cherry/bytes.h>
 #include <cherry/math/math.h>
 #include <cherry/server/socket.h>
@@ -39,6 +40,9 @@
 
 #include <common/command.h>
 #include <common/key.h>
+#include <common/request.h>
+
+#include <supervisor/handler.h>
 
 static struct client_buffer *__client_buffer_alloc()
 {
@@ -92,8 +96,67 @@ static int __supervisor_check_path(struct supervisor *ws, char *path, u32 len)
         return depth >= 0;
 }
 
-static inline void __supervisor_send_to_client(struct supervisor *p, int fd, char *ptr, int len)
+static void __supervisor_close_client(struct supervisor *p, int fd)
 {
+        debug("force client closed\n");
+
+        pthread_mutex_lock(&p->client_data_mutex);
+
+        /*
+         * increase mask to prohibit current pending packets sending to this fd
+         */
+        array_reserve(p->fd_mask, fd + 1);
+        u32 current_mask = array_get(p->fd_mask, u32, fd);
+        current_mask++;
+        array_set(p->fd_mask, fd, &current_mask);
+
+        struct client_buffer *cb = map_get(p->clients_datas, struct client_buffer *, qpkey(fd));
+        if(cb) {
+                __client_buffer_free(cb);
+                map_remove_key(p->clients_datas, &fd, sizeof(fd));
+        }
+        shutdown(fd, SHUT_RDWR);
+        socket_close(fd);
+        file_descriptor_set_remove(p->master, fd);
+        pthread_mutex_unlock(&p->client_data_mutex);
+
+        debug("force close connection\n\n");
+}
+
+static void __supervisor_check_old_and_close_client(struct supervisor *ws, int fd)
+{
+        /*
+         * make sure fd will be closed once
+         */
+        pthread_mutex_lock(&ws->client_data_mutex);
+        int i;
+        for_i(i, ws->fd_invalids->len) {
+                i32 cfd = array_get(ws->fd_invalids, i32, i);
+                if(cfd == fd) {
+                        array_remove(ws->fd_invalids, i);
+                        break;
+                }
+        }
+        pthread_mutex_unlock(&ws->client_data_mutex);
+
+        __supervisor_close_client(ws, fd);
+}
+
+static inline void __supervisor_send_to_client(struct supervisor *p, int fd, u32 mask, char *ptr, int len, u8 keep)
+{
+        pthread_mutex_lock(&p->client_data_mutex);
+        array_reserve(p->fd_mask, fd + 1);
+        u32 current_mask = array_get(p->fd_mask, u32, fd);
+        pthread_mutex_unlock(&p->client_data_mutex);
+
+        if(current_mask != mask) {
+                /*
+                 * prohibit sending to fd
+                 */
+                debug("prohibit\n");
+                return;
+        }
+
         debug("send client %s\n", ptr);
         int bytes_send          = 0;
         int slen                = len;
@@ -106,6 +169,7 @@ static inline void __supervisor_send_to_client(struct supervisor *p, int fd, cha
         /*
          * send packet content
          */
+        pthread_mutex_lock(&p->client_data_mutex);
         while(bytes_send < slen) {
                 bytes_send += send(fd, ptr, len, 0);
                 if(bytes_send < 0) {
@@ -114,21 +178,41 @@ static inline void __supervisor_send_to_client(struct supervisor *p, int fd, cha
                 len -= bytes_send;
                 ptr += bytes_send;
         }
+        pthread_mutex_unlock(&p->client_data_mutex);
+
+        if(!keep) {
+                /*
+                 * push fd to invalids array
+                 * if we close fd after calling select then
+                 * it will block infinitely
+                 */
+                pthread_mutex_lock(&p->client_data_mutex);
+
+                array_reserve(p->fd_mask, fd + 1);
+                u32 current_mask = array_get(p->fd_mask, u32, fd);
+                current_mask++;
+                array_set(p->fd_mask, fd, &current_mask);
+
+                array_push(p->fd_invalids, &fd);
+                pthread_mutex_unlock(&p->client_data_mutex);
+        }
 }
 
-void supervisor_send_to_client(struct supervisor *p, int fd, char *ptr, int len)
+void supervisor_send_to_client(struct supervisor *p, int fd, u32 mask, char *ptr, int len, u8 keep)
 {
-        __supervisor_send_to_client(p, fd, ptr, len);
+        __supervisor_send_to_client(p, fd, mask, ptr, len, keep);
 }
 
 static void __supervisor_handle_msg(struct supervisor *ws, u32 fd, char* msg, size_t msg_len)
 {
+        debug("handle message\n");
+        pthread_mutex_lock(&ws->client_data_mutex);
         if( ! map_has_key(ws->clients_datas, qpkey(fd))) {
                 struct client_buffer *cb        = __client_buffer_alloc();
                 map_set(ws->clients_datas, qpkey(fd), &cb);
         }
-
         struct client_buffer *cb = map_get(ws->clients_datas, struct client_buffer *, qpkey(fd));
+        pthread_mutex_unlock(&ws->client_data_mutex);
         int amount;
 check:;
         if(msg_len == 0) goto end;
@@ -178,26 +262,19 @@ send_client:;
         if(cmd) {
                 supervisor_delegate *delegate = map_get_pointer(ws->delegates, qskey(cmd->_string));
                 if(delegate) {
-                        (*delegate)(ws, fd, obj);
-                }
+                        array_reserve(ws->fd_mask, fd + 1);
+                        u32 mask = array_get(ws->fd_mask, u32, fd);
 
+                        (*delegate)(ws, fd, mask, obj);
+                } else {
+                        __supervisor_check_old_and_close_client(ws, fd);
+                }
+        } else {
+                __supervisor_check_old_and_close_client(ws, fd);
         }
         sfs_object_free(obj);
         cb->requested_len       = 0;
         cb->buff->len           = 0;
-
-        debug("force client closed\n");
-        if(cb) {
-                __client_buffer_free(cb);
-                map_remove_key(ws->clients_datas, &fd, sizeof(fd));
-        }
-
-        shutdown(fd, SHUT_RDWR);
-        socket_close(fd);
-        file_descriptor_set_remove(ws->master, fd);
-        debug("force close connection\n\n");
-
-        // goto check;
 end:;
 }
 
@@ -271,18 +348,41 @@ void supervisor_start(struct supervisor *ws)
 #define MAX_RECV_BUF_LEN 99999
         char *recvbuf           = smalloc(sizeof(char) * MAX_RECV_BUF_LEN);
         int nbytes              = 0;
-        struct timeval t1, t2;
+        struct timeval t1;
         double elapsedTime;
         gettimeofday(&t1, NULL);
+        struct list_head *head;
+
         while(1) {
                 /*
                  * listen for next incomming sockets
                  */
+                pthread_mutex_lock(&ws->client_data_mutex);
                 file_descriptor_set_assign(ws->incomming, ws->master);
+                pthread_mutex_unlock(&ws->client_data_mutex);
+
+                debug("start select\n");
                 if(select(ws->fdmax + 1, ws->incomming->set->ptr, NULL, NULL, NULL) == -1) {
                         perror("select");
                         break;
                 }
+                debug("process select\n");
+                /*
+                 * process handlers
+                 */
+                gettimeofday(&t1, NULL);
+                list_for_each_secure(head, &ws->handlers, {
+                        struct supervisor_handler *handler = (struct supervisor_handler *)
+                                ((char *)head - offsetof(struct supervisor_handler, head));
+                        elapsedTime = (t1.tv_sec - handler->last_executed_time.tv_sec);
+                        elapsedTime += (t1.tv_usec - handler->last_executed_time.tv_usec) / 1000000.0;
+                        if(elapsedTime >= handler->time_rate) {
+                                if(handler->delegate) {
+                                        handler->delegate(ws);
+                                }
+                                handler->last_executed_time = t1;
+                        }
+                });
                 /*
                  * get active sockets
                  */
@@ -300,12 +400,20 @@ void supervisor_start(struct supervisor *ws)
                                 if(newfd == -1) {
                                         perror("accept\n");
                                 } else {
+                                        pthread_mutex_lock(&ws->client_data_mutex);
+
                                         file_descriptor_set_add(ws->master, newfd);
                                         ws->fdmax = MAX(ws->fdmax, newfd);
                                         debug("new connection from %s on socket %d\n",
                                                 inet_ntop(remoteaddr.ss_family,
                                                         get_in_addr((struct sockaddr *)&remoteaddr),
                                                         remoteIP, INET6_ADDRSTRLEN), newfd);
+                                        array_reserve(ws->fd_mask, newfd + 1);
+                                        u32 mask = array_get(ws->fd_mask, u32, newfd);
+                                        mask++;
+                                        array_set(ws->fd_mask, newfd, &mask);
+
+                                        pthread_mutex_unlock(&ws->client_data_mutex);
                                 }
                         } else {
                                 /*
@@ -313,28 +421,29 @@ void supervisor_start(struct supervisor *ws)
                                  */
                                 nbytes = recv(*fd, recvbuf, MAX_RECV_BUF_LEN, 0);
                                 if(nbytes <= 0) {
-                                        debug("client closed\n");
-
-                                        struct client_buffer *cb = map_get(ws->clients_datas, struct client_buffer *, fd, sizeof(*fd));
-                                        if(cb) {
-                                                __client_buffer_free(cb);
-                                                map_remove_key(ws->clients_datas, fd, sizeof(*fd));
-                                        }
-
-                                        shutdown(*fd, SHUT_RDWR);
-                                        socket_close(*fd);
-                                        file_descriptor_set_remove(ws->master, *fd);
-                                        debug("close connection\n\n");
+                                        __supervisor_check_old_and_close_client(ws, *fd);
                                 } else {
                                         __supervisor_handle_msg(ws, *fd, recvbuf, nbytes);
                                 }
                         }
                 }
+
+                /*
+                 * close old sockets
+                 */
+        check_old_fd:;
+                pthread_mutex_lock(&ws->client_data_mutex);
+                if(ws->fd_invalids->len) {
+                        i32 cfd = array_get(ws->fd_invalids, i32, 0);
+                        array_remove(ws->fd_invalids, 0);
+                        pthread_mutex_unlock(&ws->client_data_mutex);
+
+                        __supervisor_close_client(ws, cfd);
+                        goto check_old_fd;
+                }
+                pthread_mutex_unlock(&ws->client_data_mutex);
         }
 finish:;
-#if OS == WINDOWS
-        WSACleanup();
-#endif
         shutdown(ws->listener, SHUT_RDWR);
         socket_close(ws->listener);
         string_free(ports);
@@ -342,6 +451,44 @@ finish:;
         array_free(actives);
 
 #undef MAX_RECV_BUF_LEN
+}
+
+static void __load_base_map_callback(void *p, struct sfs_object *data)
+{
+        struct string *j = sfs_object_to_json(data);
+        debug("load base map : %s\n",j->ptr);
+        string_free(j);
+}
+
+
+static void __load_base_map(struct supervisor *p, char *file)
+{
+        struct string *es_version_code = sfs_object_get_string(p->config, qlkey("es_version_code"), SFS_GET_REPLACE_IF_WRONG_TYPE);
+        struct string *es_pass = sfs_object_get_string(p->config, qlkey("es_pass"), SFS_GET_REPLACE_IF_WRONG_TYPE);
+
+        struct sfs_object *request = cs_request_data_from_file(file, FILE_INNER, qskey(es_version_code), qskey(es_pass));
+        cs_request_alloc(p->es_server_requester, request, __load_base_map_callback, p);
+}
+
+static void __load_es_server(struct supervisor *p)
+{
+        p->es_server_requester  = cs_requester_alloc();
+
+        struct string *host     = sfs_object_get_string(p->config, qlkey("es_host"), SFS_GET_REPLACE_IF_WRONG_TYPE);
+        u16 port = sfs_object_get_short(p->config, qlkey("es_port"), SFS_GET_REPLACE_IF_WRONG_TYPE);
+
+        cs_requester_connect(p->es_server_requester, host->ptr, port);
+
+        __load_base_map(p, "res/supervisor/index.json");
+        __load_base_map(p, "res/supervisor/service/map.json");
+        __load_base_map(p, "res/supervisor/location/map.json");
+}
+
+static void __register_handler(struct supervisor *p, supervisor_handler_delegate delegate, double time_rate)
+{
+        debug("register time rate %f\n", time_rate);
+        struct supervisor_handler *handler = supervisor_handler_alloc(delegate, time_rate);
+        list_add_tail(&handler->head, &p->handlers);
 }
 
 struct supervisor *supervisor_alloc()
@@ -353,10 +500,19 @@ struct supervisor *supervisor_alloc()
         p->listener             = 0;
         p->root                 = string_alloc(0);
 
+        INIT_LIST_HEAD(&p->handlers);
+
+        p->fd_mask              = array_alloc(sizeof(u32), ORDERED);
+        p->fd_invalids          = array_alloc(sizeof(i32), NO_ORDERED);
+
+        pthread_mutex_init(&p->client_data_mutex, NULL);
+
         /*
          * load config
          */
         p->config               = sfs_object_from_json_file("res/config.json", FILE_INNER);
+
+        __load_es_server(p);
 
         /*
          * setup delegates
@@ -365,20 +521,39 @@ struct supervisor *supervisor_alloc()
         map_set(p->delegates, qskey(&__cmd_get_service__), &(supervisor_delegate){supervisor_process_get_service});
         map_set(p->delegates, qskey(&__cmd_register_service__), &(supervisor_delegate){supervisor_process_register_service});
 
+        __register_handler(p,
+                supervisor_process_clear_invalidated_service,
+                sfs_object_get_double(p->config, qlkey("service_created_timeout"), SFS_GET_REPLACE_IF_WRONG_TYPE));
+
         p->clients_datas        = map_alloc(sizeof(struct client_buffer *));
         return p;
 }
 
 void supervisor_free(struct supervisor *p)
 {
+        cs_requester_free(p->es_server_requester);
         string_free(p->root);
         file_descriptor_set_free(p->master);
         file_descriptor_set_free(p->incomming);
 
+        array_free(p->fd_mask);
+        array_free(p->fd_invalids);
+
         sfs_object_free(p->config);
 
         map_free(p->delegates);
+
+        struct list_head *head;
+        list_while_not_singular(head, &p->handlers) {
+                struct supervisor_handler *handler = (struct supervisor_handler *)
+                        ((char *)head - offsetof(struct supervisor_handler, head));
+                supervisor_handler_free(handler);
+        }
+
+        pthread_mutex_lock(&p->client_data_mutex);
         map_deep_free(p->clients_datas, struct client_buffer *, __client_buffer_free);
+        pthread_mutex_unlock(&p->client_data_mutex);
+        pthread_mutex_destroy(&p->client_data_mutex);
 
         sfree(p);
 }

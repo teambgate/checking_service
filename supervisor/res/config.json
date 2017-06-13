@@ -1,9 +1,12 @@
 {
-        "service_port"  : 9999,
-        "service_root"  : "./",
-        "host"          : "127.0.0.1",
-        "user"          : "root",
-        "pass"          : "123456",
-        "db"            : "testdb",
-        "gc_time"       : 5.0
+        "service_port"                  : 9999,
+        "service_root"                  : "./",
+        "service_pass"                  : "123456",
+
+        "es_host"                       : "localhost",
+        "es_port"                       : 9898,
+        "es_pass"                       : "123456",
+        "es_version_code"               : "1",
+
+        "service_created_timeout"       : 300
 }

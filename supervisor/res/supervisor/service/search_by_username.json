@@ -1,0 +1,11 @@
+{
+        "request" : "get",
+        "path"  : "/supervisor/service/_search",
+        "data"  : {
+                "query": {
+                        "match" : {
+                                "user_name" : ""
+                        }
+                }
+        }
+}

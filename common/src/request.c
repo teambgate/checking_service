@@ -16,11 +16,12 @@
 #include <cherry/list.h>
 #include <cherry/array.h>
 #include <cherry/map.h>
-#include <cherry/string.h> 
+#include <cherry/string.h>
 #include <cherry/stdio.h>
 #include <cherry/stdlib.h>
 #include <smartfox/data.h>
 #include <common/key.h>
+#include <common/command.h>
 #include <pthread.h>
 #include <cherry/lock.h>
 #include <sys/time.h>
@@ -33,6 +34,49 @@
 #include <arpa/inet.h>
 #include <signal.h>
 #include <netinet/in.h>
+
+struct sfs_object *cs_request_data_from_file(char *file, int file_type,
+        char *version, size_t version_len,
+        char *pass, size_t pass_len)
+{
+        /*
+         * read map data
+         */
+        struct sfs_object *obj = sfs_object_from_json_file(file, file_type);
+        /*
+         * get map command, path, data
+         */
+        struct string *request = sfs_object_get_string(obj, qlkey("request"), SFS_GET_REPLACE_IF_WRONG_TYPE);
+        struct string *path = sfs_object_get_string(obj, qlkey("path"), SFS_GET_REPLACE_IF_WRONG_TYPE);
+        struct sfs_object *objdata = sfs_object_get_object(obj, qlkey("data"), SFS_GET_REPLACE_IF_WRONG_TYPE);
+        /*
+         * create request
+         */
+        struct sfs_object *data = sfs_object_alloc();
+        sfs_object_set_string(data, qskey(&__key_version__), version, version_len);
+        if(strcmp(request->ptr, "post") == 0) {
+                sfs_object_set_string(data, qskey(&__key_cmd__), qskey(&__cmd_post__));
+        } else if(strcmp(request->ptr, "get") == 0) {
+                sfs_object_set_string(data, qskey(&__key_cmd__), qskey(&__cmd_get__));
+        } else if(strcmp(request->ptr, "put") == 0) {
+                sfs_object_set_string(data, qskey(&__key_cmd__), qskey(&__cmd_put__));
+        } else if(strcmp(request->ptr, "delete") == 0) {
+                sfs_object_set_string(data, qskey(&__key_cmd__), qskey(&__cmd_delete__));
+        }
+        sfs_object_set_string(data, qskey(&__key_pass__), pass, pass_len);
+        sfs_object_set_string(data, qskey(&__key_path__), qskey(path));
+        /*
+         * set data
+         */
+        struct string *json = sfs_object_to_json(objdata);
+        int counter = 0;
+        struct sfs_object *d = sfs_object_from_json(json->ptr, json->len, &counter);
+        string_free(json);
+        sfs_object_set_object(data, qskey(&__key_data__), d);
+        sfs_object_free(obj);
+
+        return data;
+}
 
 static struct cs_response *__cs_response_alloc(cs_request_callback callback, void *ctx)
 {
@@ -283,7 +327,7 @@ receive_full_packet:;
         }
         pthread_mutex_unlock(&p->wait_lock);
         if(res) {
-                res->callback(res->ctx, res->data);
+                if(res->callback) res->callback(res->ctx, res->data);
                 __cs_response_free(res);
         }
         p->requested_len       = 0;

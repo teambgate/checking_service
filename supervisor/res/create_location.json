@@ -1,8 +1,0 @@
-{
-        "request" : "post",
-        "path"  : "/root/service?parent=1",
-        "data"  : {
-                "lat" : 0,
-                "lon" : 0
-        }
-}

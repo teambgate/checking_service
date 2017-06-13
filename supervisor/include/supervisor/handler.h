@@ -11,12 +11,21 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  */
-#ifndef __CHECKING_SERVICE_SUPERVISOR_REQUEST_VERSION_1_VERSION_H__
-#define __CHECKING_SERVICE_SUPERVISOR_REQUEST_VERSION_1_VERSION_H__
+#ifndef __CHECKING_SERVICE_SUPERVISOR_HANDLERS_H__
+#define __CHECKING_SERVICE_SUPERVISOR_HANDLERS_H__
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include <supervisor/types.h>
 
-void supervisor_process_get_service_v1(struct supervisor *p, int fd, u32 mask, struct sfs_object *obj);
-void supervisor_process_register_service_v1(struct supervisor *p, int fd, u32 mask, struct sfs_object *obj);
+struct supervisor_handler *supervisor_handler_alloc(supervisor_handler_delegate delegate, double time_rate);
+
+void supervisor_handler_free(struct supervisor_handler *p);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

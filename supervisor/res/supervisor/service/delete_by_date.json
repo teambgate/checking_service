@@ -1,0 +1,25 @@
+{
+        "request" : "post",
+        "path"  : "/supervisor/service/_delete_by_query?conflicts=proceed",
+        "data"  : {
+                "query" : {
+                        "bool" : {
+                                "must" : [
+                                        {
+                                                "term" : {
+                                                        "validated" : 0
+                                                }
+                                        },
+                                        {
+                                                "range" : {
+                                                        "reserved" : {
+                                                                "from"  : "1900-01-01 00:00:00",
+                                                                "to"    : "2017-06-13 23:00:00"
+                                                        }
+                                                }
+                                        }
+                                ]
+                        }
+                }
+        }
+}

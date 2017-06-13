@@ -22,12 +22,14 @@ void supervisor_start(struct supervisor *p);
 
 void supervisor_free(struct supervisor *p);
 
-void supervisor_send_to_client(struct supervisor *p, int fd, char *ptr, int len);
+void supervisor_send_to_client(struct supervisor *p, int fd, u32 mask, char *ptr, int len, u8 keep);
 
 /*
  * request delegate
  */
-void supervisor_process_get_service(struct supervisor *p, int fd, struct sfs_object *obj);
-void supervisor_process_register_service(struct supervisor *p, int fd, struct sfs_object *obj);
+void supervisor_process_get_service(struct supervisor *p, int fd, u32 mask, struct sfs_object *obj);
+void supervisor_process_register_service(struct supervisor *p, int fd, u32 mask, struct sfs_object *obj);
+
+void supervisor_process_clear_invalidated_service(struct supervisor *p);
 
 #endif

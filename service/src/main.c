@@ -37,55 +37,61 @@ int main(int argc, char **argv)
         int count = 0;
 start:;
         struct cs_requester *p  = cs_requester_alloc();
-        cs_requester_connect(p, "localhost", 9898);
-        for(int i = 0; i < 20000; i++)
-        {
-                // struct sfs_object *data = sfs_object_alloc();
-                // sfs_object_set_string(data, qskey(&__key_version__), qlkey("1"));
-                // sfs_object_set_string(data, qskey(&__key_cmd__), qskey(&__cmd_get_service__));
-                // sfs_object_set_int(data, qskey(&__key_id__), 1);
-                // sfs_object_set_string(data, qskey(&__key_pass__), qlkey("123456"));
-                // sfs_object_set_string(data, qskey(&__key_ip__), qlkey("192.168.1.248"));
-                // sfs_object_set_long(data, qskey(&__key_port__), 1000);
-                // sfs_object_set_double(data, qskey(&__key_lat__), 1.1);
-                // sfs_object_set_double(data, qskey(&__key_lng__), 9999.1);
-                // cs_request_alloc(p, data, callback, p);
+        cs_requester_connect(p, "127.0.0.1", 9999);
+        struct sfs_object *data = sfs_object_alloc();
+        sfs_object_set_string(data, qskey(&__key_version__), qlkey("1"));
+        sfs_object_set_string(data, qskey(&__key_cmd__), qskey(&__cmd_register_service__));
+        sfs_object_set_string(data, qskey(&__key_pass__), qlkey("123456"));
+        sfs_object_set_string(data, qskey(&__key_name__), qlkey("BGATE CORP"));
+        sfs_object_set_string(data, qskey(&__key_user_name__), qlkey("manh_tran"));
+        sfs_object_set_string(data, qskey(&__key_user_pass__), qlkey("12345678"));
+        // sfs_object_set_int(data, qskey(&__key_id__), 1);
+        // sfs_object_set_string(data, qskey(&__key_ip__), qlkey("192.168.1.248"));
+        // sfs_object_set_long(data, qskey(&__key_port__), 1000);
+        // sfs_object_set_double(data, qskey(&__key_lat__), 1.1);
+        // sfs_object_set_double(data, qskey(&__key_lng__), 9999.1);
+        cs_request_alloc(p, data, callback, p);
 
-                struct sfs_object *obj = sfs_object_from_json_file("res/request.json", FILE_INNER);
-                struct string *request = sfs_object_get_string(obj, qlkey("request"), SFS_GET_REPLACE_IF_WRONG_TYPE);
-                struct string *path = sfs_object_get_string(obj, qlkey("path"), SFS_GET_REPLACE_IF_WRONG_TYPE);
-                struct sfs_object *objdata = sfs_object_get_object(obj, qlkey("data"), SFS_GET_REPLACE_IF_WRONG_TYPE);
+        // struct cs_requester *p  = cs_requester_alloc();
+        // cs_requester_connect(p, "localhost", 9898);
+        // for(int i = 0; i < 20000; i++)
+        // {
+        //         struct sfs_object *obj = sfs_object_from_json_file("res/request.json", FILE_INNER);
+        //         struct string *request = sfs_object_get_string(obj, qlkey("request"), SFS_GET_REPLACE_IF_WRONG_TYPE);
+        //         struct string *path = sfs_object_get_string(obj, qlkey("path"), SFS_GET_REPLACE_IF_WRONG_TYPE);
+        //         struct sfs_object *objdata = sfs_object_get_object(obj, qlkey("data"), SFS_GET_REPLACE_IF_WRONG_TYPE);
+        //
+        //         struct sfs_object *data = sfs_object_alloc();
+        //         sfs_object_set_string(data, qskey(&__key_version__), qlkey("1"));
+        //
+        //         if(strcmp(request->ptr, "post") == 0) {
+        //                 sfs_object_set_string(data, qskey(&__key_cmd__), qskey(&__cmd_post__));
+        //         } else if(strcmp(request->ptr, "get") == 0) {
+        //                 sfs_object_set_string(data, qskey(&__key_cmd__), qskey(&__cmd_get__));
+        //         } else if(strcmp(request->ptr, "put") == 0) {
+        //                 sfs_object_set_string(data, qskey(&__key_cmd__), qskey(&__cmd_put__));
+        //         } else if(strcmp(request->ptr, "delete") == 0) {
+        //                 sfs_object_set_string(data, qskey(&__key_cmd__), qskey(&__cmd_delete__));
+        //         }
+        //
+        //
+        //         sfs_object_set_string(data, qskey(&__key_pass__), qlkey("123456"));
+        //
+        //         sfs_object_set_string(data, qskey(&__key_path__), qskey(path));
+        //
+        //         struct string *json = sfs_object_to_json(objdata);
+        //         int counter = 0;
+        //         struct sfs_object *d = sfs_object_from_json(json->ptr, json->len, &counter);
+        //         string_free(json);
+        //         // struct sfs_object *obj = sfs_object_alloc();
+        //         // sfs_object_set_string(obj, qskey(&__key_name__), qlkey("Johan"));
+        //         sfs_object_set_object(data, qskey(&__key_data__), d);
+        //         cs_request_alloc(p, data, callback, p);
+        //         sfs_object_free(obj);
+        //         sleep(1);
+        // }
 
-                struct sfs_object *data = sfs_object_alloc();
-                sfs_object_set_string(data, qskey(&__key_version__), qlkey("1"));
-
-                if(strcmp(request->ptr, "post") == 0) {
-                        sfs_object_set_string(data, qskey(&__key_cmd__), qskey(&__cmd_post__));
-                } else if(strcmp(request->ptr, "get") == 0) {
-                        sfs_object_set_string(data, qskey(&__key_cmd__), qskey(&__cmd_get__));
-                } else if(strcmp(request->ptr, "put") == 0) {
-                        sfs_object_set_string(data, qskey(&__key_cmd__), qskey(&__cmd_put__));
-                } else if(strcmp(request->ptr, "delete") == 0) {
-                        sfs_object_set_string(data, qskey(&__key_cmd__), qskey(&__cmd_delete__));
-                }
-
-
-                sfs_object_set_string(data, qskey(&__key_pass__), qlkey("123456"));
-
-                sfs_object_set_string(data, qskey(&__key_path__), qskey(path));
-
-                struct string *json = sfs_object_to_json(objdata);
-                int counter = 0;
-                struct sfs_object *d = sfs_object_from_json(json->ptr, json->len, &counter);
-                string_free(json);
-                // struct sfs_object *obj = sfs_object_alloc();
-                // sfs_object_set_string(obj, qskey(&__key_name__), qlkey("Johan"));
-                sfs_object_set_object(data, qskey(&__key_data__), d);
-                cs_request_alloc(p, data, callback, p);
-                sfs_object_free(obj);
-                sleep(1);
-        }
-        sleep(120);
+        sleep(3);
         debug("free requester\n");
         cs_requester_free(p);
         sleep(3);

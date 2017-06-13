@@ -25,6 +25,8 @@ extern struct string    __key_lat__;
 extern struct string    __key_lng__;
 extern struct string    __key_ip__;
 extern struct string    __key_port__;
+extern struct string    __key_user_pass__;
+extern struct string    __key_user_name__;
 extern struct string    __key_name__;
 extern struct string    __key_services__;
 extern struct string    __key_cell__;
@@ -34,5 +36,6 @@ extern struct string    __key_error__;
 extern struct string    __key_companies__;
 extern struct string    __key_path__;
 extern struct string    __key_data__;
+extern struct string    __key_reserved__;
 
 #endif
