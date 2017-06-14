@@ -8,5 +8,7 @@
         "es_pass"                       : "123456",
         "es_version_code"               : "1",
 
-        "service_created_timeout"       : 300
+        "packet_size_limit"             : "2M",
+
+        "service_created_timeout"       : 120
 }

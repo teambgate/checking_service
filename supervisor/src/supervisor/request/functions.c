@@ -59,3 +59,9 @@ void func(struct supervisor *p, int fd, u32 mask, struct sfs_object *obj)       
 
 register_function(supervisor_process_get_service);
 register_function(supervisor_process_register_service);
+register_function(supervisor_process_get_service_by_username);
+register_function(supervisor_process_validate_service);
+
+register_function(supervisor_process_register_location);
+register_function(supervisor_process_update_location_latlng);
+register_function(supervisor_process_update_location_ip_port);

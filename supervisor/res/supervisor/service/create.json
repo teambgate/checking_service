@@ -1,12 +1,13 @@
 {
         "request" : "post",
-        "path"  : "/supervisor/service",
+        "path"  : "/supervisor/service/{USER_NAME}/_create",
         "data"  : {
-                "name"          : "",
-                "capacity"      : 1,
-                "user_name"     : "",
-                "user_pass"     : "",
-                "validated"     : 0,
-                "reserved"      : "2017-06-13 00:00:00"
+                "name"                  : "",
+                "capacity"              : 1,
+                "user_pass"             : "",
+                "validated"             : 0,
+                "validate_code"         : "",
+                "validate_count"        : 5,
+                "reserved"              : "2017-06-13 00:00:00"
         }
 }

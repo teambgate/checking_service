@@ -11,20 +11,18 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  */
-#ifndef __CHECKING_SERVICE_COMMON_ERROR_H__
-#define __CHECKING_SERVICE_COMMON_ERROR_H__
+#ifndef __CHECKING_SERVICE_SUPERVISOR_CALLBACK_USER_DATA_H__
+#define __CHECKING_SERVICE_SUPERVISOR_CALLBACK_USER_DATA_H__
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#include <common/types.h>
+#include <supervisor/types.h>
 
-enum {
-        ERROR_VERSION_INVALID,
-        ERROR_DATA_INVALID,
-        ERROR_SERVER_INVALID
-};
+struct callback_user_data *callback_user_data_alloc(struct supervisor *p, int fd, u32 mask, struct sfs_object *obj);
+
+void callback_user_data_free(struct callback_user_data *p);
 
 #ifdef __cplusplus
 }

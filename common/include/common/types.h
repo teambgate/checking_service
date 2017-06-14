@@ -14,6 +14,10 @@
 #ifndef __CHECKING_SERVICE_COMMON_TYPES_H__
 #define __CHECKING_SERVICE_COMMON_TYPES_H__
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <cherry/types.h>
 #include <smartfox/types.h>
 #include <sys/time.h>
@@ -69,5 +73,9 @@ struct cs_requester {
 
         struct timeval          t1, t2;
 };
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

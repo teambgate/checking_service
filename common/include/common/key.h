@@ -14,6 +14,10 @@
 #ifndef __CHECKING_SERVICE_COMMON_KEY_H__
 #define __CHECKING_SERVICE_COMMON_KEY_H__
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <common/types.h>
 
 extern struct string    __key_cmd__;
@@ -21,10 +25,12 @@ extern struct string    __key_id__;
 extern struct string    __key_pass__;
 extern struct string    __key_request_id__;
 extern struct string    __key_version__;
+extern struct string    __key_latlng__;
 extern struct string    __key_lat__;
-extern struct string    __key_lng__;
+extern struct string    __key_lon__;
 extern struct string    __key_ip__;
 extern struct string    __key_port__;
+extern struct string    __key_device_id__;
 extern struct string    __key_user_pass__;
 extern struct string    __key_user_name__;
 extern struct string    __key_name__;
@@ -37,5 +43,14 @@ extern struct string    __key_companies__;
 extern struct string    __key_path__;
 extern struct string    __key_data__;
 extern struct string    __key_reserved__;
+extern struct string    __key_validate_code__;
+extern struct string    __key_validate_count__;
+extern struct string    __key_validated__;
+extern struct string    __key_capacity__;
+extern struct string    __key_location_name__;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

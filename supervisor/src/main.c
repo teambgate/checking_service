@@ -25,6 +25,7 @@
 #include <cherry/stdlib.h>
 #include <cherry/unistd.h>
 #include <cherry/ctype.h>
+#include <cherry/time.h>
 
 #include <smartfox/data.h>
 #include <supervisor/supervisor.h>
@@ -148,6 +149,8 @@ get_line:;
 
 int main( int argc, char** argv )
 {
+        srand ( time(NULL) );
+
         __setup_jni();
 
         pthread_t tid[1];

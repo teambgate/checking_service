@@ -12,7 +12,7 @@
  * GNU General Public License for more details.
  */
 #include <supervisor/supervisor.h>
-#include "version.h"
+#include "../version.h"
 
 #include <cherry/memory.h>
 #include <cherry/string.h>
@@ -40,7 +40,7 @@
 #include <common/key.h>
 #include <common/error.h>
 
-void supervisor_process_get_service_v1(struct supervisor *p, int fd, u32 mask, struct sfs_object *obj)
+void supervisor_process_get_service_by_username_v1(struct supervisor *p, int fd, u32 mask, struct sfs_object *obj)
 {
 
 }

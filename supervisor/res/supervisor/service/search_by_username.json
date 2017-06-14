@@ -1,11 +1,7 @@
 {
         "request" : "get",
-        "path"  : "/supervisor/service/_search",
+        "path"  : "/supervisor/service/{USER_NAME}",
         "data"  : {
-                "query": {
-                        "match" : {
-                                "user_name" : ""
-                        }
-                }
+                "version": true
         }
 }

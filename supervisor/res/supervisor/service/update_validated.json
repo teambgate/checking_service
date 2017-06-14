@@ -3,7 +3,7 @@
         "path"  : "/supervisor/service/{ID}/_update?version={VERSION_NUMBER}",
         "data"  : {
                 "doc" :{
-                        "name"  : ""
+                        "validated"  : 1
                 }
         }
 }

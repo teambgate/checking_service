@@ -23,6 +23,7 @@
 #include <cherry/stdio.h>
 #include <locale.h>
 #include <time.h>
+#include <cherry/crypt/md5.h>
 
 static void callback(void *p, struct sfs_object *data)
 {
@@ -33,6 +34,10 @@ static void callback(void *p, struct sfs_object *data)
 
 int main(int argc, char **argv)
 {
+        struct string *test_md5 = md5_string(qlkey(""));
+        debug("md5 : %s\n", test_md5->ptr);
+        string_free(test_md5);
+
         setlocale(LC_NUMERIC, "C");
         int count = 0;
 start:;
@@ -40,16 +45,21 @@ start:;
         cs_requester_connect(p, "127.0.0.1", 9999);
         struct sfs_object *data = sfs_object_alloc();
         sfs_object_set_string(data, qskey(&__key_version__), qlkey("1"));
-        sfs_object_set_string(data, qskey(&__key_cmd__), qskey(&__cmd_register_service__));
+        sfs_object_set_string(data, qskey(&__key_cmd__), qskey(&__cmd_register_location__));
         sfs_object_set_string(data, qskey(&__key_pass__), qlkey("123456"));
         sfs_object_set_string(data, qskey(&__key_name__), qlkey("BGATE CORP"));
-        sfs_object_set_string(data, qskey(&__key_user_name__), qlkey("manh_tran"));
+        sfs_object_set_string(data, qskey(&__key_user_name__), qlkey("sang_tao"));
         sfs_object_set_string(data, qskey(&__key_user_pass__), qlkey("12345678"));
+        sfs_object_set_string(data, qskey(&__key_device_id__), qlkey("Manh Ubuntu"));
+        sfs_object_set_string(data, qskey(&__key_validate_code__), qlkey("ZCavT1Pk"));
         // sfs_object_set_int(data, qskey(&__key_id__), 1);
-        // sfs_object_set_string(data, qskey(&__key_ip__), qlkey("192.168.1.248"));
-        // sfs_object_set_long(data, qskey(&__key_port__), 1000);
-        // sfs_object_set_double(data, qskey(&__key_lat__), 1.1);
-        // sfs_object_set_double(data, qskey(&__key_lng__), 9999.1);
+        sfs_object_set_string(data, qskey(&__key_ip__), qlkey("192.168.1.248"));
+        sfs_object_set_long(data, qskey(&__key_port__), 1000);
+        sfs_object_set_string(data, qskey(&__key_location_name__), qlkey("Sang Tao"));
+        struct sfs_object *latlng = sfs_object_get_object(data, qskey(&__key_latlng__), SFS_GET_REPLACE_IF_WRONG_TYPE);
+        sfs_object_set_double(latlng, qskey(&__key_lat__), 1.1);
+        sfs_object_set_double(latlng, qskey(&__key_lon__), 99.1);
+
         cs_request_alloc(p, data, callback, p);
 
         // struct cs_requester *p  = cs_requester_alloc();
@@ -91,10 +101,10 @@ start:;
         //         sleep(1);
         // }
 
-        sleep(3);
+        sleep(1);
         debug("free requester\n");
         cs_requester_free(p);
-        sleep(3);
+        sleep(1);
         cache_free();
         dim_memory();
         // count++;

@@ -37,6 +37,13 @@ struct supervisor_handler {
         struct timeval                  last_executed_time;
 };
 
+struct callback_user_data {
+        struct supervisor *p;
+        int fd;
+        u32 mask;
+        struct sfs_object *obj;
+};
+
 struct supervisor {
         struct file_descriptor_set      *master;
         struct file_descriptor_set      *incomming;

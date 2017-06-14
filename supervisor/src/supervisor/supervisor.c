@@ -480,13 +480,12 @@ static void __load_es_server(struct supervisor *p)
         cs_requester_connect(p->es_server_requester, host->ptr, port);
 
         __load_base_map(p, "res/supervisor/index.json");
-        __load_base_map(p, "res/supervisor/service/map.json");
         __load_base_map(p, "res/supervisor/location/map.json");
+        __load_base_map(p, "res/supervisor/service/map.json");
 }
 
 static void __register_handler(struct supervisor *p, supervisor_handler_delegate delegate, double time_rate)
 {
-        debug("register time rate %f\n", time_rate);
         struct supervisor_handler *handler = supervisor_handler_alloc(delegate, time_rate);
         list_add_tail(&handler->head, &p->handlers);
 }
@@ -518,8 +517,15 @@ struct supervisor *supervisor_alloc()
          * setup delegates
          */
         p->delegates            = map_alloc(sizeof(supervisor_delegate));
+
         map_set(p->delegates, qskey(&__cmd_get_service__), &(supervisor_delegate){supervisor_process_get_service});
         map_set(p->delegates, qskey(&__cmd_register_service__), &(supervisor_delegate){supervisor_process_register_service});
+        map_set(p->delegates, qskey(&__cmd_get_service_by_username__), &(supervisor_delegate){supervisor_process_get_service_by_username});
+        map_set(p->delegates, qskey(&__cmd_validate_service__), &(supervisor_delegate){supervisor_process_validate_service});
+
+        map_set(p->delegates, qskey(&__cmd_register_location__), &(supervisor_delegate){supervisor_process_register_location});
+        map_set(p->delegates, qskey(&__cmd_update_location_latlng__), &(supervisor_delegate){supervisor_process_update_location_latlng});
+        map_set(p->delegates, qskey(&__cmd_update_location_ip_port__), &(supervisor_delegate){supervisor_process_update_location_ip_port});
 
         __register_handler(p,
                 supervisor_process_clear_invalidated_service,

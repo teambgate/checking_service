@@ -1,0 +1,7 @@
+{
+        "request" : "post",
+        "path"  : "/supervisor/service/{ID}/_update?retry_on_conflict=5",
+        "data"  : {
+                "script" : "ctx._source.validate_count-=1"
+        }
+}

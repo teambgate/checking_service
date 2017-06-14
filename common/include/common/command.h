@@ -14,6 +14,10 @@
 #ifndef __CHECKING_SERVICE_COMMON_COMMAND_H__
 #define __CHECKING_SERVICE_COMMON_COMMAND_H__
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <common/types.h>
 
 extern struct string __cmd_get__;
@@ -23,5 +27,15 @@ extern struct string __cmd_delete__;
 
 extern struct string __cmd_get_service__;
 extern struct string __cmd_register_service__;
+extern struct string __cmd_get_service_by_username__;
+extern struct string __cmd_validate_service__;
+
+extern struct string __cmd_register_location__;
+extern struct string __cmd_update_location_latlng__;
+extern struct string __cmd_update_location_ip_port__;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

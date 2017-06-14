@@ -11,8 +11,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  */
-#ifndef __CHECKING_SERVICE_COMMON_ERROR_H__
-#define __CHECKING_SERVICE_COMMON_ERROR_H__
+#ifndef __CHECKING_SERVICE_COMMON_UTIL_H__
+#define __CHECKING_SERVICE_COMMON_UTIL_H__
 
 #ifdef __cplusplus
 extern "C" {
@@ -20,11 +20,11 @@ extern "C" {
 
 #include <common/types.h>
 
-enum {
-        ERROR_VERSION_INVALID,
-        ERROR_DATA_INVALID,
-        ERROR_SERVER_INVALID
-};
+int common_username_valid(char *name, size_t len);
+
+void common_gen_random(char *buf, size_t len);
+
+int common_is_ip(char *s);
 
 #ifdef __cplusplus
 }
