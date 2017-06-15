@@ -257,8 +257,8 @@ receive_full_packet:;
 send_client:;
         int counter = 0;
         debug("receive: %s\n", cb->buff->ptr);
-        struct sfs_object *obj = sfs_object_from_json(cb->buff->ptr, cb->buff->len, &counter);
-        struct sfs_data *cmd = map_get(obj->data, struct sfs_data *, qskey(&__key_cmd__));
+        struct smart_object *obj = smart_object_from_json(cb->buff->ptr, cb->buff->len, &counter);
+        struct smart_data *cmd = map_get(obj->data, struct smart_data *, qskey(&__key_cmd__));
         if(cmd) {
                 supervisor_delegate *delegate = map_get_pointer(ws->delegates, qskey(cmd->_string));
                 if(delegate) {
@@ -272,7 +272,7 @@ send_client:;
         } else {
                 __supervisor_check_old_and_close_client(ws, fd);
         }
-        sfs_object_free(obj);
+        smart_object_free(obj);
         cb->requested_len       = 0;
         cb->buff->len           = 0;
 end:;
@@ -280,8 +280,8 @@ end:;
 
 void supervisor_start(struct supervisor *ws)
 {
-        char *root      = sfs_object_get_string(ws->config, qlkey("service_root"), SFS_GET_REPLACE_IF_WRONG_TYPE)->ptr;
-        u16 port        = sfs_object_get_short(ws->config, qlkey("service_port"), SFS_GET_REPLACE_IF_WRONG_TYPE);
+        char *root      = smart_object_get_string(ws->config, qlkey("service_root"), SMART_GET_REPLACE_IF_WRONG_TYPE)->ptr;
+        u16 port        = smart_object_get_short(ws->config, qlkey("service_port"), SMART_GET_REPLACE_IF_WRONG_TYPE);
 
         ws->root->len = 0;
         string_cat(ws->root, root, strlen(root));
@@ -453,9 +453,9 @@ finish:;
 #undef MAX_RECV_BUF_LEN
 }
 
-static void __load_base_map_callback(void *p, struct sfs_object *data)
+static void __load_base_map_callback(void *p, struct smart_object *data)
 {
-        struct string *j = sfs_object_to_json(data);
+        struct string *j = smart_object_to_json(data);
         debug("load base map : %s\n",j->ptr);
         string_free(j);
 }
@@ -463,10 +463,10 @@ static void __load_base_map_callback(void *p, struct sfs_object *data)
 
 static void __load_base_map(struct supervisor *p, char *file)
 {
-        struct string *es_version_code = sfs_object_get_string(p->config, qlkey("es_version_code"), SFS_GET_REPLACE_IF_WRONG_TYPE);
-        struct string *es_pass = sfs_object_get_string(p->config, qlkey("es_pass"), SFS_GET_REPLACE_IF_WRONG_TYPE);
+        struct string *es_version_code = smart_object_get_string(p->config, qlkey("es_version_code"), SMART_GET_REPLACE_IF_WRONG_TYPE);
+        struct string *es_pass = smart_object_get_string(p->config, qlkey("es_pass"), SMART_GET_REPLACE_IF_WRONG_TYPE);
 
-        struct sfs_object *request = cs_request_data_from_file(file, FILE_INNER, qskey(es_version_code), qskey(es_pass));
+        struct smart_object *request = cs_request_data_from_file(file, FILE_INNER, qskey(es_version_code), qskey(es_pass));
         cs_request_alloc(p->es_server_requester, request, __load_base_map_callback, p);
 }
 
@@ -474,8 +474,8 @@ static void __load_es_server(struct supervisor *p)
 {
         p->es_server_requester  = cs_requester_alloc();
 
-        struct string *host     = sfs_object_get_string(p->config, qlkey("es_host"), SFS_GET_REPLACE_IF_WRONG_TYPE);
-        u16 port = sfs_object_get_short(p->config, qlkey("es_port"), SFS_GET_REPLACE_IF_WRONG_TYPE);
+        struct string *host     = smart_object_get_string(p->config, qlkey("es_host"), SMART_GET_REPLACE_IF_WRONG_TYPE);
+        u16 port = smart_object_get_short(p->config, qlkey("es_port"), SMART_GET_REPLACE_IF_WRONG_TYPE);
 
         cs_requester_connect(p->es_server_requester, host->ptr, port);
 
@@ -509,7 +509,7 @@ struct supervisor *supervisor_alloc()
         /*
          * load config
          */
-        p->config               = sfs_object_from_json_file("res/config.json", FILE_INNER);
+        p->config               = smart_object_from_json_file("res/config.json", FILE_INNER);
 
         __load_es_server(p);
 
@@ -529,7 +529,7 @@ struct supervisor *supervisor_alloc()
 
         __register_handler(p,
                 supervisor_process_clear_invalidated_service,
-                sfs_object_get_double(p->config, qlkey("service_created_timeout"), SFS_GET_REPLACE_IF_WRONG_TYPE));
+                smart_object_get_double(p->config, qlkey("service_created_timeout"), SMART_GET_REPLACE_IF_WRONG_TYPE));
 
         p->clients_datas        = map_alloc(sizeof(struct client_buffer *));
         return p;
@@ -545,7 +545,7 @@ void supervisor_free(struct supervisor *p)
         array_free(p->fd_mask);
         array_free(p->fd_invalids);
 
-        sfs_object_free(p->config);
+        smart_object_free(p->config);
 
         map_free(p->delegates);
 

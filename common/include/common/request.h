@@ -13,13 +13,13 @@
  */
 #include <common/types.h>
 
-struct sfs_object *cs_request_data_from_file(char *file, int file_type,
+struct smart_object *cs_request_data_from_file(char *file, int file_type,
         char *version, size_t version_len,
         char *pass, size_t pass_len);
 /*
  * cs request
  */
-struct cs_request *cs_request_alloc(struct cs_requester *p, struct sfs_object *data, cs_request_callback callback, void *ctx);
+struct cs_request *cs_request_alloc(struct cs_requester *p, struct smart_object *data, cs_request_callback callback, void *ctx);
 
 void cs_request_free(struct cs_request *p);
 

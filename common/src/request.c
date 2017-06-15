@@ -35,45 +35,45 @@
 #include <signal.h>
 #include <netinet/in.h>
 
-struct sfs_object *cs_request_data_from_file(char *file, int file_type,
+struct smart_object *cs_request_data_from_file(char *file, int file_type,
         char *version, size_t version_len,
         char *pass, size_t pass_len)
 {
         /*
          * read map data
          */
-        struct sfs_object *obj = sfs_object_from_json_file(file, file_type);
+        struct smart_object *obj = smart_object_from_json_file(file, file_type);
         /*
          * get map command, path, data
          */
-        struct string *request = sfs_object_get_string(obj, qlkey("request"), SFS_GET_REPLACE_IF_WRONG_TYPE);
-        struct string *path = sfs_object_get_string(obj, qlkey("path"), SFS_GET_REPLACE_IF_WRONG_TYPE);
-        struct sfs_object *objdata = sfs_object_get_object(obj, qlkey("data"), SFS_GET_REPLACE_IF_WRONG_TYPE);
+        struct string *request = smart_object_get_string(obj, qlkey("request"), SMART_GET_REPLACE_IF_WRONG_TYPE);
+        struct string *path = smart_object_get_string(obj, qlkey("path"), SMART_GET_REPLACE_IF_WRONG_TYPE);
+        struct smart_object *objdata = smart_object_get_object(obj, qlkey("data"), SMART_GET_REPLACE_IF_WRONG_TYPE);
         /*
          * create request
          */
-        struct sfs_object *data = sfs_object_alloc();
-        sfs_object_set_string(data, qskey(&__key_version__), version, version_len);
+        struct smart_object *data = smart_object_alloc();
+        smart_object_set_string(data, qskey(&__key_version__), version, version_len);
         if(strcmp(request->ptr, "post") == 0) {
-                sfs_object_set_string(data, qskey(&__key_cmd__), qskey(&__cmd_post__));
+                smart_object_set_string(data, qskey(&__key_cmd__), qskey(&__cmd_post__));
         } else if(strcmp(request->ptr, "get") == 0) {
-                sfs_object_set_string(data, qskey(&__key_cmd__), qskey(&__cmd_get__));
+                smart_object_set_string(data, qskey(&__key_cmd__), qskey(&__cmd_get__));
         } else if(strcmp(request->ptr, "put") == 0) {
-                sfs_object_set_string(data, qskey(&__key_cmd__), qskey(&__cmd_put__));
+                smart_object_set_string(data, qskey(&__key_cmd__), qskey(&__cmd_put__));
         } else if(strcmp(request->ptr, "delete") == 0) {
-                sfs_object_set_string(data, qskey(&__key_cmd__), qskey(&__cmd_delete__));
+                smart_object_set_string(data, qskey(&__key_cmd__), qskey(&__cmd_delete__));
         }
-        sfs_object_set_string(data, qskey(&__key_pass__), pass, pass_len);
-        sfs_object_set_string(data, qskey(&__key_path__), qskey(path));
+        smart_object_set_string(data, qskey(&__key_pass__), pass, pass_len);
+        smart_object_set_string(data, qskey(&__key_path__), qskey(path));
         /*
          * set data
          */
-        struct string *json = sfs_object_to_json(objdata);
+        struct string *json = smart_object_to_json(objdata);
         int counter = 0;
-        struct sfs_object *d = sfs_object_from_json(json->ptr, json->len, &counter);
+        struct smart_object *d = smart_object_from_json(json->ptr, json->len, &counter);
         string_free(json);
-        sfs_object_set_object(data, qskey(&__key_data__), d);
-        sfs_object_free(obj);
+        smart_object_set_object(data, qskey(&__key_data__), d);
+        smart_object_free(obj);
 
         return data;
 }
@@ -90,7 +90,7 @@ static struct cs_response *__cs_response_alloc(cs_request_callback callback, voi
 static void __cs_response_free(struct cs_response *p)
 {
         if(p->data) {
-                sfs_object_free(p->data);
+                smart_object_free(p->data);
         }
         sfree(p);
 }
@@ -98,16 +98,16 @@ static void __cs_response_free(struct cs_response *p)
 /*
  * cs request
  */
-struct cs_request *cs_request_alloc(struct cs_requester *p, struct sfs_object *data, cs_request_callback callback, void *ctx)
+struct cs_request *cs_request_alloc(struct cs_requester *p, struct smart_object *data, cs_request_callback callback, void *ctx)
 {
         pthread_mutex_lock(&p->run_mutex);
 
         struct cs_request *r    = smalloc(sizeof(struct cs_request));
         r->data                 = data;
 
-        struct sfs_number num;
+        struct smart_number num;
         num._generic_integer    = p->total++;
-        sfs_object_set(r->data, qskey(&__key_request_id__), SFS_LONG, qpkey(num));
+        smart_object_set(r->data, qskey(&__key_request_id__), SMART_LONG, qpkey(num));
 
         u8 flag = list_singular(&p->list);
         // pthread_mutex_lock(&p->lock);
@@ -131,7 +131,7 @@ struct cs_request *cs_request_alloc(struct cs_requester *p, struct sfs_object *d
 void cs_request_free(struct cs_request *p)
 {
         list_del(&p->head);
-        if(p->data) sfs_object_free(p->data);
+        if(p->data) smart_object_free(p->data);
         sfree(p);
 }
 
@@ -187,7 +187,7 @@ get_head:;
 
         struct cs_request *r    = (struct cs_request *)
                 ((char *)head - offsetof(struct cs_request, head));
-        struct string *d        = sfs_object_to_json(r->data);
+        struct string *d        = smart_object_to_json(r->data);
         int bytes_send          = 0;
         int len                 = d->len;
         char *ptr               = d->ptr;
@@ -272,7 +272,7 @@ process_request:;
                         if((*read_valid) == 0) {
                                 pthread_mutex_unlock(&p->read_mutex);
                                 goto finish;
-                        }        
+                        }
                 }
                 pthread_mutex_unlock(&p->read_mutex);
                 goto check_life_time;
@@ -319,8 +319,8 @@ receive_full_packet:;
         msg_len -= amount;
 
         int counter     = 0;
-        struct sfs_object *data = sfs_object_from_json(p->buff->ptr, p->buff->len, &counter);
-        struct sfs_data *id     = map_get(data->data, struct sfs_data *, qskey(&__key_request_id__));
+        struct smart_object *data = smart_object_from_json(p->buff->ptr, p->buff->len, &counter);
+        struct smart_data *id     = map_get(data->data, struct smart_data *, qskey(&__key_request_id__));
         pthread_mutex_lock(&p->wait_lock);
         struct cs_response *res = map_get(p->waits, struct cs_response *, qpkey(id->_number));
         if(res) {

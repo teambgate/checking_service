@@ -41,7 +41,7 @@
 #include <common/error.h>
 #include <common/request.h>
 
-void supervisor_process_update_location_latlng_v1(struct supervisor *p, int fd, u32 mask, struct sfs_object *obj)
+void supervisor_process_update_location_latlng_v1(struct supervisor *p, int fd, u32 mask, struct smart_object *obj)
 {
 
 }

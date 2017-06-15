@@ -47,78 +47,78 @@
 /*
  * response invalid data
  */
-static void __response_invalid_data(struct supervisor *p, int fd, u32 mask, struct sfs_object *obj, char *msg, size_t msg_len)
+static void __response_invalid_data(struct supervisor *p, int fd, u32 mask, struct smart_object *obj, char *msg, size_t msg_len)
 {
-        struct sfs_object *res = sfs_object_alloc();
-        sfs_object_set_long(res, qskey(&__key_request_id__), sfs_object_get_long(obj, qskey(&__key_request_id__), 0));
-        sfs_object_set_bool(res, qskey(&__key_result__), 0);
-        sfs_object_set_string(res, qskey(&__key_message__), msg, msg_len);
-        sfs_object_set_long(res, qskey(&__key_error__), ERROR_DATA_INVALID);
+        struct smart_object *res = smart_object_alloc();
+        smart_object_set_long(res, qskey(&__key_request_id__), smart_object_get_long(obj, qskey(&__key_request_id__), 0));
+        smart_object_set_bool(res, qskey(&__key_result__), 0);
+        smart_object_set_string(res, qskey(&__key_message__), msg, msg_len);
+        smart_object_set_long(res, qskey(&__key_error__), ERROR_DATA_INVALID);
 
-        struct string *d        = sfs_object_to_json(res);
+        struct string *d        = smart_object_to_json(res);
         supervisor_send_to_client(p, fd, mask, d->ptr, d->len, 0);
         string_free(d);
-        sfs_object_free(res);
+        smart_object_free(res);
 }
 
 /*
  * response success
  */
-static void __response_success(struct supervisor *p, int fd, u32 mask, struct sfs_object *obj, char *msg, size_t msg_len)
+static void __response_success(struct supervisor *p, int fd, u32 mask, struct smart_object *obj, char *msg, size_t msg_len)
 {
-        struct sfs_object *res = sfs_object_alloc();
-        sfs_object_set_long(res, qskey(&__key_request_id__), sfs_object_get_long(obj, qskey(&__key_request_id__), 0));
-        sfs_object_set_bool(res, qskey(&__key_result__), 1);
-        sfs_object_set_string(res, qskey(&__key_message__), msg, msg_len);
+        struct smart_object *res = smart_object_alloc();
+        smart_object_set_long(res, qskey(&__key_request_id__), smart_object_get_long(obj, qskey(&__key_request_id__), 0));
+        smart_object_set_bool(res, qskey(&__key_result__), 1);
+        smart_object_set_string(res, qskey(&__key_message__), msg, msg_len);
 
-        struct string *d        = sfs_object_to_json(res);
+        struct string *d        = smart_object_to_json(res);
         supervisor_send_to_client(p, fd, mask, d->ptr, d->len, 0);
         string_free(d);
-        sfs_object_free(res);
+        smart_object_free(res);
 }
 
 /*
  * validate input
  */
-static int __validate_input(struct supervisor *p, int fd, u32 mask, struct sfs_object *obj)
+static int __validate_input(struct supervisor *p, int fd, u32 mask, struct smart_object *obj)
 {
-        struct string *service_pass = sfs_object_get_string(p->config, qlkey("service_pass"), SFS_GET_REPLACE_IF_WRONG_TYPE);
-        struct string *pass = sfs_object_get_string(obj, qskey(&__key_pass__), SFS_GET_REPLACE_IF_WRONG_TYPE);
+        struct string *service_pass = smart_object_get_string(p->config, qlkey("service_pass"), SMART_GET_REPLACE_IF_WRONG_TYPE);
+        struct string *pass = smart_object_get_string(obj, qskey(&__key_pass__), SMART_GET_REPLACE_IF_WRONG_TYPE);
 
         if(strcmp(service_pass->ptr, pass->ptr) != 0) {
                 __response_invalid_data(p, fd, mask, obj, qlkey("User unauthorized!\n"));
                 return 0;
         }
 
-        struct string *user_name = sfs_object_get_string(obj, qskey(&__key_user_name__), SFS_GET_REPLACE_IF_WRONG_TYPE);
+        struct string *user_name = smart_object_get_string(obj, qskey(&__key_user_name__), SMART_GET_REPLACE_IF_WRONG_TYPE);
         string_trim(user_name);
         if(user_name->len == 0) {
                 __response_invalid_data(p, fd, mask, obj, qlkey("Please provide user name!\n"));
                 return 0;
         }
 
-        struct string *user_pass = sfs_object_get_string(obj, qskey(&__key_user_pass__), SFS_GET_REPLACE_IF_WRONG_TYPE);
+        struct string *user_pass = smart_object_get_string(obj, qskey(&__key_user_pass__), SMART_GET_REPLACE_IF_WRONG_TYPE);
         string_trim(user_pass);
         if(user_pass->len == 0) {
                 __response_invalid_data(p, fd, mask, obj, qlkey("Please provide user pass!\n"));
                 return 0;
         }
 
-        struct string *device_id = sfs_object_get_string(obj, qskey(&__key_device_id__), SFS_GET_REPLACE_IF_WRONG_TYPE);
+        struct string *device_id = smart_object_get_string(obj, qskey(&__key_device_id__), SMART_GET_REPLACE_IF_WRONG_TYPE);
         string_trim(device_id);
         if(device_id->len == 0) {
                 __response_invalid_data(p, fd, mask, obj, qlkey("Please provide device id!\n"));
                 return 0;
         }
 
-        struct string *location_name = sfs_object_get_string(obj, qskey(&__key_location_name__), SFS_GET_REPLACE_IF_WRONG_TYPE);
+        struct string *location_name = smart_object_get_string(obj, qskey(&__key_location_name__), SMART_GET_REPLACE_IF_WRONG_TYPE);
         string_trim(location_name);
         if(location_name->len == 0) {
                 __response_invalid_data(p, fd, mask, obj, qlkey("Please provide location name!\n"));
                 return 0;
         }
 
-        struct string *ip       = sfs_object_get_string(obj, qskey(&__key_ip__), SFS_GET_REPLACE_IF_WRONG_TYPE);
+        struct string *ip       = smart_object_get_string(obj, qskey(&__key_ip__), SMART_GET_REPLACE_IF_WRONG_TYPE);
         string_trim(ip);
         if(ip->len == 0) {
                 __response_invalid_data(p, fd, mask, obj, qlkey("Please provide ip address!\n"));
@@ -134,15 +134,15 @@ static int __validate_input(struct supervisor *p, int fd, u32 mask, struct sfs_o
 /*
  *
  */
-static void __create_new_location_callback(struct callback_user_data *cud, struct sfs_object *recv)
+static void __create_new_location_callback(struct callback_user_data *cud, struct smart_object *recv)
 {
-        struct sfs_object *data = sfs_object_get_object(recv, qskey(&__key_data__), SFS_GET_REPLACE_IF_WRONG_TYPE);
-        struct string *result = sfs_object_get_string(data, qlkey("result"), SFS_GET_REPLACE_IF_WRONG_TYPE);
+        struct smart_object *data = smart_object_get_object(recv, qskey(&__key_data__), SMART_GET_REPLACE_IF_WRONG_TYPE);
+        struct string *result = smart_object_get_string(data, qlkey("result"), SMART_GET_REPLACE_IF_WRONG_TYPE);
         if(strcmp(result->ptr, "created") == 0) {
                 __response_success(cud->p, cud->fd, cud->mask,
                         cud->obj, qlkey("location is created successfully!\n"));
         } else {
-                int status = sfs_object_get_int(data, qlkey("status"), SFS_GET_REPLACE_IF_WRONG_TYPE);
+                int status = smart_object_get_int(data, qlkey("status"), SMART_GET_REPLACE_IF_WRONG_TYPE);
                 if(status == 409) {
                         __response_invalid_data(cud->p, cud->fd, cud->mask,
                                 cud->obj, qlkey("location is created by other!\n"));
@@ -156,9 +156,9 @@ static void __create_new_location_callback(struct callback_user_data *cud, struc
 
 static void __create_new_location(struct callback_user_data *cud, int location_id)
 {
-        struct string *user_name        = sfs_object_get_string(cud->obj, qskey(&__key_user_name__), SFS_GET_REPLACE_IF_WRONG_TYPE);
-        struct string *device_id        = sfs_object_get_string(cud->obj, qskey(&__key_device_id__), SFS_GET_REPLACE_IF_WRONG_TYPE);
-        struct string *location_name    = sfs_object_get_string(cud->obj, qskey(&__key_location_name__), SFS_GET_REPLACE_IF_WRONG_TYPE);
+        struct string *user_name        = smart_object_get_string(cud->obj, qskey(&__key_user_name__), SMART_GET_REPLACE_IF_WRONG_TYPE);
+        struct string *device_id        = smart_object_get_string(cud->obj, qskey(&__key_device_id__), SMART_GET_REPLACE_IF_WRONG_TYPE);
+        struct string *location_name    = smart_object_get_string(cud->obj, qskey(&__key_location_name__), SMART_GET_REPLACE_IF_WRONG_TYPE);
 
         struct string *id               = string_alloc_chars(qskey(user_name));
         string_cat(id, qlkey("_location_"));
@@ -166,31 +166,31 @@ static void __create_new_location(struct callback_user_data *cud, int location_i
         /*
          * create new location
          */
-        struct string *es_version_code = sfs_object_get_string(cud->p->config, qlkey("es_version_code"), SFS_GET_REPLACE_IF_WRONG_TYPE);
-        struct string *es_pass = sfs_object_get_string(cud->p->config, qlkey("es_pass"), SFS_GET_REPLACE_IF_WRONG_TYPE);
-        struct sfs_object *request_data = cs_request_data_from_file("res/supervisor/location/create.json", FILE_INNER,
+        struct string *es_version_code = smart_object_get_string(cud->p->config, qlkey("es_version_code"), SMART_GET_REPLACE_IF_WRONG_TYPE);
+        struct string *es_pass = smart_object_get_string(cud->p->config, qlkey("es_pass"), SMART_GET_REPLACE_IF_WRONG_TYPE);
+        struct smart_object *request_data = cs_request_data_from_file("res/supervisor/location/create.json", FILE_INNER,
                 qskey(es_version_code), qskey(es_pass));
 
-        struct string *path     = sfs_object_get_string(request_data, qskey(&__key_path__), SFS_GET_REPLACE_IF_WRONG_TYPE);
+        struct string *path     = smart_object_get_string(request_data, qskey(&__key_path__), SMART_GET_REPLACE_IF_WRONG_TYPE);
         string_replace(path, "{ID}", id->ptr);
         string_replace(path, "{PARENT_ID}", user_name->ptr);
 
-        struct sfs_object *request_data_data = sfs_object_get_object(request_data, qskey(&__key_data__), SFS_GET_REPLACE_IF_WRONG_TYPE);
+        struct smart_object *request_data_data = smart_object_get_object(request_data, qskey(&__key_data__), SMART_GET_REPLACE_IF_WRONG_TYPE);
 
-        struct string *ip               = sfs_object_get_string(cud->obj, qskey(&__key_ip__), SFS_GET_REPLACE_IF_WRONG_TYPE);
-        u16 port                        = sfs_object_get_short(cud->obj, qskey(&__key_port__), SFS_GET_REPLACE_IF_WRONG_TYPE);
-        struct sfs_object *latlng       = sfs_object_get_object(cud->obj, qskey(&__key_latlng__), SFS_GET_REPLACE_IF_WRONG_TYPE);
+        struct string *ip               = smart_object_get_string(cud->obj, qskey(&__key_ip__), SMART_GET_REPLACE_IF_WRONG_TYPE);
+        u16 port                        = smart_object_get_short(cud->obj, qskey(&__key_port__), SMART_GET_REPLACE_IF_WRONG_TYPE);
+        struct smart_object *latlng       = smart_object_get_object(cud->obj, qskey(&__key_latlng__), SMART_GET_REPLACE_IF_WRONG_TYPE);
         /*
          * ensure latlng will contain lat and lon
          */
-        sfs_object_get_double(latlng, qskey(&__key_lat__), SFS_GET_REPLACE_IF_WRONG_TYPE);
-        sfs_object_get_double(latlng, qskey(&__key_lon__), SFS_GET_REPLACE_IF_WRONG_TYPE);
+        smart_object_get_double(latlng, qskey(&__key_lat__), SMART_GET_REPLACE_IF_WRONG_TYPE);
+        smart_object_get_double(latlng, qskey(&__key_lon__), SMART_GET_REPLACE_IF_WRONG_TYPE);
 
-        sfs_object_set_string(request_data_data, qskey(&__key_ip__), qskey(ip));
-        sfs_object_set_short(request_data_data, qskey(&__key_port__), port);
-        sfs_object_set_object(request_data_data, qskey(&__key_latlng__), sfs_object_clone(latlng));
-        sfs_object_set_string(request_data_data, qskey(&__key_device_id__), qskey(device_id));
-        sfs_object_set_string(request_data_data, qskey(&__key_location_name__), qskey(location_name));
+        smart_object_set_string(request_data_data, qskey(&__key_ip__), qskey(ip));
+        smart_object_set_short(request_data_data, qskey(&__key_port__), port);
+        smart_object_set_object(request_data_data, qskey(&__key_latlng__), smart_object_clone(latlng));
+        smart_object_set_string(request_data_data, qskey(&__key_device_id__), qskey(device_id));
+        smart_object_set_string(request_data_data, qskey(&__key_location_name__), qskey(location_name));
 
         cs_request_alloc(cud->p->es_server_requester, request_data,
                 (cs_request_callback)__create_new_location_callback, cud);
@@ -201,18 +201,18 @@ static void __create_new_location(struct callback_user_data *cud, int location_i
 /*
  *
  */
-static void __search_all_location_callback(struct callback_user_data *cud, struct sfs_object *recv)
+static void __search_all_location_callback(struct callback_user_data *cud, struct smart_object *recv)
 {
-        struct sfs_object *data = sfs_object_get_object(recv, qskey(&__key_data__), SFS_GET_REPLACE_IF_WRONG_TYPE);
+        struct smart_object *data = smart_object_get_object(recv, qskey(&__key_data__), SMART_GET_REPLACE_IF_WRONG_TYPE);
 
-        struct sfs_object *hits = sfs_object_get_object(data, qlkey("hits"), SFS_GET_REPLACE_IF_WRONG_TYPE);
+        struct smart_object *hits = smart_object_get_object(data, qlkey("hits"), SMART_GET_REPLACE_IF_WRONG_TYPE);
 
-        int total = sfs_object_get_int(hits, qlkey("total"), SFS_GET_REPLACE_IF_WRONG_TYPE);
+        int total = smart_object_get_int(hits, qlkey("total"), SMART_GET_REPLACE_IF_WRONG_TYPE);
 
         /*
          * make sure that service capacity is included in cud->obj from previous state
          */
-        int capacity = sfs_object_get_int(cud->obj, qskey(&__key_capacity__), SFS_GET_REPLACE_IF_WRONG_TYPE);
+        int capacity = smart_object_get_int(cud->obj, qskey(&__key_capacity__), SMART_GET_REPLACE_IF_WRONG_TYPE);
 
         if(capacity == 0) {
                 __response_invalid_data(cud->p, cud->fd, cud->mask,  cud->obj,
@@ -224,7 +224,7 @@ static void __search_all_location_callback(struct callback_user_data *cud, struc
         if(total == 0) {
                 __create_new_location(cud, 1);
         } else {
-                struct sfs_array *hits_hits = sfs_object_get_array(hits, qlkey("hits"), SFS_GET_REPLACE_IF_WRONG_TYPE);
+                struct smart_array *hits_hits = smart_object_get_array(hits, qlkey("hits"), SMART_GET_REPLACE_IF_WRONG_TYPE);
                 if(total < capacity) {
                         struct array *nums = array_alloc(sizeof(int), NO_ORDERED);
                         int i, j;
@@ -236,8 +236,8 @@ static void __search_all_location_callback(struct callback_user_data *cud, struc
                          * find available slot
                          */
                         for_i(i, total) {
-                                struct sfs_object *location     = sfs_array_get_object(hits_hits, i, SFS_GET_REPLACE_IF_WRONG_TYPE);
-                                struct string *_id              = sfs_object_get_string(location, qlkey("_id"), SFS_GET_REPLACE_IF_WRONG_TYPE);
+                                struct smart_object *location     = smart_array_get_object(hits_hits, i, SMART_GET_REPLACE_IF_WRONG_TYPE);
+                                struct string *_id              = smart_object_get_string(location, qlkey("_id"), SMART_GET_REPLACE_IF_WRONG_TYPE);
 
                                 char *ptr = _id->ptr + _id->len - 1;
                                 /*
@@ -275,11 +275,11 @@ static void __search_all_location_callback(struct callback_user_data *cud, struc
 /*
  *
  */
-static void __update_immediately_callback(struct callback_user_data *cud, struct sfs_object *recv)
+static void __update_immediately_callback(struct callback_user_data *cud, struct smart_object *recv)
 {
-        struct sfs_object *data = sfs_object_get_object(recv, qskey(&__key_data__), SFS_GET_REPLACE_IF_WRONG_TYPE);
-        int _version = sfs_object_get_int(data, qlkey("_version"), SFS_GET_REPLACE_IF_WRONG_TYPE);
-        int _old_version = sfs_object_get_int(cud->obj, qlkey("_version"), SFS_GET_REPLACE_IF_WRONG_TYPE);
+        struct smart_object *data = smart_object_get_object(recv, qskey(&__key_data__), SMART_GET_REPLACE_IF_WRONG_TYPE);
+        int _version = smart_object_get_int(data, qlkey("_version"), SMART_GET_REPLACE_IF_WRONG_TYPE);
+        int _old_version = smart_object_get_int(cud->obj, qlkey("_version"), SMART_GET_REPLACE_IF_WRONG_TYPE);
 
         if(_version > 0 && _version - 1 == _old_version) {
                 __response_success(cud->p, cud->fd, cud->mask,  cud->obj,
@@ -303,57 +303,57 @@ static void __update_immediately_callback(struct callback_user_data *cud, struct
         callback_user_data_free(cud);
 }
 
-static void __get_me_callback(struct callback_user_data *cud, struct sfs_object *recv)
+static void __get_me_callback(struct callback_user_data *cud, struct smart_object *recv)
 {
-        struct sfs_object *data = sfs_object_get_object(recv, qskey(&__key_data__), SFS_GET_REPLACE_IF_WRONG_TYPE);
+        struct smart_object *data = smart_object_get_object(recv, qskey(&__key_data__), SMART_GET_REPLACE_IF_WRONG_TYPE);
 
-        struct sfs_object *hits = sfs_object_get_object(data, qlkey("hits"), SFS_GET_REPLACE_IF_WRONG_TYPE);
+        struct smart_object *hits = smart_object_get_object(data, qlkey("hits"), SMART_GET_REPLACE_IF_WRONG_TYPE);
 
-        int total = sfs_object_get_int(hits, qlkey("total"), SFS_GET_REPLACE_IF_WRONG_TYPE);
+        int total = smart_object_get_int(hits, qlkey("total"), SMART_GET_REPLACE_IF_WRONG_TYPE);
 
         if(total == 1) {
                 /*
                  * replace immediately
                  */
-                struct string *user_name        = sfs_object_get_string(cud->obj, qskey(&__key_user_name__), SFS_GET_REPLACE_IF_WRONG_TYPE);
+                struct string *user_name        = smart_object_get_string(cud->obj, qskey(&__key_user_name__), SMART_GET_REPLACE_IF_WRONG_TYPE);
 
-                struct sfs_array *hits_hits     = sfs_object_get_array(hits, qlkey("hits"), SFS_GET_REPLACE_IF_WRONG_TYPE);
-                struct sfs_object *location     = sfs_array_get_object(hits_hits, 0, SFS_GET_REPLACE_IF_WRONG_TYPE);
+                struct smart_array *hits_hits     = smart_object_get_array(hits, qlkey("hits"), SMART_GET_REPLACE_IF_WRONG_TYPE);
+                struct smart_object *location     = smart_array_get_object(hits_hits, 0, SMART_GET_REPLACE_IF_WRONG_TYPE);
 
-                struct string *_id              = sfs_object_get_string(location, qlkey("_id"), SFS_GET_REPLACE_IF_WRONG_TYPE);
-                int version                     = sfs_object_get_int(location, qlkey("_version"), SFS_GET_REPLACE_IF_WRONG_TYPE);
-                struct sfs_object *_source      = sfs_object_get_object(location, qlkey("_source"), SFS_GET_REPLACE_IF_WRONG_TYPE);
+                struct string *_id              = smart_object_get_string(location, qlkey("_id"), SMART_GET_REPLACE_IF_WRONG_TYPE);
+                int version                     = smart_object_get_int(location, qlkey("_version"), SMART_GET_REPLACE_IF_WRONG_TYPE);
+                struct smart_object *_source      = smart_object_get_object(location, qlkey("_source"), SMART_GET_REPLACE_IF_WRONG_TYPE);
 
                 /*
                  * store current _version to check collision
                  */
-                sfs_object_set_int(cud->obj, qlkey("_version"), version);
+                smart_object_set_int(cud->obj, qlkey("_version"), version);
 
-                struct string *es_version_code = sfs_object_get_string(cud->p->config, qlkey("es_version_code"), SFS_GET_REPLACE_IF_WRONG_TYPE);
-                struct string *es_pass = sfs_object_get_string(cud->p->config, qlkey("es_pass"), SFS_GET_REPLACE_IF_WRONG_TYPE);
-                struct sfs_object *request_data = cs_request_data_from_file("res/supervisor/location/update_ip.json", FILE_INNER,
+                struct string *es_version_code = smart_object_get_string(cud->p->config, qlkey("es_version_code"), SMART_GET_REPLACE_IF_WRONG_TYPE);
+                struct string *es_pass = smart_object_get_string(cud->p->config, qlkey("es_pass"), SMART_GET_REPLACE_IF_WRONG_TYPE);
+                struct smart_object *request_data = cs_request_data_from_file("res/supervisor/location/update_ip.json", FILE_INNER,
                         qskey(es_version_code), qskey(es_pass));
 
-                struct string *path     = sfs_object_get_string(request_data, qskey(&__key_path__), SFS_GET_REPLACE_IF_WRONG_TYPE);
+                struct string *path     = smart_object_get_string(request_data, qskey(&__key_path__), SMART_GET_REPLACE_IF_WRONG_TYPE);
                 string_replace_int(path, "{VERSION_NUMBER}", version);
                 string_replace(path, "{ID}", _id->ptr);
                 string_replace(path, "{SERVICE_ID}", user_name->ptr);
 
-                struct sfs_object *request_data_data = sfs_object_get_object(request_data, qskey(&__key_data__), SFS_GET_REPLACE_IF_WRONG_TYPE);
-                struct sfs_object *doc          = sfs_object_get_object(request_data_data, qlkey("doc"), SFS_GET_REPLACE_IF_WRONG_TYPE);
+                struct smart_object *request_data_data = smart_object_get_object(request_data, qskey(&__key_data__), SMART_GET_REPLACE_IF_WRONG_TYPE);
+                struct smart_object *doc          = smart_object_get_object(request_data_data, qlkey("doc"), SMART_GET_REPLACE_IF_WRONG_TYPE);
 
-                struct string *ip               = sfs_object_get_string(cud->obj, qskey(&__key_ip__), SFS_GET_REPLACE_IF_WRONG_TYPE);
-                u16 port                        = sfs_object_get_short(cud->obj, qskey(&__key_port__), SFS_GET_REPLACE_IF_WRONG_TYPE);
-                struct sfs_object *latlng       = sfs_object_get_object(cud->obj, qskey(&__key_latlng__), SFS_GET_REPLACE_IF_WRONG_TYPE);
+                struct string *ip               = smart_object_get_string(cud->obj, qskey(&__key_ip__), SMART_GET_REPLACE_IF_WRONG_TYPE);
+                u16 port                        = smart_object_get_short(cud->obj, qskey(&__key_port__), SMART_GET_REPLACE_IF_WRONG_TYPE);
+                struct smart_object *latlng       = smart_object_get_object(cud->obj, qskey(&__key_latlng__), SMART_GET_REPLACE_IF_WRONG_TYPE);
                 /*
                  * ensure latlng will contain lat and lon
                  */
-                sfs_object_get_double(latlng, qskey(&__key_lat__), SFS_GET_REPLACE_IF_WRONG_TYPE);
-                sfs_object_get_double(latlng, qskey(&__key_lon__), SFS_GET_REPLACE_IF_WRONG_TYPE);
+                smart_object_get_double(latlng, qskey(&__key_lat__), SMART_GET_REPLACE_IF_WRONG_TYPE);
+                smart_object_get_double(latlng, qskey(&__key_lon__), SMART_GET_REPLACE_IF_WRONG_TYPE);
 
-                sfs_object_set_string(doc, qskey(&__key_ip__), qskey(ip));
-                sfs_object_set_short(doc, qskey(&__key_port__), port);
-                sfs_object_set_object(doc, qskey(&__key_latlng__), sfs_object_clone(latlng));
+                smart_object_set_string(doc, qskey(&__key_ip__), qskey(ip));
+                smart_object_set_short(doc, qskey(&__key_port__), port);
+                smart_object_set_object(doc, qskey(&__key_latlng__), smart_object_clone(latlng));
 
                 cs_request_alloc(cud->p->es_server_requester, request_data,
                         (cs_request_callback)__update_immediately_callback, cud);
@@ -361,14 +361,14 @@ static void __get_me_callback(struct callback_user_data *cud, struct sfs_object 
                 /*
                  * search for available slot
                  */
-                struct string *es_version_code = sfs_object_get_string(cud->p->config, qlkey("es_version_code"), SFS_GET_REPLACE_IF_WRONG_TYPE);
-                struct string *es_pass = sfs_object_get_string(cud->p->config, qlkey("es_pass"), SFS_GET_REPLACE_IF_WRONG_TYPE);
-                struct sfs_object *request_data = cs_request_data_from_file("res/supervisor/location/search_by_service.json", FILE_INNER,
+                struct string *es_version_code = smart_object_get_string(cud->p->config, qlkey("es_version_code"), SMART_GET_REPLACE_IF_WRONG_TYPE);
+                struct string *es_pass = smart_object_get_string(cud->p->config, qlkey("es_pass"), SMART_GET_REPLACE_IF_WRONG_TYPE);
+                struct smart_object *request_data = cs_request_data_from_file("res/supervisor/location/search_by_service.json", FILE_INNER,
                         qskey(es_version_code), qskey(es_pass));
 
-                struct string *user_name        = sfs_object_get_string(cud->obj, qskey(&__key_user_name__), SFS_GET_REPLACE_IF_WRONG_TYPE);
+                struct string *user_name        = smart_object_get_string(cud->obj, qskey(&__key_user_name__), SMART_GET_REPLACE_IF_WRONG_TYPE);
 
-                struct string *path     = sfs_object_get_string(request_data, qskey(&__key_path__), SFS_GET_REPLACE_IF_WRONG_TYPE);
+                struct string *path     = smart_object_get_string(request_data, qskey(&__key_path__), SMART_GET_REPLACE_IF_WRONG_TYPE);
                 string_replace(path, "{SERVICE_ID}", user_name->ptr);
 
                 cs_request_alloc(cud->p->es_server_requester, request_data,
@@ -376,46 +376,46 @@ static void __get_me_callback(struct callback_user_data *cud, struct sfs_object 
         }
 }
 
-static void __get_service_callback(struct callback_user_data *cud, struct sfs_object *recv)
+static void __get_service_callback(struct callback_user_data *cud, struct smart_object *recv)
 {
-        struct sfs_object *data = sfs_object_get_object(recv, qskey(&__key_data__), SFS_GET_REPLACE_IF_WRONG_TYPE);
+        struct smart_object *data = smart_object_get_object(recv, qskey(&__key_data__), SMART_GET_REPLACE_IF_WRONG_TYPE);
 
-        u8 found = sfs_object_get_bool(data, qlkey("found"), SFS_GET_REPLACE_IF_WRONG_TYPE);
+        u8 found = smart_object_get_bool(data, qlkey("found"), SMART_GET_REPLACE_IF_WRONG_TYPE);
 
         if(found) {
-                struct string *user_name        = sfs_object_get_string(cud->obj, qskey(&__key_user_name__), SFS_GET_REPLACE_IF_WRONG_TYPE);
+                struct string *user_name        = smart_object_get_string(cud->obj, qskey(&__key_user_name__), SMART_GET_REPLACE_IF_WRONG_TYPE);
 
-                struct string *device_id        = sfs_object_get_string(cud->obj, qskey(&__key_device_id__), SFS_GET_REPLACE_IF_WRONG_TYPE);
+                struct string *device_id        = smart_object_get_string(cud->obj, qskey(&__key_device_id__), SMART_GET_REPLACE_IF_WRONG_TYPE);
 
-                int _version                    = sfs_object_get_int(data, qlkey("_version"), SFS_GET_REPLACE_IF_WRONG_TYPE);
+                int _version                    = smart_object_get_int(data, qlkey("_version"), SMART_GET_REPLACE_IF_WRONG_TYPE);
 
-                struct sfs_object *_source      = sfs_object_get_object(data, qlkey("_source"), SFS_GET_REPLACE_IF_WRONG_TYPE);
+                struct smart_object *_source      = smart_object_get_object(data, qlkey("_source"), SMART_GET_REPLACE_IF_WRONG_TYPE);
 
-                struct string *user_pass        = sfs_object_get_string(_source, qskey(&__key_user_pass__), SFS_GET_REPLACE_IF_WRONG_TYPE);
+                struct string *user_pass        = smart_object_get_string(_source, qskey(&__key_user_pass__), SMART_GET_REPLACE_IF_WRONG_TYPE);
 
-                struct string *input_pass       = sfs_object_get_string(cud->obj, qskey(&__key_user_pass__), SFS_GET_REPLACE_IF_WRONG_TYPE);
+                struct string *input_pass       = smart_object_get_string(cud->obj, qskey(&__key_user_pass__), SMART_GET_REPLACE_IF_WRONG_TYPE);
 
                 if(strcmp(input_pass->ptr, user_pass->ptr) == 0) {
                         /*
                          * store capacity for next allocation
                          */
-                        int capacity            = sfs_object_get_int(_source, qskey(&__key_capacity__), SFS_GET_REPLACE_IF_WRONG_TYPE);
-                        sfs_object_set_int(cud->obj, qskey(&__key_capacity__), capacity);
+                        int capacity            = smart_object_get_int(_source, qskey(&__key_capacity__), SMART_GET_REPLACE_IF_WRONG_TYPE);
+                        smart_object_set_int(cud->obj, qskey(&__key_capacity__), capacity);
                         /*
                          * search me
                          */
-                        struct string *es_version_code = sfs_object_get_string(cud->p->config, qlkey("es_version_code"), SFS_GET_REPLACE_IF_WRONG_TYPE);
-                        struct string *es_pass = sfs_object_get_string(cud->p->config, qlkey("es_pass"), SFS_GET_REPLACE_IF_WRONG_TYPE);
-                        struct sfs_object *request_data = cs_request_data_from_file("res/supervisor/location/search_by_service_by_device.json", FILE_INNER,
+                        struct string *es_version_code = smart_object_get_string(cud->p->config, qlkey("es_version_code"), SMART_GET_REPLACE_IF_WRONG_TYPE);
+                        struct string *es_pass = smart_object_get_string(cud->p->config, qlkey("es_pass"), SMART_GET_REPLACE_IF_WRONG_TYPE);
+                        struct smart_object *request_data = cs_request_data_from_file("res/supervisor/location/search_by_service_by_device.json", FILE_INNER,
                                 qskey(es_version_code), qskey(es_pass));
 
-                        struct string *path = sfs_object_get_string(request_data, qskey(&__key_path__), SFS_GET_REPLACE_IF_WRONG_TYPE);
+                        struct string *path = smart_object_get_string(request_data, qskey(&__key_path__), SMART_GET_REPLACE_IF_WRONG_TYPE);
                         string_replace(path, "{SERVICE_ID}", user_name->ptr);
 
-                        struct sfs_object *request_data_data = sfs_object_get_object(request_data, qskey(&__key_data__), SFS_GET_REPLACE_IF_WRONG_TYPE);
-                        struct sfs_object *query = sfs_object_get_object(request_data_data, qlkey("query"), SFS_GET_REPLACE_IF_WRONG_TYPE);
-                        struct sfs_object *match = sfs_object_get_object(query, qlkey("match"), SFS_GET_REPLACE_IF_WRONG_TYPE);
-                        sfs_object_set_string(match, qskey(&__key_device_id__), qskey(device_id));
+                        struct smart_object *request_data_data = smart_object_get_object(request_data, qskey(&__key_data__), SMART_GET_REPLACE_IF_WRONG_TYPE);
+                        struct smart_object *query = smart_object_get_object(request_data_data, qlkey("query"), SMART_GET_REPLACE_IF_WRONG_TYPE);
+                        struct smart_object *match = smart_object_get_object(query, qlkey("match"), SMART_GET_REPLACE_IF_WRONG_TYPE);
+                        smart_object_set_string(match, qskey(&__key_device_id__), qskey(device_id));
 
                         cs_request_alloc(cud->p->es_server_requester, request_data,
                                 (cs_request_callback)__get_me_callback, cud);
@@ -431,17 +431,17 @@ static void __get_service_callback(struct callback_user_data *cud, struct sfs_ob
         }
 }
 
-static void __get_service(struct supervisor *p, int fd, u32 mask, struct sfs_object *obj)
+static void __get_service(struct supervisor *p, int fd, u32 mask, struct smart_object *obj)
 {
-        struct string *user_name = sfs_object_get_string(obj, qskey(&__key_user_name__), SFS_GET_REPLACE_IF_WRONG_TYPE);
+        struct string *user_name = smart_object_get_string(obj, qskey(&__key_user_name__), SMART_GET_REPLACE_IF_WRONG_TYPE);
 
-        struct string *es_version_code = sfs_object_get_string(p->config, qlkey("es_version_code"), SFS_GET_REPLACE_IF_WRONG_TYPE);
-        struct string *es_pass = sfs_object_get_string(p->config, qlkey("es_pass"), SFS_GET_REPLACE_IF_WRONG_TYPE);
+        struct string *es_version_code = smart_object_get_string(p->config, qlkey("es_version_code"), SMART_GET_REPLACE_IF_WRONG_TYPE);
+        struct string *es_pass = smart_object_get_string(p->config, qlkey("es_pass"), SMART_GET_REPLACE_IF_WRONG_TYPE);
 
-        struct sfs_object *request_data = cs_request_data_from_file("res/supervisor/service/search_by_username.json", FILE_INNER,
+        struct smart_object *request_data = cs_request_data_from_file("res/supervisor/service/search_by_username.json", FILE_INNER,
                 qskey(es_version_code), qskey(es_pass));
 
-        struct string *path = sfs_object_get_string(request_data, qskey(&__key_path__), SFS_GET_REPLACE_IF_WRONG_TYPE);
+        struct string *path = smart_object_get_string(request_data, qskey(&__key_path__), SMART_GET_REPLACE_IF_WRONG_TYPE);
         string_replace(path, "{USER_NAME}", user_name->ptr);
 
         struct callback_user_data *cud = callback_user_data_alloc(p, fd, mask, obj);
@@ -450,7 +450,7 @@ static void __get_service(struct supervisor *p, int fd, u32 mask, struct sfs_obj
                 (cs_request_callback)__get_service_callback, cud);
 }
 
-void supervisor_process_register_location_v1(struct supervisor *p, int fd, u32 mask, struct sfs_object *obj)
+void supervisor_process_register_location_v1(struct supervisor *p, int fd, u32 mask, struct smart_object *obj)
 {
         if(!__validate_input(p, fd, mask, obj)) {
                 return;

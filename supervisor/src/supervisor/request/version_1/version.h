@@ -16,14 +16,14 @@
 
 #include <supervisor/types.h>
 
-void supervisor_process_get_service_v1(struct supervisor *p, int fd, u32 mask, struct sfs_object *obj);
-void supervisor_process_register_service_v1(struct supervisor *p, int fd, u32 mask, struct sfs_object *obj);
-void supervisor_process_get_service_by_username_v1(struct supervisor *p, int fd, u32 mask, struct sfs_object *obj);
-void supervisor_process_validate_service_v1(struct supervisor *p, int fd, u32 mask, struct sfs_object *obj);
+void supervisor_process_get_service_v1(struct supervisor *p, int fd, u32 mask, struct smart_object *obj);
+void supervisor_process_register_service_v1(struct supervisor *p, int fd, u32 mask, struct smart_object *obj);
+void supervisor_process_get_service_by_username_v1(struct supervisor *p, int fd, u32 mask, struct smart_object *obj);
+void supervisor_process_validate_service_v1(struct supervisor *p, int fd, u32 mask, struct smart_object *obj);
 
-void supervisor_process_register_location_v1(struct supervisor *p, int fd, u32 mask, struct sfs_object *obj);
-void supervisor_process_update_location_latlng_v1(struct supervisor *p, int fd, u32 mask, struct sfs_object *obj);
-void supervisor_process_update_location_ip_port_v1(struct supervisor *p, int fd, u32 mask, struct sfs_object *obj);
+void supervisor_process_register_location_v1(struct supervisor *p, int fd, u32 mask, struct smart_object *obj);
+void supervisor_process_update_location_latlng_v1(struct supervisor *p, int fd, u32 mask, struct smart_object *obj);
+void supervisor_process_update_location_ip_port_v1(struct supervisor *p, int fd, u32 mask, struct smart_object *obj);
 
 
 #endif

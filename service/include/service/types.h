@@ -20,7 +20,7 @@
 #include <mysql.h>
 
 struct service;
-typedef void(*service_delegate)(struct service *, struct sfs_object *);
+typedef void(*service_delegate)(struct service *, struct smart_object *);
 
 struct service {
         struct file_descriptor_set      *master;
@@ -29,7 +29,7 @@ struct service {
         int                             listener;
         struct string                   *root;
 
-        struct sfs_object               *config;
+        struct smart_object               *config;
 };
 
 #endif

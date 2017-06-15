@@ -48,9 +48,9 @@ extern "C" {
         ), NULL);
     }
 
-    static void callback(void *p, struct sfs_object *data)
+    static void callback(void *p, struct smart_object *data)
     {
-        struct string *j = sfs_object_to_json(data);
+        struct string *j = smart_object_to_json(data);
         debug("native ui : receive : %s\n",j->ptr);
         string_free(j);
     }
@@ -62,34 +62,34 @@ extern "C" {
         debug("native ui init requester : %d\n", ret);
 
         {
-            struct sfs_object *obj = sfs_object_from_json_file("res/request.json", FILE_INNER);
-            struct string *request = sfs_object_get_string(obj, (void*)"request", sizeof("request") - 1, SFS_GET_REPLACE_IF_WRONG_TYPE);
-            struct string *path = sfs_object_get_string(obj, (void*)"path", sizeof("path") - 1, SFS_GET_REPLACE_IF_WRONG_TYPE);
-            struct sfs_object *objdata = sfs_object_get_object(obj, (void*)"data", sizeof("data") - 1, SFS_GET_REPLACE_IF_WRONG_TYPE);
+            struct smart_object *obj = smart_object_from_json_file("res/request.json", FILE_INNER);
+            struct string *request = smart_object_get_string(obj, (void*)"request", sizeof("request") - 1, SMART_GET_REPLACE_IF_WRONG_TYPE);
+            struct string *path = smart_object_get_string(obj, (void*)"path", sizeof("path") - 1, SMART_GET_REPLACE_IF_WRONG_TYPE);
+            struct smart_object *objdata = smart_object_get_object(obj, (void*)"data", sizeof("data") - 1, SMART_GET_REPLACE_IF_WRONG_TYPE);
 
-            struct sfs_object *data = sfs_object_alloc();
-            sfs_object_set_string(data, qskey(&__key_version__), qlkey("1"));
+            struct smart_object *data = smart_object_alloc();
+            smart_object_set_string(data, qskey(&__key_version__), qlkey("1"));
 
             if(strcmp(request->ptr, "post") == 0) {
-                sfs_object_set_string(data, qskey(&__key_cmd__), qskey(&__cmd_post__));
+                smart_object_set_string(data, qskey(&__key_cmd__), qskey(&__cmd_post__));
             } else if(strcmp(request->ptr, "get") == 0) {
-                sfs_object_set_string(data, qskey(&__key_cmd__), qskey(&__cmd_get__));
+                smart_object_set_string(data, qskey(&__key_cmd__), qskey(&__cmd_get__));
             } else if(strcmp(request->ptr, "put") == 0) {
-                sfs_object_set_string(data, qskey(&__key_cmd__), qskey(&__cmd_put__));
+                smart_object_set_string(data, qskey(&__key_cmd__), qskey(&__cmd_put__));
             }
 
 
-            sfs_object_set_string(data, qskey(&__key_pass__), qlkey("123456"));
+            smart_object_set_string(data, qskey(&__key_pass__), qlkey("123456"));
 
-            sfs_object_set_string(data, qskey(&__key_path__), qskey(path));
+            smart_object_set_string(data, qskey(&__key_path__), qskey(path));
 
-            struct string *json = sfs_object_to_json(objdata);
+            struct string *json = smart_object_to_json(objdata);
             int counter = 0;
-            struct sfs_object *d = sfs_object_from_json(json->ptr, json->len, &counter);
+            struct smart_object *d = smart_object_from_json(json->ptr, json->len, &counter);
             string_free(json);
-            // struct sfs_object *obj = sfs_object_alloc();
-            // sfs_object_set_string(obj, qskey(&__key_name__), qlkey("Johan"));
-            sfs_object_set_object(data, qskey(&__key_data__), d);
+            // struct smart_object *obj = smart_object_alloc();
+            // smart_object_set_string(obj, qskey(&__key_name__), qlkey("Johan"));
+            smart_object_set_object(data, qskey(&__key_data__), d);
             cs_request_alloc(p, data, callback, p);
         }
     }

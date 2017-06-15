@@ -56,12 +56,12 @@ static void __setup_jni()
         __jni_env = env;
 }
 
-static struct sfs_object *__parse_input(char *line, int len)
+static struct smart_object *__parse_input(char *line, int len)
 {
         int counter             = 0;
         int start               = 0;
         int end                 = 0;
-        struct sfs_object *p    = sfs_object_alloc();
+        struct smart_object *p    = smart_object_alloc();
         struct string *key      = string_alloc(0);
         struct string *val      = string_alloc(0);
 
@@ -83,7 +83,7 @@ read_cmd:;
                 increase_count()
                 goto read_cmd;
         }
-        sfs_object_set_string(p, qlkey("cmd"), line + start, end - start + 1);
+        smart_object_set_string(p, qlkey("cmd"), line + start, end - start + 1);
 
 find_argument:;
         if(line[counter] != '-') {
@@ -119,7 +119,7 @@ read_value:;
         }
         val->len = 0;
         string_cat(val, line + start, end - start + 1);
-        sfs_object_set_string(p, key->ptr, key->len, val->ptr, val->len);
+        smart_object_set_string(p, key->ptr, key->len, val->ptr, val->len);
 
         goto read_argument;
 
@@ -137,11 +137,11 @@ get_line:;
         int counter = 0;
 
         if(fgets(line, BUFFER_LEN, stdin) != NULL) {
-                struct sfs_object *com = __parse_input(line, BUFFER_LEN);
+                struct smart_object *com = __parse_input(line, BUFFER_LEN);
 
-                struct string *cmd = sfs_object_get_string(com, qlkey("cmd"), SFS_GET_REPLACE_IF_WRONG_TYPE);
+                struct string *cmd = smart_object_get_string(com, qlkey("cmd"), SMART_GET_REPLACE_IF_WRONG_TYPE);
 
-                sfs_object_free(com);
+                smart_object_free(com);
         }
 
         goto get_line;

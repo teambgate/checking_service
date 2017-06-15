@@ -20,7 +20,7 @@
 
 struct supervisor;
 
-typedef void(*supervisor_delegate)(struct supervisor *, int fd, u32 mask, struct sfs_object *);
+typedef void(*supervisor_delegate)(struct supervisor *, int fd, u32 mask, struct smart_object *);
 
 struct client_buffer {
         struct string   *buff;
@@ -41,7 +41,7 @@ struct callback_user_data {
         struct supervisor *p;
         int fd;
         u32 mask;
-        struct sfs_object *obj;
+        struct smart_object *obj;
 };
 
 struct supervisor {
@@ -65,7 +65,7 @@ struct supervisor {
 
         struct map                      *clients_datas;
 
-        struct sfs_object               *config;
+        struct smart_object               *config;
 };
 
 #endif

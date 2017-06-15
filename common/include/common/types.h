@@ -28,16 +28,16 @@ extern "C" {
         .ptr = str              \
 };
 
-typedef void(*cs_request_callback)(void*, struct sfs_object *);
+typedef void(*cs_request_callback)(void*, struct smart_object *);
 
 struct cs_request {
         struct list_head        head;
-        struct sfs_object       *data;
+        struct smart_object       *data;
 };
 
 struct cs_response {
         int                     num;
-        struct sfs_object       *data;
+        struct smart_object       *data;
         void                    *ctx;
         cs_request_callback     callback;
 };

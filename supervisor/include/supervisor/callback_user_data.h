@@ -20,7 +20,7 @@ extern "C" {
 
 #include <supervisor/types.h>
 
-struct callback_user_data *callback_user_data_alloc(struct supervisor *p, int fd, u32 mask, struct sfs_object *obj);
+struct callback_user_data *callback_user_data_alloc(struct supervisor *p, int fd, u32 mask, struct smart_object *obj);
 
 void callback_user_data_free(struct callback_user_data *p);
 

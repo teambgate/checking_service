@@ -25,9 +25,9 @@
 #include <time.h>
 #include <cherry/crypt/md5.h>
 
-static void callback(void *p, struct sfs_object *data)
+static void callback(void *p, struct smart_object *data)
 {
-        struct string *j = sfs_object_to_json(data);
+        struct string *j = smart_object_to_json(data);
         debug("receive : %s\n",j->ptr);
         string_free(j);
 }
@@ -43,22 +43,22 @@ int main(int argc, char **argv)
 start:;
         struct cs_requester *p  = cs_requester_alloc();
         cs_requester_connect(p, "127.0.0.1", 9999);
-        struct sfs_object *data = sfs_object_alloc();
-        sfs_object_set_string(data, qskey(&__key_version__), qlkey("1"));
-        sfs_object_set_string(data, qskey(&__key_cmd__), qskey(&__cmd_register_location__));
-        sfs_object_set_string(data, qskey(&__key_pass__), qlkey("123456"));
-        sfs_object_set_string(data, qskey(&__key_name__), qlkey("BGATE CORP"));
-        sfs_object_set_string(data, qskey(&__key_user_name__), qlkey("sang_tao"));
-        sfs_object_set_string(data, qskey(&__key_user_pass__), qlkey("12345678"));
-        sfs_object_set_string(data, qskey(&__key_device_id__), qlkey("Manh Ubuntu"));
-        sfs_object_set_string(data, qskey(&__key_validate_code__), qlkey("ZCavT1Pk"));
-        // sfs_object_set_int(data, qskey(&__key_id__), 1);
-        sfs_object_set_string(data, qskey(&__key_ip__), qlkey("192.168.1.248"));
-        sfs_object_set_long(data, qskey(&__key_port__), 1000);
-        sfs_object_set_string(data, qskey(&__key_location_name__), qlkey("Sang Tao"));
-        struct sfs_object *latlng = sfs_object_get_object(data, qskey(&__key_latlng__), SFS_GET_REPLACE_IF_WRONG_TYPE);
-        sfs_object_set_double(latlng, qskey(&__key_lat__), 1.1);
-        sfs_object_set_double(latlng, qskey(&__key_lon__), 99.1);
+        struct smart_object *data = smart_object_alloc();
+        smart_object_set_string(data, qskey(&__key_version__), qlkey("1"));
+        smart_object_set_string(data, qskey(&__key_cmd__), qskey(&__cmd_register_location__));
+        smart_object_set_string(data, qskey(&__key_pass__), qlkey("123456"));
+        smart_object_set_string(data, qskey(&__key_name__), qlkey("BGATE CORP"));
+        smart_object_set_string(data, qskey(&__key_user_name__), qlkey("sang_tao"));
+        smart_object_set_string(data, qskey(&__key_user_pass__), qlkey("12345678"));
+        smart_object_set_string(data, qskey(&__key_device_id__), qlkey("Manh Ubuntu"));
+        smart_object_set_string(data, qskey(&__key_validate_code__), qlkey("ZCavT1Pk"));
+        // smart_object_set_int(data, qskey(&__key_id__), 1);
+        smart_object_set_string(data, qskey(&__key_ip__), qlkey("192.168.1.248"));
+        smart_object_set_long(data, qskey(&__key_port__), 1000);
+        smart_object_set_string(data, qskey(&__key_location_name__), qlkey("Sang Tao"));
+        struct smart_object *latlng = smart_object_get_object(data, qskey(&__key_latlng__), SMART_GET_REPLACE_IF_WRONG_TYPE);
+        smart_object_set_double(latlng, qskey(&__key_lat__), 1.1);
+        smart_object_set_double(latlng, qskey(&__key_lon__), 99.1);
 
         cs_request_alloc(p, data, callback, p);
 
@@ -66,38 +66,38 @@ start:;
         // cs_requester_connect(p, "localhost", 9898);
         // for(int i = 0; i < 20000; i++)
         // {
-        //         struct sfs_object *obj = sfs_object_from_json_file("res/request.json", FILE_INNER);
-        //         struct string *request = sfs_object_get_string(obj, qlkey("request"), SFS_GET_REPLACE_IF_WRONG_TYPE);
-        //         struct string *path = sfs_object_get_string(obj, qlkey("path"), SFS_GET_REPLACE_IF_WRONG_TYPE);
-        //         struct sfs_object *objdata = sfs_object_get_object(obj, qlkey("data"), SFS_GET_REPLACE_IF_WRONG_TYPE);
+        //         struct smart_object *obj = smart_object_from_json_file("res/request.json", FILE_INNER);
+        //         struct string *request = smart_object_get_string(obj, qlkey("request"), SMART_GET_REPLACE_IF_WRONG_TYPE);
+        //         struct string *path = smart_object_get_string(obj, qlkey("path"), SMART_GET_REPLACE_IF_WRONG_TYPE);
+        //         struct smart_object *objdata = smart_object_get_object(obj, qlkey("data"), SMART_GET_REPLACE_IF_WRONG_TYPE);
         //
-        //         struct sfs_object *data = sfs_object_alloc();
-        //         sfs_object_set_string(data, qskey(&__key_version__), qlkey("1"));
+        //         struct smart_object *data = smart_object_alloc();
+        //         smart_object_set_string(data, qskey(&__key_version__), qlkey("1"));
         //
         //         if(strcmp(request->ptr, "post") == 0) {
-        //                 sfs_object_set_string(data, qskey(&__key_cmd__), qskey(&__cmd_post__));
+        //                 smart_object_set_string(data, qskey(&__key_cmd__), qskey(&__cmd_post__));
         //         } else if(strcmp(request->ptr, "get") == 0) {
-        //                 sfs_object_set_string(data, qskey(&__key_cmd__), qskey(&__cmd_get__));
+        //                 smart_object_set_string(data, qskey(&__key_cmd__), qskey(&__cmd_get__));
         //         } else if(strcmp(request->ptr, "put") == 0) {
-        //                 sfs_object_set_string(data, qskey(&__key_cmd__), qskey(&__cmd_put__));
+        //                 smart_object_set_string(data, qskey(&__key_cmd__), qskey(&__cmd_put__));
         //         } else if(strcmp(request->ptr, "delete") == 0) {
-        //                 sfs_object_set_string(data, qskey(&__key_cmd__), qskey(&__cmd_delete__));
+        //                 smart_object_set_string(data, qskey(&__key_cmd__), qskey(&__cmd_delete__));
         //         }
         //
         //
-        //         sfs_object_set_string(data, qskey(&__key_pass__), qlkey("123456"));
+        //         smart_object_set_string(data, qskey(&__key_pass__), qlkey("123456"));
         //
-        //         sfs_object_set_string(data, qskey(&__key_path__), qskey(path));
+        //         smart_object_set_string(data, qskey(&__key_path__), qskey(path));
         //
-        //         struct string *json = sfs_object_to_json(objdata);
+        //         struct string *json = smart_object_to_json(objdata);
         //         int counter = 0;
-        //         struct sfs_object *d = sfs_object_from_json(json->ptr, json->len, &counter);
+        //         struct smart_object *d = smart_object_from_json(json->ptr, json->len, &counter);
         //         string_free(json);
-        //         // struct sfs_object *obj = sfs_object_alloc();
-        //         // sfs_object_set_string(obj, qskey(&__key_name__), qlkey("Johan"));
-        //         sfs_object_set_object(data, qskey(&__key_data__), d);
+        //         // struct smart_object *obj = smart_object_alloc();
+        //         // smart_object_set_string(obj, qskey(&__key_name__), qlkey("Johan"));
+        //         smart_object_set_object(data, qskey(&__key_data__), d);
         //         cs_request_alloc(p, data, callback, p);
-        //         sfs_object_free(obj);
+        //         smart_object_free(obj);
         //         sleep(1);
         // }
 

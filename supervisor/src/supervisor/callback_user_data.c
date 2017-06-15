@@ -15,18 +15,18 @@
 #include <cherry/memory.h>
 #include <smartfox/data.h>
 
-struct callback_user_data *callback_user_data_alloc(struct supervisor *p, int fd, u32 mask, struct sfs_object *obj)
+struct callback_user_data *callback_user_data_alloc(struct supervisor *p, int fd, u32 mask, struct smart_object *obj)
 {
         struct callback_user_data *cud = smalloc(sizeof(struct callback_user_data));
         cud->p = p;
         cud->fd = fd;
         cud->mask = mask;
-        cud->obj = sfs_object_clone(obj);
+        cud->obj = smart_object_clone(obj);
         return cud;
 }
 
 void callback_user_data_free(struct callback_user_data *p)
 {
-        sfs_object_free(p->obj);
+        smart_object_free(p->obj);
         sfree(p);
 }
