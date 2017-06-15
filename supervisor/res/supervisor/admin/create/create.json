@@ -1,0 +1,12 @@
+{
+        "request" : "post",
+        "path"  : "/supervisor/admin/{ADMIN_NAME}/_create",
+        "data"  : {
+                "admin_pass"    : "{ADMIN_PASS}",
+                "permission"    : {
+                        "view_service"          : false,
+                        "delete_service"        : false,
+                        "deactivate_service"    : false
+                }
+        }
+}

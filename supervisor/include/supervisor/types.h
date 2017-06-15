@@ -44,6 +44,11 @@ struct callback_user_data {
         struct smart_object *obj;
 };
 
+struct client_step {
+        int fd;
+        u64 step;
+};
+
 struct supervisor {
         struct file_descriptor_set      *master;
         struct file_descriptor_set      *incomming;
@@ -64,6 +69,8 @@ struct supervisor {
         pthread_mutex_t                 client_data_mutex;
 
         struct map                      *clients_datas;
+
+        u64                             step;
 
         struct smart_object               *config;
 };

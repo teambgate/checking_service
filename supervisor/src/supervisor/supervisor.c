@@ -102,6 +102,8 @@ static void __supervisor_close_client(struct supervisor *p, int fd)
 
         pthread_mutex_lock(&p->client_data_mutex);
 
+        debug("force client closed begin\n");
+
         /*
          * increase mask to prohibit current pending packets sending to this fd
          */
@@ -125,24 +127,47 @@ static void __supervisor_close_client(struct supervisor *p, int fd)
 
 static void __supervisor_check_old_and_close_client(struct supervisor *ws, int fd)
 {
+        int can_close = 1;
         /*
          * make sure fd will be closed once
          */
         pthread_mutex_lock(&ws->client_data_mutex);
         int i;
         for_i(i, ws->fd_invalids->len) {
-                i32 cfd = array_get(ws->fd_invalids, i32, i);
-                if(cfd == fd) {
-                        array_remove(ws->fd_invalids, i);
+                struct client_step cfd = array_get(ws->fd_invalids, struct client_step, i);
+                if(cfd.fd == fd) {
+                        if(cfd.step < ws->step) {
+                                array_remove(ws->fd_invalids, i);
+                        } else {
+                                can_close = 0;
+                        }
+
                         break;
                 }
         }
         pthread_mutex_unlock(&ws->client_data_mutex);
 
-        __supervisor_close_client(ws, fd);
+        if(can_close) __supervisor_close_client(ws, fd);
 }
 
-static inline void __supervisor_send_to_client(struct supervisor *p, int fd, u32 mask, char *ptr, int len, u8 keep)
+static void __supervisor_push_close(struct supervisor *p, int fd)
+{
+        pthread_mutex_lock(&p->client_data_mutex);
+
+        array_reserve(p->fd_mask, fd + 1);
+        u32 current_mask = array_get(p->fd_mask, u32, fd);
+        current_mask++;
+        array_set(p->fd_mask, fd, &current_mask);
+
+        struct client_step step;
+        step.fd = fd;
+        step.step = p->step;
+
+        array_push(p->fd_invalids, &step);
+        pthread_mutex_unlock(&p->client_data_mutex);
+}
+
+static void __supervisor_send_to_client(struct supervisor *p, int fd, u32 mask, char *ptr, int len, u8 keep)
 {
         pthread_mutex_lock(&p->client_data_mutex);
         array_reserve(p->fd_mask, fd + 1);
@@ -157,19 +182,19 @@ static inline void __supervisor_send_to_client(struct supervisor *p, int fd, u32
                 return;
         }
 
-        debug("send client %s\n", ptr);
+        debug("send client %d : %s\n", fd, ptr);
         int bytes_send          = 0;
         int slen                = len;
         /*
          * send packet len
          */
+        pthread_mutex_lock(&p->client_data_mutex);
         u32 num                 = htonl((u32)len);
         send(fd, &num, sizeof(num), 0);
 
         /*
          * send packet content
          */
-        pthread_mutex_lock(&p->client_data_mutex);
         while(bytes_send < slen) {
                 bytes_send += send(fd, ptr, len, 0);
                 if(bytes_send < 0) {
@@ -186,15 +211,7 @@ static inline void __supervisor_send_to_client(struct supervisor *p, int fd, u32
                  * if we close fd after calling select then
                  * it will block infinitely
                  */
-                pthread_mutex_lock(&p->client_data_mutex);
-
-                array_reserve(p->fd_mask, fd + 1);
-                u32 current_mask = array_get(p->fd_mask, u32, fd);
-                current_mask++;
-                array_set(p->fd_mask, fd, &current_mask);
-
-                array_push(p->fd_invalids, &fd);
-                pthread_mutex_unlock(&p->client_data_mutex);
+                __supervisor_push_close(p, fd);
         }
 }
 
@@ -213,6 +230,7 @@ static void __supervisor_handle_msg(struct supervisor *ws, u32 fd, char* msg, si
         }
         struct client_buffer *cb = map_get(ws->clients_datas, struct client_buffer *, qpkey(fd));
         pthread_mutex_unlock(&ws->client_data_mutex);
+
         int amount;
 check:;
         if(msg_len == 0) goto end;
@@ -258,19 +276,22 @@ send_client:;
         int counter = 0;
         debug("receive: %s\n", cb->buff->ptr);
         struct smart_object *obj = smart_object_from_json(cb->buff->ptr, cb->buff->len, &counter);
-        struct smart_data *cmd = map_get(obj->data, struct smart_data *, qskey(&__key_cmd__));
-        if(cmd) {
-                supervisor_delegate *delegate = map_get_pointer(ws->delegates, qskey(cmd->_string));
-                if(delegate) {
-                        array_reserve(ws->fd_mask, fd + 1);
-                        u32 mask = array_get(ws->fd_mask, u32, fd);
+        struct string *cmd = smart_object_get_string(obj, qskey(&__key_cmd__), SMART_GET_REPLACE_IF_WRONG_TYPE);
+        supervisor_delegate *delegate = map_get_pointer(ws->delegates, qskey(cmd));
 
-                        (*delegate)(ws, fd, mask, obj);
-                } else {
-                        __supervisor_check_old_and_close_client(ws, fd);
-                }
+        if(*delegate) {
+                pthread_mutex_lock(&ws->client_data_mutex);
+                array_reserve(ws->fd_mask, fd + 1);
+                u32 mask = array_get(ws->fd_mask, u32, fd);
+                pthread_mutex_unlock(&ws->client_data_mutex);
+
+                (*delegate)(ws, fd, mask, obj);
         } else {
-                __supervisor_check_old_and_close_client(ws, fd);
+                if(strcmp(cb->buff->ptr, "0") == 0) {
+                        __supervisor_check_old_and_close_client(ws, fd);
+                } else {
+                        __supervisor_push_close(ws, fd);
+                }
         }
         smart_object_free(obj);
         cb->requested_len       = 0;
@@ -353,12 +374,15 @@ void supervisor_start(struct supervisor *ws)
         gettimeofday(&t1, NULL);
         struct list_head *head;
 
+        ws->step = 0;
+
         while(1) {
                 /*
                  * listen for next incomming sockets
                  */
                 pthread_mutex_lock(&ws->client_data_mutex);
                 file_descriptor_set_assign(ws->incomming, ws->master);
+                ws->step++;
                 pthread_mutex_unlock(&ws->client_data_mutex);
 
                 debug("start select\n");
@@ -367,6 +391,7 @@ void supervisor_start(struct supervisor *ws)
                         break;
                 }
                 debug("process select\n");
+
                 /*
                  * process handlers
                  */
@@ -433,17 +458,21 @@ void supervisor_start(struct supervisor *ws)
                  */
         check_old_fd:;
                 pthread_mutex_lock(&ws->client_data_mutex);
-                if(ws->fd_invalids->len) {
-                        i32 cfd = array_get(ws->fd_invalids, i32, 0);
-                        array_remove(ws->fd_invalids, 0);
-                        pthread_mutex_unlock(&ws->client_data_mutex);
-
-                        __supervisor_close_client(ws, cfd);
-                        goto check_old_fd;
+                int i;
+                for_i(i, ws->fd_invalids->len) {
+                        struct client_step cfd = array_get(ws->fd_invalids, struct client_step, i);
+                        if(cfd.step < ws->step) {
+                                array_remove(ws->fd_invalids, i);
+                                pthread_mutex_unlock(&ws->client_data_mutex);
+                                __supervisor_close_client(ws, cfd.fd);
+                                pthread_mutex_lock(&ws->client_data_mutex);
+                                i--;
+                        }
                 }
                 pthread_mutex_unlock(&ws->client_data_mutex);
         }
 finish:;
+        debug("shutdown\n");
         shutdown(ws->listener, SHUT_RDWR);
         socket_close(ws->listener);
         string_free(ports);
@@ -480,6 +509,7 @@ static void __load_es_server(struct supervisor *p)
         cs_requester_connect(p->es_server_requester, host->ptr, port);
 
         __load_base_map(p, "res/supervisor/index.json");
+        __load_base_map(p, "res/supervisor/admin/map.json");
         __load_base_map(p, "res/supervisor/location/map.json");
         __load_base_map(p, "res/supervisor/service/map.json");
 }
@@ -502,7 +532,9 @@ struct supervisor *supervisor_alloc()
         INIT_LIST_HEAD(&p->handlers);
 
         p->fd_mask              = array_alloc(sizeof(u32), ORDERED);
-        p->fd_invalids          = array_alloc(sizeof(i32), NO_ORDERED);
+        p->fd_invalids          = array_alloc(sizeof(struct client_step), ORDERED);
+
+        p->clients_datas        = map_alloc(sizeof(struct client_buffer *));
 
         pthread_mutex_init(&p->client_data_mutex, NULL);
 
@@ -519,19 +551,18 @@ struct supervisor *supervisor_alloc()
         p->delegates            = map_alloc(sizeof(supervisor_delegate));
 
         map_set(p->delegates, qskey(&__cmd_get_service__), &(supervisor_delegate){supervisor_process_get_service});
-        map_set(p->delegates, qskey(&__cmd_register_service__), &(supervisor_delegate){supervisor_process_register_service});
-        map_set(p->delegates, qskey(&__cmd_get_service_by_username__), &(supervisor_delegate){supervisor_process_get_service_by_username});
-        map_set(p->delegates, qskey(&__cmd_validate_service__), &(supervisor_delegate){supervisor_process_validate_service});
+        map_set(p->delegates, qskey(&__cmd_service_register__), &(supervisor_delegate){supervisor_process_service_register});
+        map_set(p->delegates, qskey(&__cmd_service_get_by_username__), &(supervisor_delegate){supervisor_process_service_get_by_username});
+        map_set(p->delegates, qskey(&__cmd_service_validate__), &(supervisor_delegate){supervisor_process_service_validate});
 
-        map_set(p->delegates, qskey(&__cmd_register_location__), &(supervisor_delegate){supervisor_process_register_location});
-        map_set(p->delegates, qskey(&__cmd_update_location_latlng__), &(supervisor_delegate){supervisor_process_update_location_latlng});
-        map_set(p->delegates, qskey(&__cmd_update_location_ip_port__), &(supervisor_delegate){supervisor_process_update_location_ip_port});
+        map_set(p->delegates, qskey(&__cmd_location_register__), &(supervisor_delegate){supervisor_process_location_register});
+        map_set(p->delegates, qskey(&__cmd_location_update_latlng__), &(supervisor_delegate){supervisor_process_location_update_latlng});
+        map_set(p->delegates, qskey(&__cmd_location_update_ip_port__), &(supervisor_delegate){supervisor_process_location_update_ip_port});
+        map_set(p->delegates, qskey(&__cmd_location_search_nearby__), &(supervisor_delegate){supervisor_process_location_search_nearby});
 
         __register_handler(p,
                 supervisor_process_clear_invalidated_service,
                 smart_object_get_double(p->config, qlkey("service_created_timeout"), SMART_GET_REPLACE_IF_WRONG_TYPE));
-
-        p->clients_datas        = map_alloc(sizeof(struct client_buffer *));
         return p;
 }
 

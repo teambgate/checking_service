@@ -1,0 +1,12 @@
+{
+        "request" : "put",
+        "path"  : "/supervisor/_mapping/admin",
+        "data"  : {
+                "properties" : {
+                        "admin_pass": {
+                                "type" : "string",
+                                "index": "not_analyzed"
+                        }
+                }
+        }
+}

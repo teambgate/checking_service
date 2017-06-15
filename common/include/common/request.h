@@ -16,6 +16,13 @@
 struct smart_object *cs_request_data_from_file(char *file, int file_type,
         char *version, size_t version_len,
         char *pass, size_t pass_len);
+
+struct smart_object *cs_request_data_from_string(char *content, size_t len,
+        char *version, size_t version_len,
+        char *pass, size_t pass_len);
+
+struct string *cs_request_string_from_file(char *file, int file_type);
+
 /*
  * cs request
  */

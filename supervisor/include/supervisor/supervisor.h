@@ -28,13 +28,14 @@ void supervisor_send_to_client(struct supervisor *p, int fd, u32 mask, char *ptr
  * request delegate
  */
 void supervisor_process_get_service(struct supervisor *p, int fd, u32 mask, struct smart_object *obj);
-void supervisor_process_register_service(struct supervisor *p, int fd, u32 mask, struct smart_object *obj);
-void supervisor_process_get_service_by_username(struct supervisor *p, int fd, u32 mask, struct smart_object *obj);
-void supervisor_process_validate_service(struct supervisor *p, int fd, u32 mask, struct smart_object *obj);
+void supervisor_process_service_register(struct supervisor *p, int fd, u32 mask, struct smart_object *obj);
+void supervisor_process_service_get_by_username(struct supervisor *p, int fd, u32 mask, struct smart_object *obj);
+void supervisor_process_service_validate(struct supervisor *p, int fd, u32 mask, struct smart_object *obj);
 
-void supervisor_process_register_location(struct supervisor *p, int fd, u32 mask, struct smart_object *obj);
-void supervisor_process_update_location_latlng(struct supervisor *p, int fd, u32 mask, struct smart_object *obj);
-void supervisor_process_update_location_ip_port(struct supervisor *p, int fd, u32 mask, struct smart_object *obj);
+void supervisor_process_location_register(struct supervisor *p, int fd, u32 mask, struct smart_object *obj);
+void supervisor_process_location_update_latlng(struct supervisor *p, int fd, u32 mask, struct smart_object *obj);
+void supervisor_process_location_update_ip_port(struct supervisor *p, int fd, u32 mask, struct smart_object *obj);
+void supervisor_process_location_search_nearby(struct supervisor *p, int fd, u32 mask, struct smart_object *obj);
 
 /*
  * handle delegate

@@ -3,7 +3,10 @@
         "path"  : "/supervisor/location/{ID}/_update?routing={SERVICE_ID}&version={VERSION_NUMBER}",
         "data"  : {
                 "doc" :{
-                        "ip"          : "0.0.0.0"
+                        "latlng" : {
+                                "lat"   : {LAT},
+                                "lon"   : {LON}
+                        }
                 }
         }
 }

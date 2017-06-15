@@ -58,10 +58,11 @@ void func(struct supervisor *p, int fd, u32 mask, struct smart_object *obj)     
 
 
 register_function(supervisor_process_get_service);
-register_function(supervisor_process_register_service);
-register_function(supervisor_process_get_service_by_username);
-register_function(supervisor_process_validate_service);
+register_function(supervisor_process_service_register);
+register_function(supervisor_process_service_get_by_username);
+register_function(supervisor_process_service_validate);
 
-register_function(supervisor_process_register_location);
-register_function(supervisor_process_update_location_latlng);
-register_function(supervisor_process_update_location_ip_port);
+register_function(supervisor_process_location_register);
+register_function(supervisor_process_location_update_latlng);
+register_function(supervisor_process_location_update_ip_port);
+register_function(supervisor_process_location_search_nearby);

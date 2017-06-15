@@ -40,8 +40,11 @@
 #include <common/key.h>
 #include <common/error.h>
 #include <common/request.h>
+#include <common/util.h>
 
-void supervisor_process_update_location_latlng_v1(struct supervisor *p, int fd, u32 mask, struct smart_object *obj)
+#include <supervisor/callback_user_data.h>
+
+void supervisor_process_service_get_by_username_v1(struct supervisor *p, int fd, u32 mask, struct smart_object *obj)
 {
 
 }

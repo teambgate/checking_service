@@ -43,24 +43,28 @@ int main(int argc, char **argv)
 start:;
         struct cs_requester *p  = cs_requester_alloc();
         cs_requester_connect(p, "127.0.0.1", 9999);
-        struct smart_object *data = smart_object_alloc();
-        smart_object_set_string(data, qskey(&__key_version__), qlkey("1"));
-        smart_object_set_string(data, qskey(&__key_cmd__), qskey(&__cmd_register_location__));
-        smart_object_set_string(data, qskey(&__key_pass__), qlkey("123456"));
-        smart_object_set_string(data, qskey(&__key_name__), qlkey("BGATE CORP"));
-        smart_object_set_string(data, qskey(&__key_user_name__), qlkey("sang_tao"));
-        smart_object_set_string(data, qskey(&__key_user_pass__), qlkey("12345678"));
-        smart_object_set_string(data, qskey(&__key_device_id__), qlkey("Manh Ubuntu"));
-        smart_object_set_string(data, qskey(&__key_validate_code__), qlkey("ZCavT1Pk"));
-        // smart_object_set_int(data, qskey(&__key_id__), 1);
-        smart_object_set_string(data, qskey(&__key_ip__), qlkey("192.168.1.248"));
-        smart_object_set_long(data, qskey(&__key_port__), 1000);
-        smart_object_set_string(data, qskey(&__key_location_name__), qlkey("Sang Tao"));
-        struct smart_object *latlng = smart_object_get_object(data, qskey(&__key_latlng__), SMART_GET_REPLACE_IF_WRONG_TYPE);
-        smart_object_set_double(latlng, qskey(&__key_lat__), 1.1);
-        smart_object_set_double(latlng, qskey(&__key_lon__), 99.1);
 
-        cs_request_alloc(p, data, callback, p);
+        for(int i = 0; i < 10000; i++) {
+                struct smart_object *data = smart_object_alloc();
+                smart_object_set_string(data, qskey(&__key_version__), qlkey("1"));
+                smart_object_set_string(data, qskey(&__key_cmd__), qskey(&__cmd_location_search_nearby__));
+                smart_object_set_string(data, qskey(&__key_pass__), qlkey("123456"));
+                smart_object_set_string(data, qskey(&__key_name__), qlkey("BGATE CORP"));
+                smart_object_set_string(data, qskey(&__key_user_name__), qlkey("bui_thi_xuan"));
+                smart_object_set_string(data, qskey(&__key_user_pass__), qlkey("12345678"));
+                smart_object_set_string(data, qskey(&__key_device_id__), qlkey("Manh Ubuntu"));
+                smart_object_set_string(data, qskey(&__key_validate_code__), qlkey("EKir8cdX"));
+                // smart_object_set_int(data, qskey(&__key_id__), 1);
+                smart_object_set_string(data, qskey(&__key_ip__), qlkey("192.168.1.218"));
+                smart_object_set_long(data, qskey(&__key_port__), 50000);
+                smart_object_set_string(data, qskey(&__key_location_name__), qlkey("Sang Tao"));
+                struct smart_object *latlng = smart_object_get_object(data, qskey(&__key_latlng__), SMART_GET_REPLACE_IF_WRONG_TYPE);
+                smart_object_set_double(latlng, qskey(&__key_lat__), 23);
+                smart_object_set_double(latlng, qskey(&__key_lon__), 99.122);
+
+                cs_request_alloc(p, data, callback, p);
+        }
+
 
         // struct cs_requester *p  = cs_requester_alloc();
         // cs_requester_connect(p, "localhost", 9898);
@@ -101,7 +105,7 @@ start:;
         //         sleep(1);
         // }
 
-        sleep(1);
+        sleep(600);
         debug("free requester\n");
         cs_requester_free(p);
         sleep(1);

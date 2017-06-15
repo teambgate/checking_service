@@ -161,6 +161,8 @@ int main( int argc, char** argv )
 
         supervisor_start(s);
 
+        debug("???\n");
+
         supervisor_free(s);
         cache_free();
         dim_memory();

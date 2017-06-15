@@ -1,9 +1,9 @@
 {
         "request" : "post",
-        "path"  : "/supervisor/location/_delete_by_query?conflicts=proceed&routing=__SERVICE_ID__",
+        "path"  : "/supervisor/location/_delete_by_query?conflicts=proceed&routing={SERVICE_ID}",
         "data"  : {
                 "query" : {
-                        "match" : {
+                        "term" : {
                                 "device_id" : ""
                         }
                 }

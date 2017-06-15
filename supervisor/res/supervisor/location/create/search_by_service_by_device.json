@@ -4,8 +4,8 @@
         "data"  : {
                 "version": true,
                 "query" : {
-                        "match" : {
-                                "device_id" : ""
+                        "term" : {
+                                "device_id" : "{DEVICE_ID}"
                         }
                 }
         }

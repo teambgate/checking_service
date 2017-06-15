@@ -1,0 +1,44 @@
+{
+        "request" : "get",
+        "path"  : "/supervisor/location/_search",
+        "data"  : {
+                "version": true,
+                "query" : {
+                        "bool" : {
+                                "must" : [
+                                        {
+                                                "term" : {
+                                                        "device_id" : "{DEVICE_ID}"
+                                                }
+                                        },
+                                        {
+                                                "has_parent" : {
+                                                        "parent_type" : "service",
+                                                        "query" : {
+                                                                "bool" : {
+                                                                        "must" : [
+                                                                                {
+                                                                                        "term" : {
+                                                                                                "_id"   : "{SERVICE_ID}"
+                                                                                        }
+                                                                                },
+                                                                                {
+                                                                                        "term" : {
+                                                                                                "validated" : 1
+                                                                                        }
+                                                                                },
+                                                                                {
+                                                                                        "term" : {
+                                                                                                "user_pass" : "{USER_PASS}"
+                                                                                        }
+                                                                                }
+                                                                        ]
+                                                                }
+                                                        }
+                                                }
+                                        }
+                                ]
+                        }
+                }
+        }
+}

@@ -48,6 +48,7 @@ extern struct string    __key_validate_count__;
 extern struct string    __key_validated__;
 extern struct string    __key_capacity__;
 extern struct string    __key_location_name__;
+extern struct string    __key_locations__;
 
 #ifdef __cplusplus
 }

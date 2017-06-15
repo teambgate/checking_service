@@ -26,13 +26,14 @@ extern struct string __cmd_put__;
 extern struct string __cmd_delete__;
 
 extern struct string __cmd_get_service__;
-extern struct string __cmd_register_service__;
-extern struct string __cmd_get_service_by_username__;
-extern struct string __cmd_validate_service__;
+extern struct string __cmd_service_register__;
+extern struct string __cmd_service_get_by_username__;
+extern struct string __cmd_service_validate__;
 
-extern struct string __cmd_register_location__;
-extern struct string __cmd_update_location_latlng__;
-extern struct string __cmd_update_location_ip_port__;
+extern struct string __cmd_location_register__;
+extern struct string __cmd_location_update_latlng__;
+extern struct string __cmd_location_update_ip_port__;
+extern struct string __cmd_location_search_nearby__;
 
 #ifdef __cplusplus
 }

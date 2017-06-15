@@ -6,6 +6,14 @@
                         "reserved" : {
                                 "type" : "date",
                                 "format": "yyyy-MM-dd HH:mm:ss"
+                        },
+                        "validate_code": {
+                                "type" : "string",
+                                "index": "not_analyzed"
+                        },
+                        "user_pass": {
+                                "type" : "string",
+                                "index": "not_analyzed"
                         }
                 }
         }

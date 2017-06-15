@@ -1,0 +1,20 @@
+{
+        "request" : "get",
+        "path"  : "/supervisor/location/_search?pretty",
+        "data"  : {
+                "version": true,
+                "query" : {
+                        "bool" : {
+                                "filter" : {
+                                        "geo_distance" : {
+                                                "distance" : "10m",
+                                                "latlng" : {
+                                                        "lat" : {LAT},
+                                                        "lon" : {LON}
+                                                }
+                                        }
+                                }
+                        }
+                }
+        }
+}

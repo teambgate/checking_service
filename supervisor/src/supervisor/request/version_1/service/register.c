@@ -128,97 +128,6 @@ static int __validate_input(struct supervisor *p, int fd, u32 mask, struct smart
         return 1;
 }
 
-// /*
-//  * reserve user name
-//  */
-// static void __reserve_user_name_callback(struct callback_user_data *p, struct smart_object *recv)
-// {
-//         struct smart_object *data = smart_object_get_object(recv, qskey(&__key_data__), SMART_GET_REPLACE_IF_WRONG_TYPE);
-//         struct string *result   = smart_object_get_string(data, qlkey("result"), SMART_GET_REPLACE_IF_WRONG_TYPE);
-//         struct string *_id      = smart_object_get_string(data, qlkey("_id"), SMART_GET_REPLACE_IF_WRONG_TYPE);
-//         if(strcmp(result->ptr, "created") == 0 && _id->len) {
-//                 /*
-//                  * created successfuly
-//                  */
-//                 struct smart_object *res = smart_object_alloc();
-//                 smart_object_set_long(res, qskey(&__key_request_id__), smart_object_get_long(p->obj, qskey(&__key_request_id__), 0));
-//                 smart_object_set_bool(res, qskey(&__key_result__), 1);
-//                 smart_object_set_string(res, qskey(&__key_message__), qlkey("success"));
-//
-//                 struct string *d        = smart_object_to_json(res);
-//                 supervisor_send_to_client(p->p, p->fd, p->mask, d->ptr, d->len, 0);
-//                 string_free(d);
-//                 smart_object_free(res);
-//
-//                 callback_user_data_free(p);
-//         } else {
-//                 /*
-//                  * failed
-//                  */
-//                 __response_invalid_data(p->p, p->fd, p->mask,  p->obj, qlkey("user name is not avaliable!\n"));
-//                 callback_user_data_free(p);
-//         }
-// }
-// /*
-//  * validate user name
-//  */
-// static void __validate_user_name_callback(struct callback_user_data *p, struct smart_object *result)
-// {
-//         struct smart_object *data = smart_object_get_object(result, qskey(&__key_data__), SMART_GET_REPLACE_IF_WRONG_TYPE);
-//
-//         struct smart_object *hits = smart_object_get_object(data, qlkey("hits"), SMART_GET_REPLACE_IF_WRONG_TYPE);
-//         int total = smart_object_get_int(hits, qlkey("total"), SMART_GET_REPLACE_IF_WRONG_TYPE);
-//
-//         if(total <= 0) {
-//                 struct string *es_version_code = smart_object_get_string(p->p->config, qlkey("es_version_code"), SMART_GET_REPLACE_IF_WRONG_TYPE);
-//                 struct string *es_pass = smart_object_get_string(p->p->config, qlkey("es_pass"), SMART_GET_REPLACE_IF_WRONG_TYPE);
-//
-//                 struct string *name             = smart_object_get_string(p->obj, qskey(&__key_name__), SMART_GET_REPLACE_IF_WRONG_TYPE);
-//                 struct string *user_name        = smart_object_get_string(p->obj, qskey(&__key_user_name__), SMART_GET_REPLACE_IF_WRONG_TYPE);
-//                 struct string *user_pass        = smart_object_get_string(p->obj, qskey(&__key_user_pass__), SMART_GET_REPLACE_IF_WRONG_TYPE);
-//
-//                 struct string *current_time     = current_time_to_string();
-//
-//                 struct smart_object *request_data = cs_request_data_from_file(
-//                         "res/supervisor/service/create.json", FILE_INNER,
-//                         qskey(es_version_code), qskey(es_pass));
-//
-//                 struct smart_object *request_data_data = smart_object_get_object(request_data, qskey(&__key_data__), SMART_GET_REPLACE_IF_WRONG_TYPE);
-//                 smart_object_set_string(request_data_data, qskey(&__key_name__), qskey(name));
-//                 smart_object_set_string(request_data_data, qskey(&__key_user_name__), qskey(user_name));
-//                 smart_object_set_string(request_data_data, qskey(&__key_user_pass__), qskey(user_pass));
-//                 smart_object_set_string(request_data_data, qskey(&__key_reserved__), qskey(current_time));
-//
-//                 cs_request_alloc(p->p->es_server_requester, request_data, (cs_request_callback)__reserve_user_name_callback, p);
-//
-//                 string_free(current_time);
-//         } else {
-//                 __response_invalid_data(p->p, p->fd, p->mask,  p->obj, qlkey("user name is not avaliable!\n"));
-//                 callback_user_data_free(p);
-//         }
-// }
-//
-// static void __validate_user_name(struct supervisor *p, int fd, u32 mask, struct smart_object *obj)
-// {
-//         struct string *user_name = smart_object_get_string(obj, qskey(&__key_user_name__), SMART_GET_REPLACE_IF_WRONG_TYPE);
-//
-//         struct string *es_version_code = smart_object_get_string(p->config, qlkey("es_version_code"), SMART_GET_REPLACE_IF_WRONG_TYPE);
-//         struct string *es_pass = smart_object_get_string(p->config, qlkey("es_pass"), SMART_GET_REPLACE_IF_WRONG_TYPE);
-//
-//         struct smart_object *request_data = cs_request_data_from_file("res/supervisor/service/search_by_username.json", FILE_INNER,
-//                 qskey(es_version_code), qskey(es_pass));
-//
-//         struct smart_object *request_data_data = smart_object_get_object(request_data, qskey(&__key_data__), SMART_GET_REPLACE_IF_WRONG_TYPE);
-//         struct smart_object *query = smart_object_get_object(request_data_data, qlkey("query"), SMART_GET_REPLACE_IF_WRONG_TYPE);
-//         struct smart_object *match = smart_object_get_object(query, qlkey("match"), SMART_GET_REPLACE_IF_WRONG_TYPE);
-//         smart_object_set_string(match, qskey(&__key_user_name__), qskey(user_name));
-//
-//         struct callback_user_data *cud = callback_user_data_alloc(p, fd, mask, obj);
-//
-//         cs_request_alloc(p->es_server_requester, request_data,
-//                 (cs_request_callback)__validate_user_name_callback, cud);
-// }
-
 static void __register_user_name_callback(struct callback_user_data *cud, struct smart_object *recv)
 {
         struct smart_object *data = smart_object_get_object(recv, qskey(&__key_data__), SMART_GET_REPLACE_IF_WRONG_TYPE);
@@ -250,7 +159,7 @@ static void __register_user_name(struct supervisor *p, int fd, u32 mask, struct 
         struct string *es_version_code = smart_object_get_string(p->config, qlkey("es_version_code"), SMART_GET_REPLACE_IF_WRONG_TYPE);
         struct string *es_pass = smart_object_get_string(p->config, qlkey("es_pass"), SMART_GET_REPLACE_IF_WRONG_TYPE);
 
-        struct smart_object *request_data = cs_request_data_from_file("res/supervisor/service/create.json", FILE_INNER,
+        struct smart_object *request_data = cs_request_data_from_file("res/supervisor/service/create/create.json", FILE_INNER,
                 qskey(es_version_code), qskey(es_pass));
 
         struct string *path = smart_object_get_string(request_data, qskey(&__key_path__), SMART_GET_REPLACE_IF_WRONG_TYPE);
@@ -271,7 +180,7 @@ static void __register_user_name(struct supervisor *p, int fd, u32 mask, struct 
                 (cs_request_callback)__register_user_name_callback, cud);
 }
 
-void supervisor_process_register_service_v1(struct supervisor *p, int fd, u32 mask, struct smart_object *obj)
+void supervisor_process_service_register_v1(struct supervisor *p, int fd, u32 mask, struct smart_object *obj)
 {
         if(!__validate_input(p, fd, mask, obj)) {
                 return;

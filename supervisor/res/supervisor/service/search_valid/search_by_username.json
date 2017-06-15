@@ -1,0 +1,29 @@
+{
+        "request" : "get",
+        "path"  : "/supervisor/service/_search",
+        "data"  : {
+                "version": true,
+                "query" : {
+                        "bool": {
+                                "must" : [
+                                        {
+                                                "term" : {
+                                                        "_id"   : "{USER_NAME}"
+                                                }
+                                        },
+                                        {
+                                                "term" : {
+                                                        "user_pass" : "{USER_PASS}"
+                                                }
+                                        },
+                                        {
+                                                "term" : {
+                                                        "validated" : 1
+                                                }
+                                        }
+                                ]
+                        }
+
+                }
+        }
+}

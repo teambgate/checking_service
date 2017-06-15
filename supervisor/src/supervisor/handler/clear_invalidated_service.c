@@ -32,27 +32,18 @@
  void supervisor_process_clear_invalidated_service(struct supervisor *p)
  {
          double offset = smart_object_get_double(p->config, qlkey("service_created_timeout"), SMART_GET_REPLACE_IF_WRONG_TYPE);
-         debug("offset %f\n", offset);
          struct string *last_time = offset_time_to_string(-offset);
 
          struct string *es_version_code = smart_object_get_string(p->config, qlkey("es_version_code"), SMART_GET_REPLACE_IF_WRONG_TYPE);
          struct string *es_pass = smart_object_get_string(p->config, qlkey("es_pass"), SMART_GET_REPLACE_IF_WRONG_TYPE);
 
-         struct smart_object *request_data = cs_request_data_from_file(
-                 "res/supervisor/service/delete_by_date.json", FILE_INNER,
+         struct string *content = cs_request_string_from_file("res/supervisor/service/delete/delete_by_date.json", FILE_INNER);
+         string_replace(content, "{LAST_TIME}", last_time->ptr);
+
+         struct smart_object *request_data = cs_request_data_from_string(
+                 qskey(content),
                  qskey(es_version_code), qskey(es_pass));
-
-        struct smart_object *request_data_data = smart_object_get_object(request_data, qskey(&__key_data__), SMART_GET_REPLACE_IF_WRONG_TYPE);
-        struct smart_object *query = smart_object_get_object(request_data_data, qlkey("query"), SMART_GET_REPLACE_IF_WRONG_TYPE);
-        struct smart_object *_bool = smart_object_get_object(query, qlkey("bool"), SMART_GET_REPLACE_IF_WRONG_TYPE);
-        struct smart_array *must = smart_object_get_array(_bool, qlkey("must"), SMART_GET_REPLACE_IF_WRONG_TYPE);
-        struct smart_object *must_1 = smart_array_get_object(must, 1, SMART_GET_REPLACE_IF_WRONG_TYPE);
-        struct smart_object *range = smart_object_get_object(must_1, qlkey("range"), SMART_GET_REPLACE_IF_WRONG_TYPE);
-        struct smart_object *reserved = smart_object_get_object(range, qlkey("reserved"), SMART_GET_REPLACE_IF_WRONG_TYPE);
-        struct string *to = smart_object_get_string(reserved, qlkey("to"), SMART_GET_REPLACE_IF_WRONG_TYPE);
-
-        to->len = 0;
-        string_cat_string(to, last_time);
+        string_free(content);
 
         cs_request_alloc(p->es_server_requester, request_data, (cs_request_callback)__delete_user_name_callback, p);
         string_free(last_time);

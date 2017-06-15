@@ -1,7 +1,0 @@
-{
-        "request" : "get",
-        "path"  : "/supervisor/service/{USER_NAME}",
-        "data"  : {
-                "version": true
-        }
-}
