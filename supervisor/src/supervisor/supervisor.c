@@ -136,11 +136,11 @@ static void __supervisor_check_old_and_close_client(struct supervisor *ws, int f
         for_i(i, ws->fd_invalids->len) {
                 struct client_step cfd = array_get(ws->fd_invalids, struct client_step, i);
                 if(cfd.fd == fd) {
-                        if(cfd.step < ws->step) {
+                        // if(cfd.step < ws->step) {
                                 array_remove(ws->fd_invalids, i);
-                        } else {
-                                can_close = 0;
-                        }
+                        // } else {
+                        //         can_close = 0;
+                        // }
 
                         break;
                 }
@@ -278,6 +278,8 @@ send_client:;
         struct smart_object *obj = smart_object_from_json(cb->buff->ptr, cb->buff->len, &counter);
         struct string *cmd = smart_object_get_string(obj, qskey(&__key_cmd__), SMART_GET_REPLACE_IF_WRONG_TYPE);
         supervisor_delegate *delegate = map_get_pointer(ws->delegates, qskey(cmd));
+        cb->requested_len       = 0;
+        cb->buff->len           = 0;
 
         if(*delegate) {
                 pthread_mutex_lock(&ws->client_data_mutex);
@@ -294,8 +296,6 @@ send_client:;
                 }
         }
         smart_object_free(obj);
-        cb->requested_len       = 0;
-        cb->buff->len           = 0;
 end:;
 }
 
@@ -461,13 +461,13 @@ void supervisor_start(struct supervisor *ws)
                 int i;
                 for_i(i, ws->fd_invalids->len) {
                         struct client_step cfd = array_get(ws->fd_invalids, struct client_step, i);
-                        if(cfd.step < ws->step) {
+                        // if(cfd.step < ws->step) {
                                 array_remove(ws->fd_invalids, i);
                                 pthread_mutex_unlock(&ws->client_data_mutex);
                                 __supervisor_close_client(ws, cfd.fd);
                                 pthread_mutex_lock(&ws->client_data_mutex);
                                 i--;
-                        }
+                        // }
                 }
                 pthread_mutex_unlock(&ws->client_data_mutex);
         }

@@ -151,7 +151,7 @@ int main( int argc, char** argv )
 {
         srand ( time(NULL) );
 
-        __setup_jni();
+        //__setup_jni();
 
         pthread_t tid[1];
         pthread_create(&tid[0], NULL, (void*(*)(void*))__read_input, (void*)NULL);
@@ -169,6 +169,6 @@ int main( int argc, char** argv )
 
         // goto begin;
 
-        (*jvm)->DestroyJavaVM( jvm );
+        //(*jvm)->DestroyJavaVM( jvm );
         return 0;
 }

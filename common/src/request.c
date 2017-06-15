@@ -174,7 +174,7 @@ static int __try_write(struct cs_requester *p, char *msg, size_t slen)
         send(p->listener, &num, sizeof(num), 0);
 
         while(bytes_send < slen) {
-                int sent = send(p->listener, ptr, len, 0);
+                int sent = send(p->listener, ptr, len, MSG_NOSIGNAL);
                 bytes_send += sent;
                 if(bytes_send < 0 || sent < 0) {
                         pthread_mutex_unlock(&p->write_mutex);

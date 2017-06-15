@@ -24,6 +24,8 @@
 #include <locale.h>
 #include <time.h>
 #include <cherry/crypt/md5.h>
+#include  <sys/types.h>
+
 
 static void callback(void *p, struct smart_object *data)
 {
@@ -34,12 +36,7 @@ static void callback(void *p, struct smart_object *data)
 
 int main(int argc, char **argv)
 {
-        struct string *test_md5 = md5_string(qlkey(""));
-        debug("md5 : %s\n", test_md5->ptr);
-        string_free(test_md5);
-
-        setlocale(LC_NUMERIC, "C");
-        int count = 0;
+        int i;
 start:;
         struct cs_requester *p  = cs_requester_alloc();
         cs_requester_connect(p, "127.0.0.1", 9999);
@@ -105,7 +102,7 @@ start:;
         //         sleep(1);
         // }
 
-        sleep(600);
+        sleep(6000);
         debug("free requester\n");
         cs_requester_free(p);
         sleep(1);
