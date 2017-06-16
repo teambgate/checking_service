@@ -71,6 +71,8 @@ struct cs_requester {
         struct string           *host;
         u16                     port;
 
+        u8                      valid;
+
         struct timeval          t1, t2;
 };
 

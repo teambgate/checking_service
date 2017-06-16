@@ -171,12 +171,19 @@ static int __try_write(struct cs_requester *p, char *msg, size_t slen)
         int len                 = slen;
         char *ptr               = msg;
         u32 num                 = htonl((u32)len);
-        send(p->listener, &num, sizeof(num), 0);
+        int first = send(p->listener, &num, sizeof(num), MSG_NOSIGNAL);
+
+        if(first <= 0) {
+                p->valid = 0;
+                pthread_mutex_unlock(&p->write_mutex);
+                return 0;
+        }
 
         while(bytes_send < slen) {
                 int sent = send(p->listener, ptr, len, MSG_NOSIGNAL);
                 bytes_send += sent;
-                if(bytes_send < 0 || sent < 0) {
+                if(bytes_send <= 0 || sent <= 0) {
+                        p->valid = 0;
                         pthread_mutex_unlock(&p->write_mutex);
                         return -1;
                 }
@@ -224,6 +231,7 @@ get_head:;
 
         pthread_mutex_lock(&p->read_mutex);
         while(!cs_requester_reconnect(p)) {
+                debug("try reconnect\n");
                 sleep(1);
                 if((*send_valid) == 0) {
                         pthread_mutex_unlock(&p->run_mutex);
@@ -231,18 +239,24 @@ get_head:;
                         goto finish;
                 }
         }
-
-        /*
-         * enable read
-         */
-        pthread_mutex_unlock(&p->read_mutex);
-        pthread_cond_signal(&p->read_cond);
+        p->valid = 1;
+        // /*
+        //  * enable read
+        //  */
+        // pthread_mutex_unlock(&p->read_mutex);
+        // pthread_cond_signal(&p->read_cond);
 
         struct cs_request *r    = (struct cs_request *)
                 ((char *)head - offsetof(struct cs_request, head));
         struct string *d        = smart_object_to_json(r->data);
         debug("start write\n");
         __try_write(p, qskey(d));
+
+        /*
+         * enable read
+         */
+        pthread_mutex_unlock(&p->read_mutex);
+        pthread_cond_signal(&p->read_cond);
 
 head_done:;
         string_free(d);
@@ -253,14 +267,16 @@ check_life_time:;
         /*
          * wait until server disconnect this socket
          */
-        pthread_mutex_lock(&p->write_mutex);
-        pthread_cond_wait(&p->write_cond, &p->write_mutex);
+        if(p->listener) {
+                pthread_mutex_lock(&p->write_mutex);
+                pthread_cond_wait(&p->write_cond, &p->write_mutex);
 
-        if((*send_valid) == 0) {
+                if((*send_valid) == 0) {
+                        pthread_mutex_unlock(&p->write_mutex);
+                        goto finish;
+                }
                 pthread_mutex_unlock(&p->write_mutex);
-                goto finish;
         }
-        pthread_mutex_unlock(&p->write_mutex);
 
         goto process_request;
 
@@ -295,7 +311,11 @@ process_request:;
         int msg_len;
         char *msg;
         debug("start read\n");
-        nbytes = recv(p->listener, recvbuf, MAX_RECV_BUF_LEN, 0);
+        if(p->valid)
+                nbytes = recv(p->listener, recvbuf, MAX_RECV_BUF_LEN, 0);
+        else {
+                nbytes = 0;
+        }
         msg = recvbuf;
         msg_len = nbytes;
 
@@ -407,6 +427,8 @@ struct cs_requester *cs_requester_alloc()
         p->port                 = 0;
         INIT_LIST_HEAD(&p->list);
         // spin_lock_init(&p->lock, 0);
+
+        p->valid                = 1;
 
         pthread_mutex_init(&p->run_mutex, NULL);
         pthread_mutex_init(&p->lock, NULL);

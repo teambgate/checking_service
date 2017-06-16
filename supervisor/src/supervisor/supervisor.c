@@ -190,13 +190,13 @@ static void __supervisor_send_to_client(struct supervisor *p, int fd, u32 mask, 
          */
         pthread_mutex_lock(&p->client_data_mutex);
         u32 num                 = htonl((u32)len);
-        send(fd, &num, sizeof(num), 0);
+        send(fd, &num, sizeof(num), MSG_NOSIGNAL);
 
         /*
          * send packet content
          */
         while(bytes_send < slen) {
-                bytes_send += send(fd, ptr, len, 0);
+                bytes_send += send(fd, ptr, len, MSG_NOSIGNAL);
                 if(bytes_send < 0) {
                         break;
                 }
