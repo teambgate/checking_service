@@ -41,13 +41,12 @@
 #include <common/error.h>
 #include <common/request.h>
 #include <common/util.h>
-
-#include <supervisor/callback_user_data.h>
+#include <common/cs_server.h>
 
 /*
  * response invalid data
  */
-static void __response_invalid_data(struct supervisor *p, int fd, u32 mask, struct smart_object *obj, char *msg, size_t msg_len)
+static void __response_invalid_data(struct cs_server *p, int fd, u32 mask, struct smart_object *obj, char *msg, size_t msg_len)
 {
         struct smart_object *res = smart_object_alloc();
         smart_object_set_long(res, qskey(&__key_request_id__), smart_object_get_long(obj, qskey(&__key_request_id__), 0));
@@ -56,7 +55,7 @@ static void __response_invalid_data(struct supervisor *p, int fd, u32 mask, stru
         smart_object_set_long(res, qskey(&__key_error__), ERROR_DATA_INVALID);
 
         struct string *d        = smart_object_to_json(res);
-        supervisor_send_to_client(p, fd, mask, d->ptr, d->len, 0);
+        cs_server_send_to_client(p, fd, mask, d->ptr, d->len, 0);
         string_free(d);
         smart_object_free(res);
 }
@@ -64,7 +63,7 @@ static void __response_invalid_data(struct supervisor *p, int fd, u32 mask, stru
 /*
  * response success
  */
-static void __response_success(struct supervisor *p, int fd, u32 mask, struct smart_object *obj, char *msg, size_t msg_len)
+static void __response_success(struct cs_server *p, int fd, u32 mask, struct smart_object *obj, char *msg, size_t msg_len)
 {
         struct smart_object *res = smart_object_alloc();
         smart_object_set_long(res, qskey(&__key_request_id__), smart_object_get_long(obj, qskey(&__key_request_id__), 0));
@@ -72,7 +71,7 @@ static void __response_success(struct supervisor *p, int fd, u32 mask, struct sm
         smart_object_set_string(res, qskey(&__key_message__), msg, msg_len);
 
         struct string *d        = smart_object_to_json(res);
-        supervisor_send_to_client(p, fd, mask, d->ptr, d->len, 0);
+        cs_server_send_to_client(p, fd, mask, d->ptr, d->len, 0);
         string_free(d);
         smart_object_free(res);
 }
@@ -80,7 +79,7 @@ static void __response_success(struct supervisor *p, int fd, u32 mask, struct sm
 /*
  * validate input
  */
-static int __validate_input(struct supervisor *p, int fd, u32 mask, struct smart_object *obj)
+static int __validate_input(struct cs_server *p, int fd, u32 mask, struct smart_object *obj)
 {
         struct string *service_pass = smart_object_get_string(p->config, qlkey("service_pass"), SMART_GET_REPLACE_IF_WRONG_TYPE);
         struct string *pass = smart_object_get_string(obj, qskey(&__key_pass__), SMART_GET_REPLACE_IF_WRONG_TYPE);
@@ -114,7 +113,7 @@ static int __validate_input(struct supervisor *p, int fd, u32 mask, struct smart
         return 1;
 }
 
-static void __update_latlng_callback(struct callback_user_data *cud, struct smart_object *recv)
+static void __update_latlng_callback(struct cs_server_callback_user_data *cud, struct smart_object *recv)
 {
         struct smart_object *data = smart_object_get_object(recv, qskey(&__key_data__), SMART_GET_REPLACE_IF_WRONG_TYPE);
         int _version = smart_object_get_int(data, qlkey("_version"), SMART_GET_REPLACE_IF_WRONG_TYPE);
@@ -139,11 +138,14 @@ static void __update_latlng_callback(struct callback_user_data *cud, struct smar
                 }
         }
 
-        callback_user_data_free(cud);
+        cs_server_callback_user_data_free(cud);
 }
 
-static void __get_location_callback(struct callback_user_data *cud, struct smart_object *recv)
+static void __get_location_callback(struct cs_server_callback_user_data *cud, struct smart_object *recv)
 {
+        struct supervisor *supervisor = (struct supervisor *)
+                ((char *)cud->p->user_head.next - offsetof(struct supervisor , server));
+
         struct smart_object *data = smart_object_get_object(recv, qskey(&__key_data__), SMART_GET_REPLACE_IF_WRONG_TYPE);
 
         struct smart_object *hits = smart_object_get_object(data, qlkey("hits"), SMART_GET_REPLACE_IF_WRONG_TYPE);
@@ -182,17 +184,20 @@ static void __get_location_callback(struct callback_user_data *cud, struct smart
 
                 string_free(content);
 
-                cs_request_alloc(cud->p->es_server_requester, request_data,
+                cs_request_alloc(supervisor->es_server_requester, request_data,
                         (cs_request_callback)__update_latlng_callback, cud);
         } else {
                 __response_invalid_data(cud->p, cud->fd, cud->mask,  cud->obj,
                         qlkey("User not found or wrong password!\n"));
-                callback_user_data_free(cud);
+                cs_server_callback_user_data_free(cud);
         }
 }
 
-static void __update_location(struct supervisor *p, int fd, u32 mask, struct smart_object *obj)
+static void __update_location(struct cs_server *p, int fd, u32 mask, struct smart_object *obj)
 {
+        struct supervisor *supervisor = (struct supervisor *)
+                ((char *)p->user_head.next - offsetof(struct supervisor , server));
+
         struct string *user_name = smart_object_get_string(obj, qskey(&__key_user_name__), SMART_GET_REPLACE_IF_WRONG_TYPE);
         struct string *device_id = smart_object_get_string(obj, qskey(&__key_device_id__), SMART_GET_REPLACE_IF_WRONG_TYPE);
         struct string *user_pass = smart_object_get_string(obj, qskey(&__key_user_pass__), SMART_GET_REPLACE_IF_WRONG_TYPE);
@@ -211,13 +216,13 @@ static void __update_location(struct supervisor *p, int fd, u32 mask, struct sma
 
         string_free(content);
 
-        struct callback_user_data *cud = callback_user_data_alloc(p, fd, mask, obj);
+        struct cs_server_callback_user_data *cud = cs_server_callback_user_data_alloc(p, fd, mask, obj);
 
-        cs_request_alloc(p->es_server_requester, request_data,
+        cs_request_alloc(supervisor->es_server_requester, request_data,
                 (cs_request_callback)__get_location_callback, cud);
 }
 
-void supervisor_process_location_update_latlng_v1(struct supervisor *p, int fd, u32 mask, struct smart_object *obj)
+void supervisor_process_location_update_latlng_v1(struct cs_server *p, int fd, u32 mask, struct smart_object *obj)
 {
         if(!__validate_input(p, fd, mask, obj)) {
                 return;

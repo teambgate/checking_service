@@ -1,6 +1,0 @@
-{
-        "request" : "put",
-        "path"  : "/supervisor",
-        "data"  : {
-        }
-}

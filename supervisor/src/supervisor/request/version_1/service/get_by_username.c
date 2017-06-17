@@ -42,9 +42,7 @@
 #include <common/request.h>
 #include <common/util.h>
 
-#include <supervisor/callback_user_data.h>
-
-void supervisor_process_service_get_by_username_v1(struct supervisor *p, int fd, u32 mask, struct smart_object *obj)
+void supervisor_process_service_get_by_username_v1(struct cs_server *p, int fd, u32 mask, struct smart_object *obj)
 {
 
 }

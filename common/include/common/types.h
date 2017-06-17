@@ -18,6 +18,7 @@
 extern "C" {
 #endif
 
+#include <cherry/server/types.h>
 #include <cherry/types.h>
 #include <smartfox/types.h>
 #include <sys/time.h>
@@ -28,6 +29,9 @@ extern "C" {
         .ptr = str              \
 };
 
+/*
+ * cs requester
+ */
 typedef void(*cs_request_callback)(void*, struct smart_object *);
 
 struct cs_request {
@@ -74,6 +78,55 @@ struct cs_requester {
         u8                      valid;
 
         struct timeval          t1, t2;
+};
+
+/*
+ * cs tcp server
+ */
+struct cs_server;
+typedef void(*cs_server_delegate)(struct cs_server *, int fd, u32 mask, struct smart_object *);
+
+struct cs_client_buffer {
+        struct string   *buff;
+        u32             requested_len;
+};
+
+typedef void(*cs_server_handler_delegate)(struct cs_server *);
+
+struct cs_server_handler {
+        struct list_head                head;
+
+        cs_server_handler_delegate      delegate;
+        double                          time_rate;
+        struct timeval                  last_executed_time;
+};
+
+struct cs_server_callback_user_data {
+        struct cs_server *p;
+        int fd;
+        u32 mask;
+        struct smart_object *obj;
+};
+
+struct cs_server {
+        struct file_descriptor_set      *master;
+        struct file_descriptor_set      *incomming;
+        int                             fdmax;
+        int                             listener;
+        struct string                   *root;
+
+        struct list_head                user_head;
+
+        struct array                    *fd_mask;
+        struct array                    *fd_invalids;
+
+        struct list_head                handlers;
+        struct map                      *delegates;
+
+        pthread_mutex_t                 client_data_mutex;
+        struct map                      *clients_datas;
+
+        struct smart_object             *config;
 };
 
 #ifdef __cplusplus

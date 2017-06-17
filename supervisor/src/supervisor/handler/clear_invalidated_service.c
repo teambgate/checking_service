@@ -21,16 +21,20 @@
  #include <common/key.h>
  #include <cherry/time.h>
  #include <cherry/stdio.h>
+ #include <common/cs_server.h>
 
- static void __delete_user_name_callback(struct supervisor *p, struct smart_object *result)
+ static void __delete_user_name_callback(struct cs_server *p, struct smart_object *result)
  {
          struct string *res = smart_object_to_json(result);
          debug("delete user name : %s\n", res->ptr);
          string_free(res);
  }
 
- void supervisor_process_clear_invalidated_service(struct supervisor *p)
+ void supervisor_process_clear_invalidated_service(struct cs_server *p)
  {
+         struct supervisor *supervisor = (struct supervisor *)
+                 ((char *)p->user_head.next - offsetof(struct supervisor , server));
+
          double offset = smart_object_get_double(p->config, qlkey("service_created_timeout"), SMART_GET_REPLACE_IF_WRONG_TYPE);
          struct string *last_time = offset_time_to_string(-offset);
 
@@ -45,6 +49,6 @@
                  qskey(es_version_code), qskey(es_pass));
         string_free(content);
 
-        cs_request_alloc(p->es_server_requester, request_data, (cs_request_callback)__delete_user_name_callback, p);
+        cs_request_alloc(supervisor->es_server_requester, request_data, (cs_request_callback)__delete_user_name_callback, p);
         string_free(last_time);
  }

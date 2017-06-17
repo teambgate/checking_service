@@ -15,6 +15,7 @@
 #define __CHECKING_SERVICE_SUPERVISOR_SUPERVISOR_H__
 
 #include <supervisor/types.h>
+#include <common/types.h>
 
 struct supervisor *supervisor_alloc();
 
@@ -22,24 +23,22 @@ void supervisor_start(struct supervisor *p);
 
 void supervisor_free(struct supervisor *p);
 
-void supervisor_send_to_client(struct supervisor *p, int fd, u32 mask, char *ptr, int len, u8 keep);
-
 /*
  * request delegate
  */
-void supervisor_process_get_service(struct supervisor *p, int fd, u32 mask, struct smart_object *obj);
-void supervisor_process_service_register(struct supervisor *p, int fd, u32 mask, struct smart_object *obj);
-void supervisor_process_service_get_by_username(struct supervisor *p, int fd, u32 mask, struct smart_object *obj);
-void supervisor_process_service_validate(struct supervisor *p, int fd, u32 mask, struct smart_object *obj);
+void supervisor_process_get_service(struct cs_server *p, int fd, u32 mask, struct smart_object *obj);
+void supervisor_process_service_register(struct cs_server *p, int fd, u32 mask, struct smart_object *obj);
+void supervisor_process_service_get_by_username(struct cs_server *p, int fd, u32 mask, struct smart_object *obj);
+void supervisor_process_service_validate(struct cs_server *p, int fd, u32 mask, struct smart_object *obj);
 
-void supervisor_process_location_register(struct supervisor *p, int fd, u32 mask, struct smart_object *obj);
-void supervisor_process_location_update_latlng(struct supervisor *p, int fd, u32 mask, struct smart_object *obj);
-void supervisor_process_location_update_ip_port(struct supervisor *p, int fd, u32 mask, struct smart_object *obj);
-void supervisor_process_location_search_nearby(struct supervisor *p, int fd, u32 mask, struct smart_object *obj);
+void supervisor_process_location_register(struct cs_server *p, int fd, u32 mask, struct smart_object *obj);
+void supervisor_process_location_update_latlng(struct cs_server *p, int fd, u32 mask, struct smart_object *obj);
+void supervisor_process_location_update_ip_port(struct cs_server *p, int fd, u32 mask, struct smart_object *obj);
+void supervisor_process_location_search_nearby(struct cs_server *p, int fd, u32 mask, struct smart_object *obj);
 
 /*
  * handle delegate
  */
-void supervisor_process_clear_invalidated_service(struct supervisor *p);
+void supervisor_process_clear_invalidated_service(struct cs_server *p);
 
 #endif

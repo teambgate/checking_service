@@ -1,7 +1,0 @@
-{
-        "request" : "post",
-        "path"  : "/supervisor/service",
-        "data"  : {
-                "name"          : "BGATE Corp"
-        }
-}

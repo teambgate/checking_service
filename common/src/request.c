@@ -228,7 +228,6 @@ get_head:;
                 goto get_head;
         }
 
-
         pthread_mutex_lock(&p->read_mutex);
         while(!cs_requester_reconnect(p)) {
                 debug("try reconnect\n");
@@ -240,11 +239,6 @@ get_head:;
                 }
         }
         p->valid = 1;
-        // /*
-        //  * enable read
-        //  */
-        // pthread_mutex_unlock(&p->read_mutex);
-        // pthread_cond_signal(&p->read_cond);
 
         struct cs_request *r    = (struct cs_request *)
                 ((char *)head - offsetof(struct cs_request, head));
@@ -311,9 +305,9 @@ process_request:;
         int msg_len;
         char *msg;
         debug("start read\n");
-        if(p->valid)
+        if(p->valid) {
                 nbytes = recv(p->listener, recvbuf, MAX_RECV_BUF_LEN, 0);
-        else {
+        } else {
                 nbytes = 0;
         }
         msg = recvbuf;
@@ -465,6 +459,7 @@ static void *get_in_addr(struct sockaddr *sa)
 
 int cs_requester_reconnect(struct cs_requester *requester)
 {
+        debug("start reconnect\n");
         char *host = requester->host->ptr;
         u16 port = requester->port;
 
@@ -487,22 +482,27 @@ int cs_requester_reconnect(struct cs_requester *requester)
                 return 0;
         }
         string_free(ports);
+        debug("finish get addr\n");
 
         for(p = servinfo; p != NULL; p = p->ai_next) {
+                debug("try listen 1\n");
                 if ((requester->listener = socket(p->ai_family, p->ai_socktype,
                                 p->ai_protocol)) == -1) {
                         perror("client: socket");
                         continue;
                 }
+                debug("try listen 2\n");
 
                 if (connect(requester->listener, p->ai_addr, p->ai_addrlen) == -1) {
                         close(requester->listener);
                         perror("client: connect");
                         continue;
                 }
+                debug("try listen 3\n");
 
                 break;
         }
+        debug("finish listen\n");
 
         if (p == NULL) {
                 fprintf(stderr, "client: failed to connect\n");
@@ -514,6 +514,7 @@ int cs_requester_reconnect(struct cs_requester *requester)
         debug("requester client: connecting to %s\n", s);
 
         freeaddrinfo(servinfo);
+        debug("finish reconnect\n");
 
         return 1;
 }
