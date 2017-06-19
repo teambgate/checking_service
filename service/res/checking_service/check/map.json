@@ -1,0 +1,19 @@
+{
+        "request" : "put",
+        "path"  : "/checking_service/_mapping/check",
+        "data"  : {
+                "_parent" : {
+                        "type" : "user"
+                },
+                "properties" : {
+                        "check_in" : {
+                                "type" : "date",
+                                "format": "yyyy-MM-dd HH:mm:ss"
+                        },
+                        "check_out" : {
+                                "type" : "date",
+                                "format": "yyyy-MM-dd HH:mm:ss"
+                        }
+                }
+        }
+}

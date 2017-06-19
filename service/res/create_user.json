@@ -1,9 +1,0 @@
-{
-        "request" : "post",
-        "path"  : "/root/user?parent=123456",
-        "data"  : {
-                "name"          : "Tran Duc Manh",
-                "dob"           : "1991-10-16",
-                "job"           : "Programmer"
-        }
-}

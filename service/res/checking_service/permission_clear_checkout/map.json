@@ -1,0 +1,9 @@
+{
+        "request" : "put",
+        "path"  : "/checking_service/_mapping/permission_clear_checkout",
+        "data"  : {
+                "_parent" : {
+                        "type" : "user"
+                }
+        }
+}

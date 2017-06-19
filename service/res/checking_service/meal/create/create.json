@@ -1,0 +1,7 @@
+{
+        "request" : "post",
+        "path"  : "/checking_service/meal/_create",
+        "data"  : {
+                "name"          : "{NAME}"
+        }
+}

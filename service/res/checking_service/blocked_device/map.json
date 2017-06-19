@@ -1,0 +1,12 @@
+{
+        "request" : "put",
+        "path"  : "/checking_service/_mapping/blocked_device",
+        "data"  : {
+                "properties" : {
+                        "start_time" : {
+                                "type" : "date",
+                                "format": "yyyy-MM-dd HH:mm:ss"
+                        }
+                }
+        }
+}

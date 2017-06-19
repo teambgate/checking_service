@@ -1,0 +1,8 @@
+{
+        "request" : "post",
+        "path"  : "/checking_service/dish/{ID}/_create?parent={PARENT_ID}",
+        "data"  : {
+                "name"          :       "{MEAL_NAME}",
+                "meal_id"       :       "{MEAL_ID}"
+        }
+}

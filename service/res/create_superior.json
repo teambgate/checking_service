@@ -1,9 +1,0 @@
-{
-        "request" : "post",
-        "path"  : "/root/superior?parent=AVwwh53qY6jO9cMsXxUT",
-        "data"  : {
-                "id"    : "",
-                "begin" : "1970-01-01",
-                "end"   : "9999-01-01"
-        }
-}

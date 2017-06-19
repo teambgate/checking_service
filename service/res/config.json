@@ -1,0 +1,17 @@
+{
+        "service_port"                  : 8989,
+        "service_root"                  : "./",
+        "service_pass"                  : "123456",
+
+        "es_host"                       : "127.0.0.1",
+        "es_port"                       : 9898,
+        "es_pass"                       : "123456",
+        "es_version_code"               : "1",
+
+        "supervisor_host"               : "127.0.0.1",
+        "supervisor_port"               : 9999,
+        "supervisor_pass"               : "123456",
+        "supervisor_version_code"       : "1",
+
+        "packet_size_limit"             : "2M"
+}

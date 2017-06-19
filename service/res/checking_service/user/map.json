@@ -1,0 +1,6 @@
+{
+        "request" : "put",
+        "path"  : "/checking_service/_mapping/user",
+        "data"  : {
+        }
+}

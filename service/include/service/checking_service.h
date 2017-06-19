@@ -11,23 +11,25 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  */
-#ifndef __CHECKING_SERVICE_CHECKING_SERVICE_TYPES_H__
-#define __CHECKING_SERVICE_CHECKING_SERVICE_TYPES_H__
+#ifndef __CHECKING_SERVICE_CHECKING_SERVICE_H__
+#define __CHECKING_SERVICE_CHECKING_SERVICE_H__
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#include <cherry/server/types.h>
-#include <smartfox/types.h>
-#include <common/types.h>
+#include <service/types.h>
 
-struct checking_service {
-        struct list_head        server;
+struct checking_service *checking_service_alloc();
 
-        struct cs_requester     *supervisor_requester;
-        struct cs_requester     *es_server_requester;
-};
+void checking_service_start(struct checking_service *p);
+
+void checking_service_free(struct checking_service *p);
+
+/*
+ * request delegate
+ */
+
 
 #ifdef __cplusplus
 }

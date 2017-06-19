@@ -1,0 +1,15 @@
+{
+        "request" : "put",
+        "path"  : "/checking_service/_mapping/device",
+        "data"  : {
+                "_parent" : {
+                        "type" : "user"
+                },
+                "properties" : {
+                        "device_id": {
+                                "type" : "string",
+                                "index": "not_analyzed"
+                        }
+                }
+        }
+}

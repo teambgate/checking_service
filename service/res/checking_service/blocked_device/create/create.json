@@ -1,0 +1,7 @@
+{
+        "request" : "post",
+        "path"  : "/checking_service/blocked_device/{ID}/_create",
+        "data"  : {
+                "start_time"      : "{START_TIME}"
+        }
+}

@@ -1,0 +1,8 @@
+{
+        "request" : "post",
+        "path"  : "/checking_service/check/{ID}/_create?parent={PARENT_ID}",
+        "data"  : {
+                "check_in"      : "1900-01-01 00:00:00",
+                "check_out"     : "1900-01-01 00:00:00"
+        }
+}

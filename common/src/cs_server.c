@@ -398,12 +398,12 @@ void cs_server_start(struct cs_server *ws, u16 port)
                 file_descriptor_set_assign(ws->incomming, ws->master);
                 pthread_mutex_unlock(&ws->client_data_mutex);
 
-                // debug("cs_server: start select\n");
+                debug("cs_server: start select\n");
                 if(select(ws->fdmax + 1, ws->incomming->set->ptr, NULL, NULL, NULL) == -1) {
                         perror("select");
                         break;
                 }
-                // debug("cs_server: process select\n");
+                debug("cs_server: process select\n");
 
                 /*
                  * process handlers
@@ -448,19 +448,19 @@ void cs_server_start(struct cs_server *ws, u16 port)
                                                         get_in_addr((struct sockaddr *)&remoteaddr),
                                                         remoteIP, INET6_ADDRSTRLEN), newfd);
 
-                                        {
-                                                socklen_t client_len = sizeof(struct sockaddr_storage);
-
-                                                char hoststr[NI_MAXHOST];
-                                                char portstr[NI_MAXSERV];
-
-                                                int rc = getnameinfo((struct sockaddr *)&remoteaddr,
-                                                    client_len, hoststr, sizeof(hoststr), portstr, sizeof(portstr),
-                                                    NI_NUMERICHOST | NI_NUMERICSERV);
-
-                                                if (rc == 0)
-                                                    printf("New connection from %s %s\n", hoststr, portstr);
-                                        }
+                                        // {
+                                        //         socklen_t client_len = sizeof(struct sockaddr_storage);
+                                        //
+                                        //         char hoststr[NI_MAXHOST];
+                                        //         char portstr[NI_MAXSERV];
+                                        //
+                                        //         int rc = getnameinfo((struct sockaddr *)&remoteaddr,
+                                        //             client_len, hoststr, sizeof(hoststr), portstr, sizeof(portstr),
+                                        //             NI_NUMERICHOST | NI_NUMERICSERV);
+                                        //
+                                        //         if (rc == 0)
+                                        //             printf("New connection from %s %s\n", hoststr, portstr);
+                                        // }
                                         array_reserve(ws->fd_mask, newfd + 1);
                                         u32 mask = array_get(ws->fd_mask, u32, newfd);
                                         mask++;

@@ -1,0 +1,7 @@
+{
+        "request" : "post",
+        "path"  : "/checking_service/user/{ID}/_create",
+        "data"  : {
+                "name"  : "{USER_NAME}"
+        }
+}

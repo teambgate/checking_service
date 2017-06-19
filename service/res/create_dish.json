@@ -1,8 +1,0 @@
-{
-        "request" : "post",
-        "path"  : "/root/dish?parent=AVwwh53qY6jO9cMsXxUT",
-        "data"  : {
-                "name"          : "Cơm",
-                "type"          : 0
-        }
-}

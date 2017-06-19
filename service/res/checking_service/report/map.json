@@ -1,0 +1,15 @@
+{
+        "request" : "put",
+        "path"  : "/checking_service/_mapping/report",
+        "data"  : {
+                "_parent" : {
+                        "type" : "user"
+                },
+                "properties" : {
+                        "time_created" : {
+                                "type" : "date",
+                                "format": "yyyy-MM-dd HH:mm:ss"
+                        }
+                }
+        }
+}

@@ -1,8 +1,0 @@
-{
-        "request" : "post",
-        "path"  : "/root/device?parent=AVwwh53qY6jO9cMsXxUT",
-        "data"  : {
-                "uuid"          : "123456",
-                "name"          : "iPhone 6s"
-        }
-}

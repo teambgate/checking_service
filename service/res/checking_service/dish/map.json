@@ -1,0 +1,9 @@
+{
+        "request" : "put",
+        "path"  : "/checking_service/_mapping/dish",
+        "data"  : {
+                "_parent" : {
+                        "type" : "user"
+                }
+        }
+}

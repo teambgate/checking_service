@@ -1,0 +1,23 @@
+{
+        "request" : "put",
+        "path"  : "/checking_service/_mapping/report_to",
+        "data"  : {
+                "_parent" : {
+                        "type" : "user"
+                },
+                "properties" : {
+                        "to": {
+                                "type" : "string",
+                                "index": "not_analyzed"
+                        },
+                        "date_start" : {
+                                "type" : "date",
+                                "format": "yyyy-MM-dd HH:mm:ss"
+                        },
+                        "date_end" : {
+                                "type" : "date",
+                                "format": "yyyy-MM-dd HH:mm:ss"
+                        }
+                }
+        }
+}

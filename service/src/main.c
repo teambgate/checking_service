@@ -1,114 +1,163 @@
 /*
- * Copyright (C) 2017 Manh Tran
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- */
-#include <common/request.h>
-#include <cherry/unistd.h>
-#include <smartfox/data.h>
-#include <cherry/map.h>
+* Copyright (C) 2017 Manh Tran
+*
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation; either version 2 of the License, or
+* (at your option) any later version.
+*
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+*/
 #include <cherry/array.h>
-#include <common/key.h>
-#include <common/command.h>
+#include <cherry/map.h>
+#include <cherry/stdio.h>
 #include <cherry/memory.h>
 #include <cherry/string.h>
-#include <cherry/stdio.h>
-#include <locale.h>
-#include <time.h>
-#include <cherry/crypt/md5.h>
-#include  <sys/types.h>
+#include <cherry/stdlib.h>
+#include <cherry/unistd.h>
+#include <cherry/ctype.h>
+#include <cherry/time.h>
+#include <s2/types.h>
 
+#include <smartfox/data.h>
+#include <service/checking_service.h>
 
-static void callback(void *p, struct smart_object *data)
+#include <pthread.h>
+
+static JavaVM*  jvm;
+JNIEnv*         __jni_env;
+
+static struct checking_service *s = NULL;
+
+static void __setup_jni()
 {
-        struct string *j = smart_object_to_json(data);
-        debug("receive : %s\n",j->ptr);
-        string_free(j);
+        JNIEnv*                 env;
+        JavaVMInitArgs          vm_args;
+        JavaVMOption            options[10];
+
+        int oi = 0;
+        options[oi++].optionString = "-Djava.class.path=./s2.jar";
+
+        vm_args.version                 = JNI_VERSION_1_4;
+        vm_args.options                 = options;
+        vm_args.nOptions                = oi;
+        vm_args.ignoreUnrecognized      = 1;
+
+        JNI_CreateJavaVM( &jvm, (void**)&env, &vm_args );
+
+        __jni_env = env;
 }
 
-int main(int argc, char **argv)
+static struct smart_object *__parse_input(char *line, int len)
 {
-        int i;
-start:;
-        struct cs_requester *p  = cs_requester_alloc();
-        cs_requester_connect(p, "127.0.0.1", 9999);
+        int counter             = 0;
+        int start               = 0;
+        int end                 = 0;
+        struct smart_object *p    = smart_object_alloc();
+        struct string *key      = string_alloc(0);
+        struct string *val      = string_alloc(0);
 
-        for(int i = 0; i < 10000; i++) {
-                struct smart_object *data = smart_object_alloc();
-                smart_object_set_string(data, qskey(&__key_version__), qlkey("1"));
-                smart_object_set_string(data, qskey(&__key_cmd__), qskey(&__cmd_location_search_nearby__));
-                smart_object_set_string(data, qskey(&__key_pass__), qlkey("123456"));
-                smart_object_set_string(data, qskey(&__key_name__), qlkey("BGATE CORP"));
-                smart_object_set_string(data, qskey(&__key_user_name__), qlkey("bui_thi_xuan"));
-                smart_object_set_string(data, qskey(&__key_user_pass__), qlkey("12345678"));
-                smart_object_set_string(data, qskey(&__key_device_id__), qlkey("Manh Ubuntu"));
-                smart_object_set_string(data, qskey(&__key_validate_code__), qlkey("EKir8cdX"));
-                // smart_object_set_int(data, qskey(&__key_id__), 1);
-                smart_object_set_string(data, qskey(&__key_ip__), qlkey("192.168.1.218"));
-                smart_object_set_long(data, qskey(&__key_port__), 50000);
-                smart_object_set_string(data, qskey(&__key_location_name__), qlkey("Sang Tao"));
-                struct smart_object *latlng = smart_object_get_object(data, qskey(&__key_latlng__), SMART_GET_REPLACE_IF_WRONG_TYPE);
-                smart_object_set_double(latlng, qskey(&__key_lat__), 23);
-                smart_object_set_double(latlng, qskey(&__key_lon__), 99.122);
+#define increase_count() \
+        counter++;      \
+        if(counter == len - 1) goto end;
 
-                cs_request_alloc(p, data, callback, p);
+find_cmd:;
+        if(isspace(line[counter])) {
+                increase_count()
+                goto find_cmd;
+        }
+        start   = counter;
+        end     = start;
+        increase_count()
+read_cmd:;
+        if( ! isspace(line[counter])) {
+                end = counter;
+                increase_count()
+                goto read_cmd;
+        }
+        smart_object_set_string(p, qlkey("cmd"), line + start, end - start + 1);
+
+find_argument:;
+        if(line[counter] != '-') {
+                increase_count();
+                goto find_argument;
+        }
+        increase_count()
+        start   = counter;
+        end     = start;
+        increase_count()
+read_argument:;
+        if( ! isspace(line[counter])) {
+                end = counter;
+                increase_count()
+                goto read_argument;
+        }
+        key->len = 0;
+        string_cat(key, line + start, end - start + 1);
+
+find_value:;
+        if(isspace(line[counter])) {
+                increase_count();
+                goto find_value;
+        }
+        start   = counter;
+        end     = start;
+        increase_count()
+read_value:;
+        if(line[counter] != '-') {
+                end = counter;
+                increase_count()
+                goto read_value;
+        }
+        val->len = 0;
+        string_cat(val, line + start, end - start + 1);
+        smart_object_set_string(p, key->ptr, key->len, val->ptr, val->len);
+
+        goto read_argument;
+
+end:;
+        string_free(val);
+        string_free(key);
+        return p;
+}
+
+static void __read_input(void *d)
+{
+#define BUFFER_LEN 1024
+get_line:;
+        char line[BUFFER_LEN];
+        int counter = 0;
+
+        if(fgets(line, BUFFER_LEN, stdin) != NULL) {
+                struct smart_object *com = __parse_input(line, BUFFER_LEN);
+
+                struct string *cmd = smart_object_get_string(com, qlkey("cmd"), SMART_GET_REPLACE_IF_WRONG_TYPE);
+
+                smart_object_free(com);
         }
 
+        goto get_line;
+}
 
-        // struct cs_requester *p  = cs_requester_alloc();
-        // cs_requester_connect(p, "localhost", 9898);
-        // for(int i = 0; i < 20000; i++)
-        // {
-        //         struct smart_object *obj = smart_object_from_json_file("res/request.json", FILE_INNER);
-        //         struct string *request = smart_object_get_string(obj, qlkey("request"), SMART_GET_REPLACE_IF_WRONG_TYPE);
-        //         struct string *path = smart_object_get_string(obj, qlkey("path"), SMART_GET_REPLACE_IF_WRONG_TYPE);
-        //         struct smart_object *objdata = smart_object_get_object(obj, qlkey("data"), SMART_GET_REPLACE_IF_WRONG_TYPE);
-        //
-        //         struct smart_object *data = smart_object_alloc();
-        //         smart_object_set_string(data, qskey(&__key_version__), qlkey("1"));
-        //
-        //         if(strcmp(request->ptr, "post") == 0) {
-        //                 smart_object_set_string(data, qskey(&__key_cmd__), qskey(&__cmd_post__));
-        //         } else if(strcmp(request->ptr, "get") == 0) {
-        //                 smart_object_set_string(data, qskey(&__key_cmd__), qskey(&__cmd_get__));
-        //         } else if(strcmp(request->ptr, "put") == 0) {
-        //                 smart_object_set_string(data, qskey(&__key_cmd__), qskey(&__cmd_put__));
-        //         } else if(strcmp(request->ptr, "delete") == 0) {
-        //                 smart_object_set_string(data, qskey(&__key_cmd__), qskey(&__cmd_delete__));
-        //         }
-        //
-        //
-        //         smart_object_set_string(data, qskey(&__key_pass__), qlkey("123456"));
-        //
-        //         smart_object_set_string(data, qskey(&__key_path__), qskey(path));
-        //
-        //         struct string *json = smart_object_to_json(objdata);
-        //         int counter = 0;
-        //         struct smart_object *d = smart_object_from_json(json->ptr, json->len, &counter);
-        //         string_free(json);
-        //         // struct smart_object *obj = smart_object_alloc();
-        //         // smart_object_set_string(obj, qskey(&__key_name__), qlkey("Johan"));
-        //         smart_object_set_object(data, qskey(&__key_data__), d);
-        //         cs_request_alloc(p, data, callback, p);
-        //         smart_object_free(obj);
-        //         sleep(1);
-        // }
+int main( int argc, char** argv )
+{
+        srand ( time(NULL) );
 
-        sleep(6000);
-        debug("free requester\n");
-        cs_requester_free(p);
-        sleep(1);
+        __setup_jni();
+
+        pthread_t tid[1];
+        pthread_create(&tid[0], NULL, (void*(*)(void*))__read_input, (void*)NULL);
+
+        s = checking_service_alloc();
+
+        checking_service_start(s);
+        checking_service_free(s);
         cache_free();
         dim_memory();
-        // count++;
-        // if(count < 10000) goto start;
-        return 1;
+
+        (*jvm)->DestroyJavaVM( jvm );
+        return 0;
 }

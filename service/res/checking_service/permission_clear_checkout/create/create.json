@@ -1,0 +1,7 @@
+{
+        "request" : "post",
+        "path"  : "/checking_service/permission_clear_checkout/{ID}/_create?parent={PARENT_ID}",
+        "data"  : {
+                "active"        : 1
+        }
+}

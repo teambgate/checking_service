@@ -1,7 +1,0 @@
-{
-        "request" : "post",
-        "path"  : "/root/position",
-        "data"  : {
-                
-        }
-}
