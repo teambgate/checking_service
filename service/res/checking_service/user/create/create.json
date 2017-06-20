@@ -1,7 +1,10 @@
 {
         "request" : "post",
-        "path"  : "/checking_service/user/{ID}/_create",
+        "path"  : "/checking_service/user/{USER_NAME}/_create",
         "data"  : {
-                "name"  : "{USER_NAME}"
+                "name"                  : "{NAME}",
+                "user_pass"             : "{USER_PASS}",
+                "validated"             : 0,
+                "reserved"              : "{RESERVED}"
         }
 }

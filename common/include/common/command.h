@@ -35,6 +35,11 @@ extern struct string __cmd_location_update_latlng__;
 extern struct string __cmd_location_update_ip_port__;
 extern struct string __cmd_location_search_nearby__;
 
+extern struct string __cmd_user_reserve__;
+extern struct string __cmd_user_validate__;
+
+extern struct string __cmd_device_add__;
+
 #ifdef __cplusplus
 }
 #endif

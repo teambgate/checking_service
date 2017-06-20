@@ -2,6 +2,9 @@
         "service_port"                  : 8989,
         "service_root"                  : "./",
         "service_pass"                  : "123456",
+        "service_version_code"          : "1",
+
+        "service_local_port"            : 8990,
 
         "es_host"                       : "127.0.0.1",
         "es_port"                       : 9898,

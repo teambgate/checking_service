@@ -443,10 +443,25 @@ void cs_server_start(struct cs_server *ws, u16 port)
                                         file_descriptor_set_add(ws->master, newfd);
                                         ws->fdmax = MAX(ws->fdmax, newfd);
 
-                                        debug("new connection from %s on socket %d\n",
-                                                inet_ntop(remoteaddr.ss_family,
-                                                        get_in_addr((struct sockaddr *)&remoteaddr),
-                                                        remoteIP, INET6_ADDRSTRLEN), newfd);
+                                        char *client_host = (char *)inet_ntop(remoteaddr.ss_family,
+                                                get_in_addr((struct sockaddr *)&remoteaddr),
+                                                remoteIP, INET6_ADDRSTRLEN);
+
+                                        if(ws->local_only
+                                                && strcmp(client_host, "127.0.0.1") != 0
+                                                && strcmp(client_host, "::1") != 0) {
+                                                __cs_server_check_old_and_close_client(ws, newfd);
+                                        } else {
+                                                debug("new connection from %s on socket %d\n", client_host, newfd);
+
+                                                array_reserve(ws->fd_mask, newfd + 1);
+                                                u32 mask = array_get(ws->fd_mask, u32, newfd);
+                                                mask++;
+                                                array_set(ws->fd_mask, newfd, &mask);
+
+                                                pthread_mutex_unlock(&ws->client_data_mutex);
+
+                                        }
 
                                         // {
                                         //         socklen_t client_len = sizeof(struct sockaddr_storage);
@@ -461,12 +476,6 @@ void cs_server_start(struct cs_server *ws, u16 port)
                                         //         if (rc == 0)
                                         //             printf("New connection from %s %s\n", hoststr, portstr);
                                         // }
-                                        array_reserve(ws->fd_mask, newfd + 1);
-                                        u32 mask = array_get(ws->fd_mask, u32, newfd);
-                                        mask++;
-                                        array_set(ws->fd_mask, newfd, &mask);
-
-                                        pthread_mutex_unlock(&ws->client_data_mutex);
                                 }
                         } else {
                                 /*
@@ -474,7 +483,6 @@ void cs_server_start(struct cs_server *ws, u16 port)
                                  */
                                 nbytes = recv(*fd, recvbuf, MAX_RECV_BUF_LEN, 0);
                                 if(nbytes <= 0) {
-                                        debug("CLOSESESE\n");
                                         __cs_server_check_old_and_close_client(ws, *fd);
                                 } else {
                                         __cs_server_handle_msg(ws, *fd, recvbuf, nbytes);
@@ -508,7 +516,7 @@ void cs_server_start(struct cs_server *ws, u16 port)
         #undef MAX_RECV_BUF_LEN
 }
 
-struct cs_server *cs_server_alloc()
+struct cs_server *cs_server_alloc(u8 local_only)
 {
         struct cs_server *p     = smalloc(sizeof(struct cs_server));
         p->master               = file_descriptor_set_alloc();
@@ -529,6 +537,8 @@ struct cs_server *cs_server_alloc()
         p->delegates            = map_alloc(sizeof(cs_server_delegate));
 
         p->config               = NULL;
+
+        p->local_only           = local_only;
 
         return p;
 }

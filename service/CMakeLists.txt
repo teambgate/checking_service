@@ -31,6 +31,12 @@ else()
         add_definitions(-DAPP_DEBUG=0)
 endif()
 
+if(${APP_LOG} MATCHES "true")
+        add_definitions(-DAPP_LOG=1)
+else()
+        add_definitions(-DAPP_LOG=0)
+endif()
+
 add_definitions(-D__int64=long\ long)
 
 add_subdirectory(../../cherry/kernel ../${OUT}/kernel)
@@ -66,7 +72,7 @@ else()
         file(GLOB_RECURSE SOURCES "src/*.c" "../common/src/*.c" "../s2/src/*.c")
 endif()
 
-set(PROJECT_LINK_LIBS kernel xml server smartfox jvm)
+set(PROJECT_LINK_LIBS kernel xml server smartfox jvm curl)
 
 add_executable(service ${SOURCES})
 add_dependencies(service ${PROJECT_LINK_LIBS})

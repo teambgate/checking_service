@@ -19,12 +19,17 @@ extern "C" {
 #endif
 
 #include <common/types.h>
+#include <cherry/stdio.h>
 
 int common_username_valid(char *name, size_t len);
 
 void common_gen_random(char *buf, size_t len);
 
 int common_is_ip(char *s);
+
+struct string *common_get_mac_address();
+
+ssize_t common_getpasswd (char *pw, size_t sz, int mask, FILE *fp);
 
 #ifdef __cplusplus
 }

@@ -27,3 +27,8 @@ struct string __cmd_location_register__         = SET_STRING("location_register"
 struct string __cmd_location_update_latlng__    = SET_STRING("location_update_latlng")
 struct string __cmd_location_update_ip_port__   = SET_STRING("location_update_ip_port")
 struct string __cmd_location_search_nearby__    = SET_STRING("location_search_nearby")
+
+struct string __cmd_user_reserve__              = SET_STRING("user_reserve")
+struct string __cmd_user_validate__             = SET_STRING("user_validate")
+
+struct string __cmd_device_add__                = SET_STRING("device_add")

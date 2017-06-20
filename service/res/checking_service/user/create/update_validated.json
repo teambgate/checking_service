@@ -1,0 +1,9 @@
+{
+        "request" : "post",
+        "path"  : "/checking_service/user/{USER_NAME}/_update?version={VERSION_NUMBER}",
+        "data"  : {
+                "doc" :{
+                        "validated"  : 1
+                }
+        }
+}

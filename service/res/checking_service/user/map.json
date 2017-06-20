@@ -2,5 +2,15 @@
         "request" : "put",
         "path"  : "/checking_service/_mapping/user",
         "data"  : {
+                "properties" : {
+                        "reserved" : {
+                                "type" : "date",
+                                "format": "yyyy-MM-dd HH:mm:ss"
+                        },
+                        "user_pass": {
+                                "type" : "string",
+                                "index": "not_analyzed"
+                        }
+                }
         }
 }

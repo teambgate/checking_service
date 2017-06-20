@@ -422,7 +422,7 @@ static void __get_service_callback(struct cs_server_callback_user_data *cud, str
                         (cs_request_callback)__get_me_callback, cud);
         } else {
                 __response_invalid_data(cud->p, cud->fd, cud->mask,  cud->obj,
-                        qlkey("user name is not registered!\n"));
+                        qlkey("user name is not registered or wrong password!"));
                 cs_server_callback_user_data_free(cud);
         }
 }

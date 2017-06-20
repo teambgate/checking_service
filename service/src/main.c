@@ -27,10 +27,15 @@
 
 #include <pthread.h>
 
+#include <common/request.h>
+
 static JavaVM*  jvm;
 JNIEnv*         __jni_env;
 
-static struct checking_service *s = NULL;
+static struct checking_service  *public_service = NULL;
+static struct checking_service  *local_service  = NULL;
+
+struct cs_requester *local_requester = NULL;
 
 static void __setup_jni()
 {
@@ -107,16 +112,18 @@ find_value:;
         end     = start;
         increase_count()
 read_value:;
-        if(line[counter] != '-') {
+        if(line[counter] != '-' && line[counter] != '\n') {
                 end = counter;
                 increase_count()
                 goto read_value;
         }
         val->len = 0;
         string_cat(val, line + start, end - start + 1);
+        string_trim(key);
+        string_trim(val);
         smart_object_set_string(p, key->ptr, key->len, val->ptr, val->len);
 
-        goto read_argument;
+        goto find_argument;
 
 end:;
         string_free(val);
@@ -131,15 +138,74 @@ get_line:;
         char line[BUFFER_LEN];
         int counter = 0;
 
-        if(fgets(line, BUFFER_LEN, stdin) != NULL) {
-                struct smart_object *com = __parse_input(line, BUFFER_LEN);
+        pthread_mutex_lock(&local_service->command_mutex);
+        if(local_service->command_flag) {
+                pthread_mutex_unlock(&local_service->command_mutex);
+                memset(line, 0, BUFFER_LEN);
+                if(fgets(line, BUFFER_LEN, stdin) != NULL) {
+                        struct smart_object *com = __parse_input(line, BUFFER_LEN);
 
-                struct string *cmd = smart_object_get_string(com, qlkey("cmd"), SMART_GET_REPLACE_IF_WRONG_TYPE);
+                        struct string *cmd = smart_object_get_string(com, qlkey("cmd"), SMART_GET_REPLACE_IF_WRONG_TYPE);
 
-                smart_object_free(com);
+                        if(strcmp(cmd->ptr, "service_register") == 0) {
+                                checking_service_register_username(local_service, com);
+                        } else if(strcmp(cmd->ptr, "service_validate") == 0) {
+                                checking_service_validate_username(local_service, com);
+                        } else if(strcmp(cmd->ptr, "location_register") == 0) {
+                                checking_service_register_location(local_service, com);
+                        } else if(strcmp(cmd->ptr, "location_update_ip") == 0) {
+                                checking_service_location_update_ip(local_service, com);
+                        } else if(strcmp(cmd->ptr, "location_update_public_ip") == 0) {
+                                checking_service_location_update_public_ip(local_service, com);
+                        } else if(strcmp(cmd->ptr, "location_update_latlng") == 0) {
+                                checking_service_location_update_latlng(local_service, com);
+                        } else if(strcmp(cmd->ptr, "user_reserve") == 0) {
+                                checking_service_user_reserve(local_service, com);
+                        } else if(strcmp(cmd->ptr, "user_validate") == 0) {
+                                checking_service_user_validate(local_service, com);
+                        } else if(strcmp(cmd->ptr, "device_add") == 0) {
+                                checking_service_device_add(local_service, com);
+                        } else {
+                                if(strcmp(cmd->ptr, "help") != 0) {
+                                        app_log("command not found! Commands available :\n");
+                                } else {
+                                        app_log("Commands available :\n");
+                                }
+                                app_log("- " PRINT_YEL "service_register\n" PRINT_RESET);
+                                app_log("\t\tregister new service\n\n");
+                                app_log("- " PRINT_YEL "service_validate\n" PRINT_RESET);
+                                app_log("\t\tvalidate one service\n\n");
+                                app_log("- " PRINT_YEL "location_register\n" PRINT_RESET);
+                                app_log("\t\tregister this machine as a location for a service\n\n");
+                                app_log("- " PRINT_YEL "location_update_ip\n" PRINT_RESET);
+                                app_log("\t\tupdate ip for location registered by this machine\n\n");
+                                app_log("- " PRINT_YEL "location_update_public_ip\n" PRINT_RESET);
+                                app_log("\t\tsearch for public ip and update for location registered by this machine\n\n");
+                                app_log("- " PRINT_YEL "location_update_latlng\n" PRINT_RESET);
+                                app_log("\t\tupdate latlng for location registered by this machine\n\n");
+                                app_log("- " PRINT_YEL "user_reserve\n" PRINT_RESET);
+                                app_log("\t\treserve an user\n\n");
+                                app_log("- " PRINT_YEL "user_validate\n" PRINT_RESET);
+                                app_log("\t\tvalidate an user\n\n");
+                                app_log("- " PRINT_YEL "device_add\n" PRINT_RESET);
+                                app_log("\t\tattach a device to a user\n\n");
+                                app_log("\n");
+                        }
+
+                        smart_object_free(com);
+                }
+        } else {
+                pthread_cond_wait(&local_service->command_cond, &local_service->command_mutex);
+                pthread_mutex_unlock(&local_service->command_mutex);
         }
 
         goto get_line;
+}
+
+static void __start_service(void *d)
+{
+        struct checking_service *service = (struct checking_service *)d;
+        checking_service_start(service);
 }
 
 int main( int argc, char** argv )
@@ -148,13 +214,28 @@ int main( int argc, char** argv )
 
         __setup_jni();
 
-        pthread_t tid[1];
+        local_service   = checking_service_alloc(CS_SERVER_LOCAL);
+        public_service  = checking_service_alloc(CS_SERVER_PUBLIC);
+
+        local_requester = cs_requester_alloc();
+        u16 port        = smart_object_get_short(local_service->config, qlkey("service_local_port"), SMART_GET_REPLACE_IF_WRONG_TYPE);
+        cs_requester_connect(local_requester, "127.0.0.1", port);
+
+        pthread_t tid[3];
         pthread_create(&tid[0], NULL, (void*(*)(void*))__read_input, (void*)NULL);
+        pthread_create(&tid[1], NULL, (void*(*)(void*))__start_service, (void*)local_service);
+        pthread_create(&tid[2], NULL, (void*(*)(void*))__start_service, (void*)public_service);
 
-        s = checking_service_alloc();
+        int i;
+        for(i = 1 ; i < 3; i++) {
+                int rc = pthread_join(tid[i], NULL);
+                if (rc) {
+                       break;
+                }
+        }
 
-        checking_service_start(s);
-        checking_service_free(s);
+        checking_service_free(local_service);
+        checking_service_free(public_service);
         cache_free();
         dim_memory();
 

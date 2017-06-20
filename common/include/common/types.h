@@ -108,6 +108,11 @@ struct cs_server_callback_user_data {
         struct smart_object *obj;
 };
 
+enum {
+        CS_SERVER_LOCAL         = 1,
+        CS_SERVER_PUBLIC        = 0
+};
+
 struct cs_server {
         struct file_descriptor_set      *master;
         struct file_descriptor_set      *incomming;
@@ -127,6 +132,8 @@ struct cs_server {
         struct map                      *clients_datas;
 
         struct smart_object             *config;
+
+        u8                              local_only;
 };
 
 #ifdef __cplusplus

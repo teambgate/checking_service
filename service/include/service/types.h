@@ -22,11 +22,19 @@ extern "C" {
 #include <smartfox/types.h>
 #include <common/types.h>
 
+extern struct cs_requester *local_requester;
+
 struct checking_service {
         struct list_head        server;
 
+        struct smart_object     *config;
+
         struct cs_requester     *supervisor_requester;
         struct cs_requester     *es_server_requester;
+
+        u8                      command_flag;
+        pthread_mutex_t         command_mutex;
+        pthread_cond_t          command_cond;
 };
 
 #ifdef __cplusplus

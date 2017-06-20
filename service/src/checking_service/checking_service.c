@@ -72,6 +72,7 @@ static void __load_es_server(struct checking_service *p)
                 __load_base_map(p, "res/checking_service/report/map.json");
                 __load_base_map(p, "res/checking_service/report_to/map.json");
                 __load_base_map(p, "res/checking_service/user/map.json");
+                __load_base_map(p, "res/checking_service/blocked_device/map.json");
         }
 }
 
@@ -90,26 +91,45 @@ static void __load_supervisor(struct checking_service *p)
         }
 }
 
-struct checking_service *checking_service_alloc()
+struct checking_service *checking_service_alloc(u8 local_only)
 {
-        struct checking_service *p     = smalloc(sizeof(struct checking_service));
+        struct checking_service *p      = smalloc(sizeof(struct checking_service));
         INIT_LIST_HEAD(&p->server);
 
-        struct cs_server *c     = cs_server_alloc();
+        struct cs_server *c             = cs_server_alloc(local_only);
         list_add_tail(&c->user_head, &p->server);
 
-        c->config               = smart_object_from_json_file("res/config.json", FILE_INNER);
-        //
-        // map_set(c->delegates, qskey(&__cmd_get_service__), &(cs_server_delegate){supervisor_process_get_service});
-        // map_set(c->delegates, qskey(&__cmd_service_register__), &(cs_server_delegate){supervisor_process_service_register});
-        // map_set(c->delegates, qskey(&__cmd_service_get_by_username__), &(cs_server_delegate){supervisor_process_service_get_by_username});
-        // map_set(c->delegates, qskey(&__cmd_service_validate__), &(cs_server_delegate){supervisor_process_service_validate});
-        //
-        // map_set(c->delegates, qskey(&__cmd_location_register__), &(cs_server_delegate){supervisor_process_location_register});
-        // map_set(c->delegates, qskey(&__cmd_location_update_latlng__), &(cs_server_delegate){supervisor_process_location_update_latlng});
-        // map_set(c->delegates, qskey(&__cmd_location_update_ip_port__), &(cs_server_delegate){supervisor_process_location_update_ip_port});
-        // map_set(c->delegates, qskey(&__cmd_location_search_nearby__), &(cs_server_delegate){supervisor_process_location_search_nearby});
-        //
+        p->command_flag                 = 1;
+        pthread_mutex_init(&p->command_mutex, NULL);
+        pthread_cond_init (&p->command_cond, NULL);
+
+        c->config                       = smart_object_from_json_file("res/config.json", FILE_INNER);
+        p->config                       = c->config;
+
+        if(local_only) {
+                map_set(c->delegates, qskey(&__cmd_service_register__),
+                        &(cs_server_delegate){checking_service_process_service_register_username});
+                map_set(c->delegates, qskey(&__cmd_service_validate__),
+                        &(cs_server_delegate){checking_service_process_service_validate_username});
+                map_set(c->delegates, qskey(&__cmd_location_register__),
+                        &(cs_server_delegate){checking_service_process_location_register});
+                map_set(c->delegates, qskey(&__cmd_location_update_ip_port__),
+                        &(cs_server_delegate){checking_service_process_location_update_ip});
+                map_set(c->delegates, qskey(&__cmd_location_update_latlng__),
+                        &(cs_server_delegate){checking_service_process_location_update_latlng});
+                map_set(c->delegates, qskey(&__cmd_user_reserve__),
+                        &(cs_server_delegate){checking_service_process_user_reserve});
+                map_set(c->delegates, qskey(&__cmd_user_validate__),
+                        &(cs_server_delegate){checking_service_process_user_validate});
+                map_set(c->delegates, qskey(&__cmd_device_add__),
+                        &(cs_server_delegate){checking_service_process_device_add});
+        } else {
+                map_set(c->delegates, qskey(&__cmd_user_reserve__),
+                        &(cs_server_delegate){checking_service_process_user_reserve});
+                map_set(c->delegates, qskey(&__cmd_device_add__),
+                        &(cs_server_delegate){checking_service_process_device_add});
+        }
+
         __load_es_server(p);
         __load_supervisor(p);
 
@@ -121,9 +141,16 @@ void checking_service_start(struct checking_service *p)
         if(!list_singular(&p->server)) {
                 struct cs_server *c     = (struct cs_server *)
                         ((char *)p->server.next - offsetof(struct cs_server, user_head));
-                u16 port                = smart_object_get_short(c->config, qlkey("service_port"), SMART_GET_REPLACE_IF_WRONG_TYPE);
 
-                cs_server_start(c, port);
+                if(c->local_only) {
+                        u16 port                = smart_object_get_short(c->config, qlkey("service_local_port"), SMART_GET_REPLACE_IF_WRONG_TYPE);
+
+                        cs_server_start(c, port);
+                } else {
+                        u16 port                = smart_object_get_short(c->config, qlkey("service_port"), SMART_GET_REPLACE_IF_WRONG_TYPE);
+
+                        cs_server_start(c, port);
+                }
         }
 }
 
@@ -134,6 +161,8 @@ void checking_service_free(struct checking_service *p)
                         ((char *)p->server.next - offsetof(struct cs_server, user_head));
                 cs_server_free(c);
         }
+        pthread_mutex_destroy(&p->command_mutex);
+        pthread_cond_destroy(&p->command_cond);
 
         sfree(p);
 }

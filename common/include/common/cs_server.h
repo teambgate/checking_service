@@ -36,7 +36,7 @@ void cs_server_callback_user_data_free(struct cs_server_callback_user_data *p);
 /*
  * cs_server
  */
-struct cs_server *cs_server_alloc();
+struct cs_server *cs_server_alloc(u8 local_only);
 
 void cs_server_start(struct cs_server *p, u16 port);
 

@@ -85,28 +85,28 @@ static int __validate_input(struct cs_server *p, int fd, u32 mask, struct smart_
         struct string *pass = smart_object_get_string(obj, qskey(&__key_pass__), SMART_GET_REPLACE_IF_WRONG_TYPE);
 
         if(strcmp(service_pass->ptr, pass->ptr) != 0) {
-                __response_invalid_data(p, fd, mask, obj, qlkey("User unauthorized!\n"));
+                __response_invalid_data(p, fd, mask, obj, qlkey("User unauthorized!"));
                 return 0;
         }
 
         struct string *user_name = smart_object_get_string(obj, qskey(&__key_user_name__), SMART_GET_REPLACE_IF_WRONG_TYPE);
         string_trim(user_name);
         if(user_name->len == 0) {
-                __response_invalid_data(p, fd, mask, obj, qlkey("Please provide user name!\n"));
+                __response_invalid_data(p, fd, mask, obj, qlkey("Please provide user name!"));
                 return 0;
         }
 
         struct string *user_pass = smart_object_get_string(obj, qskey(&__key_user_pass__), SMART_GET_REPLACE_IF_WRONG_TYPE);
         string_trim(user_pass);
         if(user_pass->len == 0) {
-                __response_invalid_data(p, fd, mask, obj, qlkey("Please provide user pass!\n"));
+                __response_invalid_data(p, fd, mask, obj, qlkey("Please provide user pass!"));
                 return 0;
         }
 
         struct string *device_id = smart_object_get_string(obj, qskey(&__key_device_id__), SMART_GET_REPLACE_IF_WRONG_TYPE);
         string_trim(device_id);
         if(device_id->len == 0) {
-                __response_invalid_data(p, fd, mask, obj, qlkey("Please provide device id!\n"));
+                __response_invalid_data(p, fd, mask, obj, qlkey("Please provide device id!"));
                 return 0;
         }
 
@@ -121,20 +121,20 @@ static void __update_latlng_callback(struct cs_server_callback_user_data *cud, s
 
         if(_version > 0 && _version - 1 == _old_version) {
                 __response_success(cud->p, cud->fd, cud->mask,  cud->obj,
-                        qlkey("location latlng is updated successfully!\n"));
+                        qlkey("location latlng is updated successfully!"));
         } else {
                 if(_version == 0) {
                         __response_invalid_data(cud->p, cud->fd, cud->mask,  cud->obj,
-                                qlkey("error!\n"));
+                                qlkey("error!"));
                 } else if(_old_version != _version) {
                         __response_invalid_data(cud->p, cud->fd, cud->mask,  cud->obj,
-                                qlkey("please try again!\n"));
+                                qlkey("please try again!"));
                 } else if(_old_version == _version) {
                         __response_success(cud->p, cud->fd, cud->mask,  cud->obj,
-                                qlkey("nothing to change!\n"));
+                                qlkey("nothing to change!"));
                 } else {
                         __response_invalid_data(cud->p, cud->fd, cud->mask,  cud->obj,
-                                qlkey("error!\n"));
+                                qlkey("error!"));
                 }
         }
 
@@ -188,7 +188,7 @@ static void __get_location_callback(struct cs_server_callback_user_data *cud, st
                         (cs_request_callback)__update_latlng_callback, cud);
         } else {
                 __response_invalid_data(cud->p, cud->fd, cud->mask,  cud->obj,
-                        qlkey("User not found or wrong password!\n"));
+                        qlkey("User not found or wrong password or wrong device!"));
                 cs_server_callback_user_data_free(cud);
         }
 }

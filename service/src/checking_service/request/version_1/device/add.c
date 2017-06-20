@@ -11,7 +11,7 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  */
-#include <supervisor/supervisor.h>
+#include <service/checking_service.h>
 #include "../version.h"
 
 #include <cherry/memory.h>
@@ -40,10 +40,12 @@
 #include <common/key.h>
 #include <common/error.h>
 #include <common/request.h>
+#include <common/cs_server.h>
 #include <common/util.h>
 
-#include <common/cs_server.h>
 #include <cherry/time.h>
+
+#include <cherry/crypt/md5.h>
 
 /*
  * response invalid data
@@ -78,9 +80,6 @@ static void __response_success(struct cs_server *p, int fd, u32 mask, struct sma
         smart_object_free(res);
 }
 
-/*
- * validate input
- */
 static int __validate_input(struct cs_server *p, int fd, u32 mask, struct smart_object *obj)
 {
         struct string *service_pass = smart_object_get_string(p->config, qlkey("service_pass"), SMART_GET_REPLACE_IF_WRONG_TYPE);
@@ -88,13 +87,6 @@ static int __validate_input(struct cs_server *p, int fd, u32 mask, struct smart_
 
         if(strcmp(service_pass->ptr, pass->ptr) != 0) {
                 __response_invalid_data(p, fd, mask, obj, qlkey("User unauthorized!"));
-                return 0;
-        }
-
-        struct string *name = smart_object_get_string(obj, qskey(&__key_name__), SMART_GET_REPLACE_IF_WRONG_TYPE);
-        string_trim(name);
-        if(name->len == 0) {
-                __response_invalid_data(p, fd, mask, obj, qlkey("Please provide name!"));
                 return 0;
         }
 
@@ -124,21 +116,28 @@ static int __validate_input(struct cs_server *p, int fd, u32 mask, struct smart_
                 return 0;
         }
 
+        struct string *device_id = smart_object_get_string(obj, qskey(&__key_device_id__), SMART_GET_REPLACE_IF_WRONG_TYPE);
+        string_trim(device_id);
+        if(device_id->len == 0) {
+                __response_invalid_data(p, fd, mask, obj, qlkey("Please device id!"));
+                return 0;
+        }
+
         return 1;
 }
 
-static void __register_user_name_callback(struct cs_server_callback_user_data *cud, struct smart_object *recv)
+static void __add_callback(struct cs_server_callback_user_data *cud, struct smart_object *recv)
 {
         struct smart_object *data = smart_object_get_object(recv, qskey(&__key_data__), SMART_GET_REPLACE_IF_WRONG_TYPE);
         struct string *result = smart_object_get_string(data, qlkey("result"), SMART_GET_REPLACE_IF_WRONG_TYPE);
         if(strcmp(result->ptr, "created") == 0) {
                 __response_success(cud->p, cud->fd, cud->mask,
-                        cud->obj, qlkey("user name is created successfully!"));
+                        cud->obj, qlkey("attach device successfully!"));
         } else {
                 int status = smart_object_get_int(data, qlkey("status"), SMART_GET_REPLACE_IF_WRONG_TYPE);
                 if(status == 409) {
                         __response_invalid_data(cud->p, cud->fd, cud->mask,
-                                cud->obj, qlkey("user name is not avaliable!"));
+                                cud->obj, qlkey("error!"));
                 } else {
                         __response_invalid_data(cud->p, cud->fd, cud->mask,
                                 cud->obj, qlkey("server error!"));
@@ -147,48 +146,81 @@ static void __register_user_name_callback(struct cs_server_callback_user_data *c
         cs_server_callback_user_data_free(cud);
 }
 
-static void __register_user_name(struct cs_server *p, int fd, u32 mask, struct smart_object *obj)
+static void __search_callback(struct cs_server_callback_user_data *cud, struct smart_object *recv)
 {
-        struct supervisor *supervisor = (struct supervisor *)
-                ((char *)p->user_head.next - offsetof(struct supervisor , server));
+        struct checking_service *cs = (struct checking_service *)
+                ((char *)cud->p->user_head.next - offsetof(struct checking_service , server));
 
-        struct string *name             = smart_object_get_string(obj, qskey(&__key_name__), SMART_GET_REPLACE_IF_WRONG_TYPE);
-        struct string *user_name        = smart_object_get_string(obj, qskey(&__key_user_name__), SMART_GET_REPLACE_IF_WRONG_TYPE);
-        struct string *user_pass        = smart_object_get_string(obj, qskey(&__key_user_pass__), SMART_GET_REPLACE_IF_WRONG_TYPE);
+        struct smart_object *data = smart_object_get_object(recv, qskey(&__key_data__), SMART_GET_REPLACE_IF_WRONG_TYPE);
 
-        struct string *current_time     = current_time_to_string();
+        struct smart_object *hits = smart_object_get_object(data, qlkey("hits"), SMART_GET_REPLACE_IF_WRONG_TYPE);
+
+        int total = smart_object_get_int(hits, qlkey("total"), SMART_GET_REPLACE_IF_WRONG_TYPE);
+
+        if(total == 1) {
+                /*
+                 * try validate successfuly
+                 */
+                struct string *user_name        = smart_object_get_string(cud->obj, qskey(&__key_user_name__), SMART_GET_REPLACE_IF_WRONG_TYPE);
+                struct string *device_id        = smart_object_get_string(cud->obj, qskey(&__key_device_id__), SMART_GET_REPLACE_IF_WRONG_TYPE);
+                struct string *id               = string_alloc_chars(qlkey("device_"));
+                struct string *encrypt_did      = md5_string(qskey(device_id));
+                string_cat_string(id, encrypt_did);
+                string_free(encrypt_did);
+
+                struct string *es_version_code = smart_object_get_string(cud->p->config, qlkey("es_version_code"), SMART_GET_REPLACE_IF_WRONG_TYPE);
+                struct string *es_pass = smart_object_get_string(cud->p->config, qlkey("es_pass"), SMART_GET_REPLACE_IF_WRONG_TYPE);
+
+                struct string *content = cs_request_string_from_file("res/checking_service/device/create/create.json",
+                        FILE_INNER);
+                string_replace(content, "{ID}", id->ptr);
+                string_replace(content, "{PARENT_ID}", user_name->ptr);
+                string_replace(content, "{DEVICE_ID}", device_id->ptr);
+
+                struct smart_object *request_data = cs_request_data_from_string(qskey(content),
+                        qskey(es_version_code), qskey(es_pass));
+                string_free(content);
+
+                cs_request_alloc(cs->es_server_requester, request_data,
+                        (cs_request_callback)__add_callback, cud);
+        } else {
+                __response_invalid_data(cud->p, cud->fd, cud->mask,  cud->obj, qlkey("user name is not available!"));
+                cs_server_callback_user_data_free(cud);
+        }
+}
+
+
+static void __search(struct cs_server *p, int fd, u32 mask, struct smart_object *obj)
+{
+        struct checking_service *cs = (struct checking_service *)
+                ((char *)p->user_head.next - offsetof(struct checking_service , server));
+
+        struct string *user_name = smart_object_get_string(obj, qskey(&__key_user_name__), SMART_GET_REPLACE_IF_WRONG_TYPE);
+        struct string *user_pass = smart_object_get_string(obj, qskey(&__key_user_pass__), SMART_GET_REPLACE_IF_WRONG_TYPE);
 
         struct string *es_version_code = smart_object_get_string(p->config, qlkey("es_version_code"), SMART_GET_REPLACE_IF_WRONG_TYPE);
         struct string *es_pass = smart_object_get_string(p->config, qlkey("es_pass"), SMART_GET_REPLACE_IF_WRONG_TYPE);
 
-        struct smart_object *request_data = cs_request_data_from_file("res/supervisor/service/create/create.json", FILE_INNER,
+        struct string *content = cs_request_string_from_file("res/checking_service/user/search_valid/search_by_username.json", FILE_INNER);
+        string_replace(content, "{USER_NAME}", user_name->ptr);
+        string_replace(content, "{USER_PASS}", user_pass->ptr);
+
+        struct smart_object *request_data = cs_request_data_from_string(qskey(content),
                 qskey(es_version_code), qskey(es_pass));
-
-        struct string *path = smart_object_get_string(request_data, qskey(&__key_path__), SMART_GET_REPLACE_IF_WRONG_TYPE);
-        string_replace(path, "{USER_NAME}", user_name->ptr);
-
-        struct smart_object *request_data_data = smart_object_get_object(request_data, qskey(&__key_data__), SMART_GET_REPLACE_IF_WRONG_TYPE);
-        smart_object_set_string(request_data_data, qskey(&__key_name__), qskey(name));
-        smart_object_set_string(request_data_data, qskey(&__key_user_pass__), qskey(user_pass));
-        smart_object_set_string(request_data_data, qskey(&__key_reserved__), qskey(current_time));
-
-        char buf[9];
-        common_gen_random(buf, sizeof(buf) / sizeof(buf[0]));
-        smart_object_set_string(request_data_data, qskey(&__key_validate_code__), qlkey(buf));
+        string_free(content);
 
         struct cs_server_callback_user_data *cud = cs_server_callback_user_data_alloc(p, fd, mask, obj);
 
-        cs_request_alloc(supervisor->es_server_requester, request_data,
-                (cs_request_callback)__register_user_name_callback, cud);
-
-        string_free(current_time);
+        cs_request_alloc(cs->es_server_requester, request_data,
+                (cs_request_callback)__search_callback, cud);
 }
 
-void supervisor_process_service_register_v1(struct cs_server *p, int fd, u32 mask, struct smart_object *obj)
+
+void checking_service_process_device_add_v1(struct cs_server *p, int fd, u32 mask, struct smart_object *obj)
 {
-        if(!__validate_input(p, fd, mask, obj)) {
+        if( ! __validate_input(p, fd, mask, obj)) {
                 return;
         }
 
-        __register_user_name(p, fd, mask, obj);
+        __search(p, fd, mask, obj);
 }
