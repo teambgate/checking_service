@@ -20,6 +20,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/ioctl.h>
+#include <net/if.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>
@@ -27,6 +28,7 @@
 #include <fcntl.h>
 #include <netinet/in.h>
 #include <cherry/unistd.h>
+#include <termios.h>
 
 #define MAXPW 1024
 

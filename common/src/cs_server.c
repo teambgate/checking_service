@@ -427,6 +427,8 @@ void cs_server_start(struct cs_server *ws, u16 port)
                 array_force_len(actives, 0);
                 file_descriptor_set_get_active(ws->incomming, actives);
 
+                debug("actives %d\n", actives->len);
+
                 u32 *fd;
                 array_for_each(fd, actives) {
                         if(*fd == ws->listener) {
@@ -439,18 +441,20 @@ void cs_server_start(struct cs_server *ws, u16 port)
                                         perror("accept\n");
                                 } else {
                                         pthread_mutex_lock(&ws->client_data_mutex);
-
                                         file_descriptor_set_add(ws->master, newfd);
                                         ws->fdmax = MAX(ws->fdmax, newfd);
-
                                         char *client_host = (char *)inet_ntop(remoteaddr.ss_family,
                                                 get_in_addr((struct sockaddr *)&remoteaddr),
                                                 remoteIP, INET6_ADDRSTRLEN);
 
                                         if(ws->local_only
                                                 && strcmp(client_host, "127.0.0.1") != 0
+                                                && strcmp(client_host, "::ffff:127.0.0.1") != 0
                                                 && strcmp(client_host, "::1") != 0) {
+                                                pthread_mutex_unlock(&ws->client_data_mutex);
+
                                                 __cs_server_check_old_and_close_client(ws, newfd);
+                                                debug("clear new connection from %s on socket %d\n", client_host, newfd);
                                         } else {
                                                 debug("new connection from %s on socket %d\n", client_host, newfd);
 
@@ -458,10 +462,9 @@ void cs_server_start(struct cs_server *ws, u16 port)
                                                 u32 mask = array_get(ws->fd_mask, u32, newfd);
                                                 mask++;
                                                 array_set(ws->fd_mask, newfd, &mask);
-
                                                 pthread_mutex_unlock(&ws->client_data_mutex);
-
                                         }
+
 
                                         // {
                                         //         socklen_t client_len = sizeof(struct sockaddr_storage);
@@ -478,6 +481,7 @@ void cs_server_start(struct cs_server *ws, u16 port)
                                         // }
                                 }
                         } else {
+                                debug("receive connection data\n");
                                 /*
                                  * receive client request
                                  */
