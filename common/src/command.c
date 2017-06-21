@@ -31,4 +31,14 @@ struct string __cmd_location_search_nearby__    = SET_STRING("location_search_ne
 struct string __cmd_user_reserve__              = SET_STRING("user_reserve")
 struct string __cmd_user_validate__             = SET_STRING("user_validate")
 
+struct string __cmd_check_in__                  = SET_STRING("check_in")
+struct string __cmd_check_out__                 = SET_STRING("check_out")
+
 struct string __cmd_device_add__                = SET_STRING("device_add")
+
+struct string __cmd_work_time_new__             = SET_STRING("work_time_new")
+struct string __cmd_work_time_new_by_user__     = SET_STRING("work_time_new_by_user")
+
+struct string __cmd_permission_add_work_time__  = SET_STRING("permission_add_work_time")
+struct string __cmd_permission_add_employee__   = SET_STRING("permission_add_employee")
+struct string __cmd_permission_clear_checkout__ = SET_STRING("permission_clear_checkout")

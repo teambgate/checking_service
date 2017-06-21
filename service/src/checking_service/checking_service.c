@@ -69,8 +69,10 @@ static void __load_es_server(struct checking_service *p)
                 __load_base_map(p, "res/checking_service/meal/map.json");
                 __load_base_map(p, "res/checking_service/permission_add_employee/map.json");
                 __load_base_map(p, "res/checking_service/permission_clear_checkout/map.json");
+                __load_base_map(p, "res/checking_service/permission_add_work_time/map.json");
                 __load_base_map(p, "res/checking_service/report/map.json");
                 __load_base_map(p, "res/checking_service/report_to/map.json");
+                __load_base_map(p, "res/checking_service/work_time/map.json");
                 __load_base_map(p, "res/checking_service/user/map.json");
                 __load_base_map(p, "res/checking_service/blocked_device/map.json");
         }
@@ -123,11 +125,25 @@ struct checking_service *checking_service_alloc(u8 local_only)
                         &(cs_server_delegate){checking_service_process_user_validate});
                 map_set(c->delegates, qskey(&__cmd_device_add__),
                         &(cs_server_delegate){checking_service_process_device_add});
+                map_set(c->delegates, qskey(&__cmd_work_time_new__),
+                        &(cs_server_delegate){checking_service_process_work_time_new});
+                map_set(c->delegates, qskey(&__cmd_permission_add_employee__),
+                        &(cs_server_delegate){checking_service_process_permission_add_employee});
+                map_set(c->delegates, qskey(&__cmd_permission_add_work_time__),
+                        &(cs_server_delegate){checking_service_process_permission_add_work_time});
+                map_set(c->delegates, qskey(&__cmd_permission_clear_checkout__),
+                        &(cs_server_delegate){checking_service_process_permission_clear_checkout});
         } else {
                 map_set(c->delegates, qskey(&__cmd_user_reserve__),
                         &(cs_server_delegate){checking_service_process_user_reserve});
                 map_set(c->delegates, qskey(&__cmd_device_add__),
                         &(cs_server_delegate){checking_service_process_device_add});
+                map_set(c->delegates, qskey(&__cmd_work_time_new_by_user__),
+                        &(cs_server_delegate){checking_service_process_work_time_new_by_user});
+                map_set(c->delegates, qskey(&__cmd_check_in__),
+                        &(cs_server_delegate){checking_service_process_check_in});
+                map_set(c->delegates, qskey(&__cmd_check_out__),
+                        &(cs_server_delegate){checking_service_process_check_out});
         }
 
         __load_es_server(p);

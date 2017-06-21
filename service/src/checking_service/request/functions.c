@@ -57,14 +57,21 @@ void func(struct cs_server *p, int fd, u32 mask, struct smart_object *obj)      
         __response_invalid_version(p, fd, mask, obj);                                                 \
 }
 
+/*
+ * register service jobs
+ */
 register_function(checking_service_process_service_register_username);
 register_function(checking_service_process_service_validate_username);
-
 register_function(checking_service_process_location_register);
 register_function(checking_service_process_location_update_ip);
 register_function(checking_service_process_location_update_latlng);
-
 register_function(checking_service_process_user_reserve);
 register_function(checking_service_process_user_validate);
-
+register_function(checking_service_process_check_in);
+register_function(checking_service_process_check_out);
 register_function(checking_service_process_device_add);
+register_function(checking_service_process_work_time_new);
+register_function(checking_service_process_work_time_new_by_user);
+register_function(checking_service_process_permission_add_work_time);
+register_function(checking_service_process_permission_add_employee);
+register_function(checking_service_process_permission_clear_checkout);

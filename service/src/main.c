@@ -165,6 +165,14 @@ get_line:;
                                 checking_service_user_validate(local_service, com);
                         } else if(strcmp(cmd->ptr, "device_add") == 0) {
                                 checking_service_device_add(local_service, com);
+                        } else if(strcmp(cmd->ptr, "work_time_new") == 0) {
+                                checking_service_work_time_new(local_service, com);
+                        } else if(strcmp(cmd->ptr, "permission_add_work_time") == 0) {
+                                checking_service_permission_add_work_time(local_service, com);
+                        } else if(strcmp(cmd->ptr, "permission_add_employee") == 0) {
+                                checking_service_permission_add_employee(local_service, com);
+                        } else if(strcmp(cmd->ptr, "permission_clear_checkout") == 0) {
+                                checking_service_permission_clear_checkout(local_service, com);
                         } else {
                                 if(strcmp(cmd->ptr, "help") != 0) {
                                         app_log("command not found! Commands available :\n");
@@ -189,6 +197,14 @@ get_line:;
                                 app_log("\t\tvalidate an user\n\n");
                                 app_log("- " PRINT_YEL "device_add\n" PRINT_RESET);
                                 app_log("\t\tattach a device to a user\n\n");
+                                app_log("- " PRINT_YEL "work_time_new\n" PRINT_RESET);
+                                app_log("\t\tchange work time for a user\n\n");
+                                app_log("- " PRINT_YEL "permission_add_work_time\n" PRINT_RESET);
+                                app_log("\t\tchange permission add work time of a user\n\n");
+                                app_log("- " PRINT_YEL "permission_add_employee\n" PRINT_RESET);
+                                app_log("\t\tchange permission add employee of a user\n\n");
+                                app_log("- " PRINT_YEL "permission_clear_checkout\n" PRINT_RESET);
+                                app_log("\t\tchange permission clear checkout of a user\n\n");
                                 app_log("\n");
                         }
 

@@ -1,0 +1,9 @@
+{
+        "request" : "post",
+        "path"  : "/checking_service/work_time/{ID}/_create?parent={PARENT_ID}",
+        "data"  : {
+                "time_start"    : "{TIME_START}",
+                "date_start"    : "{DATE_START}",
+                "date_end"      : "{DATE_END}"
+        }
+}

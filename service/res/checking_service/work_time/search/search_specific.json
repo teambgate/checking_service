@@ -1,0 +1,19 @@
+{
+        "request" : "get",
+        "path"  : "/checking_service/work_time/_search",
+        "data"  : {
+                "version": true,
+                "query" : {
+                        "bool": {
+                                "must" : [
+                                        {
+                                                "term" : {
+                                                        "_id"   : "{ID}"
+                                                }
+                                        }
+                                ]
+                        }
+
+                }
+        }
+}

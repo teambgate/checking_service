@@ -27,6 +27,16 @@ void checking_service_process_location_update_latlng_v1(struct cs_server *p, int
 void checking_service_process_user_reserve_v1(struct cs_server *p, int fd, u32 mask, struct smart_object *obj);
 void checking_service_process_user_validate_v1(struct cs_server *p, int fd, u32 mask, struct smart_object *obj);
 
+void checking_service_process_check_in_v1(struct cs_server *p, int fd, u32 mask, struct smart_object *obj);
+void checking_service_process_check_out_v1(struct cs_server *p, int fd, u32 mask, struct smart_object *obj);
+
 void checking_service_process_device_add_v1(struct cs_server *p, int fd, u32 mask, struct smart_object *obj);
+
+void checking_service_process_work_time_new_v1(struct cs_server *p, int fd, u32 mask, struct smart_object *obj);
+void checking_service_process_work_time_new_by_user_v1(struct cs_server *p, int fd, u32 mask, struct smart_object *obj);
+
+void checking_service_process_permission_add_work_time_v1(struct cs_server *p, int fd, u32 mask, struct smart_object *obj);
+void checking_service_process_permission_add_employee_v1(struct cs_server *p, int fd, u32 mask, struct smart_object *obj);
+void checking_service_process_permission_clear_checkout_v1(struct cs_server *p, int fd, u32 mask, struct smart_object *obj);
 
 #endif

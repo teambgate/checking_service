@@ -1,0 +1,23 @@
+{
+        "request" : "put",
+        "path"  : "/checking_service/_mapping/work_time",
+        "data"  : {
+                "_parent" : {
+                        "type" : "user"
+                },
+                "properties" : {
+                        "time_start" : {
+                                "type" : "date",
+                                "format": "HH:mm:ss"
+                        },
+                        "date_start" : {
+                                "type" : "date",
+                                "format": "HH:mm:ss"
+                        },
+                        "date_end" : {
+                                "type" : "date",
+                                "format": "HH:mm:ss"
+                        }
+                }
+        }
+}

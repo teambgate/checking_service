@@ -1,0 +1,10 @@
+{
+        "request" : "post",
+        "path"  : "/checking_service/work_time/{ID}/_update?routing={USER_NAME}&version={VERSION_NUMBER}",
+        "data"  : {
+                "doc" :{
+                        "time_start"    : "{TIME_START}",
+                        "date_start"    : "{DATE_START}"
+                }
+        }
+}

@@ -1,0 +1,9 @@
+{
+        "request" : "put",
+        "path"  : "/checking_service/_mapping/permission_add_work_time",
+        "data"  : {
+                "_parent" : {
+                        "type" : "user"
+                }
+        }
+}

@@ -33,6 +33,8 @@ extern struct string    __key_port__;
 extern struct string    __key_device_id__;
 extern struct string    __key_user_pass__;
 extern struct string    __key_user_name__;
+extern struct string    __key_admin_pass__;
+extern struct string    __key_admin_name__;
 extern struct string    __key_name__;
 extern struct string    __key_services__;
 extern struct string    __key_cell__;
@@ -49,6 +51,9 @@ extern struct string    __key_validated__;
 extern struct string    __key_capacity__;
 extern struct string    __key_location_name__;
 extern struct string    __key_locations__;
+extern struct string    __key_time_start__;
+extern struct string    __key_date_start__;
+extern struct string    __key_date_end__;
 
 #ifdef __cplusplus
 }
