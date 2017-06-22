@@ -133,6 +133,8 @@ struct cs_server {
 
         struct smart_object             *config;
 
+        i32                             timeout;
+
         u8                              local_only;
 };
 

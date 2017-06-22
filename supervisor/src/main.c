@@ -33,7 +33,8 @@
 #include <pthread.h>
 
 static JavaVM*  jvm;
-JNIEnv*         __jni_env;
+JavaVM*         __jvm;
+struct map *    __jni_env_map;
 
 static struct supervisor *s = NULL;
 
@@ -53,7 +54,8 @@ static void __setup_jni()
 
         JNI_CreateJavaVM( &jvm, (void**)&env, &vm_args );
 
-        __jni_env = env;
+        __jvm = jvm;
+        __jni_env_map = map_alloc(sizeof(JNIEnv *));
 }
 
 static struct smart_object *__parse_input(char *line, int len)

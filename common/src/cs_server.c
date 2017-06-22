@@ -390,6 +390,9 @@ void cs_server_start(struct cs_server *ws, u16 port)
         gettimeofday(&t1, NULL);
         struct list_head *head;
 
+        struct timeval select_timeout;
+        struct timeval *select_timeout_ptr = NULL;
+
         while(1) {
                 /*
                  * listen for next incomming sockets
@@ -399,7 +402,16 @@ void cs_server_start(struct cs_server *ws, u16 port)
                 pthread_mutex_unlock(&ws->client_data_mutex);
 
                 debug("cs_server: start select\n");
-                if(select(ws->fdmax + 1, ws->incomming->set->ptr, NULL, NULL, NULL) == -1) {
+
+                if(ws->timeout > 0) {
+                        select_timeout.tv_sec = ws->timeout;
+                        select_timeout.tv_usec = 0;
+                        select_timeout_ptr = &select_timeout;
+                } else {
+                        select_timeout_ptr = NULL;
+                }
+
+                if(select(ws->fdmax + 1, ws->incomming->set->ptr, NULL, NULL, select_timeout_ptr) == -1) {
                         perror("select");
                         break;
                 }
@@ -543,6 +555,8 @@ struct cs_server *cs_server_alloc(u8 local_only)
         p->config               = NULL;
 
         p->local_only           = local_only;
+
+        p->timeout              = -1;
 
         return p;
 }
