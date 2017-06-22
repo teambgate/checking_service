@@ -1,6 +1,6 @@
 {
         "request" : "post",
-        "path"  : "/checking_service/meal/_create",
+        "path"  : "/checking_service/meal/_create?routing=company",
         "data"  : {
                 "name"          : "{NAME}"
         }

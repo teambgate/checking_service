@@ -50,6 +50,7 @@ include_directories(../common/include)
 include_directories(../s2/include)
 include_directories(include)
 
+
 # LINKS JAVA LIBRARIES
 if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
@@ -60,6 +61,7 @@ elseif (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 elseif (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
         include_directories(/System/Library/Frameworks/JavaVM.framework/Headers)
 elseif (CMAKE_SYSTEM_NAME MATCHES "CYGWIN")
+		include_directories(/usr/include/curl)
         include_directories(/cygdrive/c/Program\ Files/Java/jdk1.8.0_77/include)
         include_directories(/cygdrive/c/Program\ Files/Java/jdk1.8.0_77/include/win32)
         link_directories(/cygdrive/c/Program\ Files/Java/jdk1.8.0_77/jre/bin/server)

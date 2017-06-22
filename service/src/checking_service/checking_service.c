@@ -23,6 +23,7 @@
 #include <cherry/stdio.h>
 #include <cherry/string.h>
 #include <smartfox/data.h>
+#include <s2/s2_helper.h>
 
 static void __register_handler(struct cs_server *p, cs_server_handler_delegate delegate, double time_rate)
 {
@@ -101,6 +102,8 @@ struct checking_service *checking_service_alloc(u8 local_only)
         struct cs_server *c             = cs_server_alloc(local_only);
         list_add_tail(&c->user_head, &p->server);
 
+        p->s2_helper                    = s2_helper_alloc(16, 16, 999999);
+
         p->command_flag                 = 1;
         pthread_mutex_init(&p->command_mutex, NULL);
         pthread_cond_init (&p->command_cond, NULL);
@@ -133,6 +136,14 @@ struct checking_service *checking_service_alloc(u8 local_only)
                         &(cs_server_delegate){checking_service_process_permission_add_work_time});
                 map_set(c->delegates, qskey(&__cmd_permission_clear_checkout__),
                         &(cs_server_delegate){checking_service_process_permission_clear_checkout});
+
+                /*
+                 * test functions
+                 */
+                map_set(c->delegates, qskey(&__cmd_check_in__),
+                        &(cs_server_delegate){checking_service_process_check_in});
+                map_set(c->delegates, qskey(&__cmd_check_out__),
+                        &(cs_server_delegate){checking_service_process_check_out});
         } else {
                 map_set(c->delegates, qskey(&__cmd_user_reserve__),
                         &(cs_server_delegate){checking_service_process_user_reserve});
@@ -177,6 +188,7 @@ void checking_service_free(struct checking_service *p)
                         ((char *)p->server.next - offsetof(struct cs_server, user_head));
                 cs_server_free(c);
         }
+        s2_helper_free(p->s2_helper);
         pthread_mutex_destroy(&p->command_mutex);
         pthread_cond_destroy(&p->command_cond);
 

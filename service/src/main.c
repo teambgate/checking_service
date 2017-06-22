@@ -11,6 +11,7 @@
 * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 * GNU General Public License for more details.
 */
+
 #include <cherry/array.h>
 #include <cherry/map.h>
 #include <cherry/stdio.h>
@@ -30,7 +31,8 @@
 #include <common/request.h>
 
 static JavaVM*  jvm;
-JNIEnv*         __jni_env;
+JavaVM*         __jvm;
+struct map *    __jni_env_map;
 
 static struct checking_service  *public_service = NULL;
 static struct checking_service  *local_service  = NULL;
@@ -44,7 +46,7 @@ static void __setup_jni()
         JavaVMOption            options[10];
 
         int oi = 0;
-        options[oi++].optionString = "-Djava.class.path=./s2.jar";
+        options[oi++].optionString = "-Djava.class.path=./";
 
         vm_args.version                 = JNI_VERSION_1_4;
         vm_args.options                 = options;
@@ -53,7 +55,8 @@ static void __setup_jni()
 
         JNI_CreateJavaVM( &jvm, (void**)&env, &vm_args );
 
-        __jni_env = env;
+        __jvm = jvm;
+        __jni_env_map = map_alloc(sizeof(JNIEnv *));
 }
 
 static struct smart_object *__parse_input(char *line, int len)
@@ -173,6 +176,10 @@ get_line:;
                                 checking_service_permission_add_employee(local_service, com);
                         } else if(strcmp(cmd->ptr, "permission_clear_checkout") == 0) {
                                 checking_service_permission_clear_checkout(local_service, com);
+                        } else if(strcmp(cmd->ptr, "test_check_in") == 0) {
+                                checking_service_check_in(local_service, com);
+                        } else if(strcmp(cmd->ptr, "test_check_out") == 0) {
+                                checking_service_check_out(local_service, com);
                         } else {
                                 if(strcmp(cmd->ptr, "help") != 0) {
                                         app_log("command not found! Commands available :\n");
@@ -205,6 +212,10 @@ get_line:;
                                 app_log("\t\tchange permission add employee of a user\n\n");
                                 app_log("- " PRINT_YEL "permission_clear_checkout\n" PRINT_RESET);
                                 app_log("\t\tchange permission clear checkout of a user\n\n");
+                                app_log("- " PRINT_YEL "test_check_in\n" PRINT_RESET);
+                                app_log("\t\ttest check in\n\n");
+                                app_log("- " PRINT_YEL "test_check_out\n" PRINT_RESET);
+                                app_log("\t\ttest check out\n\n");
                                 app_log("\n");
                         }
 
@@ -252,6 +263,7 @@ int main( int argc, char** argv )
 
         checking_service_free(local_service);
         checking_service_free(public_service);
+        map_free(__jni_env_map);
         cache_free();
         dim_memory();
 

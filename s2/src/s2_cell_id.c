@@ -19,6 +19,7 @@ static jmethodID        __method_id = NULL;
 
 static void __clear()
 {
+        JNIEnv *__jni_env = __jni_env_current_thread();
         if(__class) {
                 (*__jni_env)->DeleteGlobalRef(__jni_env, __class);
                 __class = NULL;
@@ -27,6 +28,7 @@ static void __clear()
 
 static void __setup()
 {
+        JNIEnv *__jni_env = __jni_env_current_thread();
         if(__class == NULL) {
                 cache_add(__clear);
 
@@ -43,6 +45,7 @@ static void __setup()
 
 struct s2_cell_id *s2_cell_id_alloc(jobject obj)
 {
+        JNIEnv *__jni_env = __jni_env_current_thread();
         __setup();
         struct s2_cell_id *p    = smalloc(sizeof(struct s2_cell_id));
         p->obj                  = (*__jni_env)->NewGlobalRef(__jni_env, obj);
@@ -55,6 +58,7 @@ struct s2_cell_id *s2_cell_id_alloc(jobject obj)
 
 void s2_cell_id_free(struct s2_cell_id *p)
 {
+        JNIEnv *__jni_env = __jni_env_current_thread();
         __setup();
         (*__jni_env)->DeleteGlobalRef(__jni_env, p->obj);
         sfree(p);

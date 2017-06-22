@@ -1,6 +1,6 @@
 {
         "request" : "post",
-        "path"  : "/checking_service/report/{ID}/_create?parent={PARENT_ID}",
+        "path"  : "/checking_service/report/{ID}/_create?parent={PARENT_ID}&routing=company",
         "data"  : {
                 "time_created"          : "1900-01-01 00:00:00"
         }

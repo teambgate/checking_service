@@ -32,6 +32,7 @@ static jmethodID        __array_list_method_get = NULL;
 
 static void __clear()
 {
+        JNIEnv *__jni_env = __jni_env_current_thread();
         if(__class) {
                 (*__jni_env)->DeleteGlobalRef(__jni_env, __class);
                 (*__jni_env)->DeleteGlobalRef(__jni_env, __array_list_class);
@@ -41,6 +42,7 @@ static void __clear()
 
 static void __setup()
 {
+        JNIEnv *__jni_env = __jni_env_current_thread();
         if(__class == NULL) {
                 cache_add(__clear);
 
@@ -91,6 +93,7 @@ static void __setup()
 
 struct s2_helper *s2_helper_alloc(int min_level, int max_level, int max_cells)
 {
+        JNIEnv *__jni_env = __jni_env_current_thread();
         __setup();
 
         struct s2_helper *p     = smalloc(sizeof(struct s2_helper));
@@ -106,8 +109,8 @@ struct s2_helper *s2_helper_alloc(int min_level, int max_level, int max_cells)
 
 struct s2_cell_union *s2_helper_get_cell_union(struct s2_helper *p, double lat, double lng, double range)
 {
+        JNIEnv *__jni_env = __jni_env_current_thread();
         __setup();
-
         struct s2_lat_lng *latlng = s2_lat_lng_alloc(lat, lng);
 
         jobject obj = (*__jni_env)->CallObjectMethod(__jni_env, p->obj, __method_get_cell_union, latlng->obj, range);
@@ -122,6 +125,7 @@ struct s2_cell_union *s2_helper_get_cell_union(struct s2_helper *p, double lat, 
 
 struct array *s2_helper_get_cellids(struct s2_helper *p, struct s2_cell_union *u)
 {
+        JNIEnv *__jni_env = __jni_env_current_thread();
         struct array *a         = array_alloc(sizeof(struct s2_cell_id *), ORDERED);
 
         jobject obj             = (*__jni_env)->CallObjectMethod(__jni_env, p->obj,
@@ -146,6 +150,7 @@ struct array *s2_helper_get_cellids(struct s2_helper *p, struct s2_cell_union *u
 
 struct s2_cell_id *s2_helper_get_cellid(struct s2_helper *p, double lat, double lng, int level)
 {
+        JNIEnv *__jni_env = __jni_env_current_thread();
         jobject obj     = (*__jni_env)->CallObjectMethod(__jni_env, p->obj, __method_get_cell_id,
                 lat, lng, level);
 
@@ -157,6 +162,7 @@ struct s2_cell_id *s2_helper_get_cellid(struct s2_helper *p, double lat, double 
 
 void s2_helper_free(struct s2_helper *p)
 {
+        JNIEnv *__jni_env = __jni_env_current_thread();
         __setup();
 
         (*__jni_env)->DeleteGlobalRef(__jni_env, p->obj);

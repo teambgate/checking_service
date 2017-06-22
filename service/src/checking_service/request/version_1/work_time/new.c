@@ -208,7 +208,7 @@ static void __search_callback(struct cs_server_callback_user_data *cud, struct s
                  * store old work time
                  */
                 {
-                        struct string *current_time = current_time_to_string();
+                        struct string *current_time = current_time_to_string(TIME_FORMAT_YY_MM_DD_HH_MM_SS);
                         string_replace(current_time, "-", "_");
                         string_replace(current_time, " ", "_");
                         string_replace(current_time, ":", "_");
@@ -219,7 +219,7 @@ static void __search_callback(struct cs_server_callback_user_data *cud, struct s
                         string_cat_string(id, current_time);
 
                         string_free(current_time);
-                        current_time = current_time_to_string();
+                        current_time = current_time_to_string(TIME_FORMAT_YY_MM_DD_HH_MM_SS);
 
                         struct string *es_version_code = smart_object_get_string(cs->config, qlkey("es_version_code"), SMART_GET_REPLACE_IF_WRONG_TYPE);
                         struct string *es_pass = smart_object_get_string(cs->config, qlkey("es_pass"), SMART_GET_REPLACE_IF_WRONG_TYPE);
@@ -247,7 +247,7 @@ static void __search_callback(struct cs_server_callback_user_data *cud, struct s
                         /*
                          * create new work time
                          */
-                        struct string *current_time = offset_time_to_string(28800);
+                        struct string *current_time = offset_date_time_to_string(28800);
 
                         struct string *id = string_alloc(0);
                         string_cat_string(id, user_name);
@@ -277,7 +277,7 @@ static void __search_callback(struct cs_server_callback_user_data *cud, struct s
                  * create new work time. offset date start to the next 8h
                  * to prevent new user checked as late
                  */
-                struct string *current_time = offset_time_to_string(28800);
+                struct string *current_time = offset_date_time_to_string(28800);
 
                 struct string *id = string_alloc(0);
                 string_cat_string(id, user_name);

@@ -54,6 +54,8 @@ extern struct string    __key_locations__;
 extern struct string    __key_time_start__;
 extern struct string    __key_date_start__;
 extern struct string    __key_date_end__;
+extern struct string    __key_check_in__;
+extern struct string    __key_check_out__;
 
 #ifdef __cplusplus
 }

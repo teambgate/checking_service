@@ -10,6 +10,11 @@
                                                 "term" : {
                                                         "_id"   : "{USER_NAME}"
                                                 }
+                                        },
+                                        {
+                                                "term" : {
+                                                        "_routing"   : "company"
+                                                }
                                         }
                                 ]
                         }

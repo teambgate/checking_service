@@ -3,7 +3,7 @@
         "path"  : "/checking_service/_mapping/blocked_device",
         "data"  : {
                 "properties" : {
-                        "start_time" : {
+                        "date_start" : {
                                 "type" : "date",
                                 "format": "yyyy-MM-dd HH:mm:ss"
                         }

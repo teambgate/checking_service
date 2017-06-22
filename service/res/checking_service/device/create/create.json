@@ -1,6 +1,6 @@
 {
         "request" : "post",
-        "path"  : "/checking_service/device/{ID}/_create?parent={PARENT_ID}&routing=device",
+        "path"  : "/checking_service/device/{ID}/_create?parent={PARENT_ID}&routing=company",
         "data"  : {
                 "device_id"     : "{DEVICE_ID}"
         }

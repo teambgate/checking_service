@@ -16,5 +16,8 @@
         "supervisor_pass"               : "123456",
         "supervisor_version_code"       : "1",
 
-        "packet_size_limit"             : "2M"
+        "packet_size_limit"             : "2M",
+
+        "lat"                           : 21.0141,
+        "lon"                           : 105.8499
 }

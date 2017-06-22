@@ -1,0 +1,9 @@
+{
+        "request" : "post",
+        "path"  : "/checking_service/check/{ID}/_update?parent={USER_NAME}&version={VERSION_NUMBER}&routing=company",
+        "data"  : {
+                "doc" :{
+                        "check_out"     : "{CHECK_OUT}"
+                }
+        }
+}

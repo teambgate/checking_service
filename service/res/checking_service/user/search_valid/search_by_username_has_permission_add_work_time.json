@@ -22,6 +22,11 @@
                                                 }
                                         },
                                         {
+                                                "term" : {
+                                                        "_routing"   : "company"
+                                                }
+                                        },
+                                        {
                                                 "has_child" : {
                                                         "type" : "permission_add_work_time",
                                                         "query" : {
@@ -30,6 +35,11 @@
                                                                                 {
                                                                                         "term" : {
                                                                                                 "active" : 1
+                                                                                        }
+                                                                                },
+                                                                                {
+                                                                                        "term" : {
+                                                                                                "_routing"   : "company"
                                                                                         }
                                                                                 }
                                                                         ]

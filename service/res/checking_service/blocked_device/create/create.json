@@ -1,7 +1,7 @@
 {
         "request" : "post",
-        "path"  : "/checking_service/blocked_device/{ID}/_create",
+        "path"  : "/checking_service/blocked_device/{ID}/_create?routing=company",
         "data"  : {
-                "start_time"      : "{START_TIME}"
+                "date_start"      : "{DATE_START}"
         }
 }

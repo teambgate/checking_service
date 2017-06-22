@@ -1,6 +1,6 @@
 {
         "request" : "post",
-        "path"  : "/checking_service/user/{USER_NAME}/_update?version={VERSION_NUMBER}",
+        "path"  : "/checking_service/user/{USER_NAME}/_update?version={VERSION_NUMBER}&routing=company",
         "data"  : {
                 "doc" :{
                         "validated"  : 1

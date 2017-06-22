@@ -1,6 +1,6 @@
 {
         "request" : "post",
-        "path"  : "/checking_service/work_time/{ID}/_update?routing={USER_NAME}&version={VERSION_NUMBER}",
+        "path"  : "/checking_service/work_time/{ID}/_update?parent={USER_NAME}&version={VERSION_NUMBER}&routing=company",
         "data"  : {
                 "doc" :{
                         "time_start"    : "{TIME_START}",

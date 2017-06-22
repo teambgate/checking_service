@@ -66,6 +66,12 @@ void checking_service_permission_add_employee_callback(struct checking_service *
 void checking_service_permission_clear_checkout(struct checking_service *p, struct smart_object *in);
 void checking_service_permission_clear_checkout_callback(struct checking_service *p, struct smart_object *recv);
 
+void checking_service_check_in(struct checking_service *p, struct smart_object *in);
+void checking_service_check_in_callback(struct checking_service *p, struct smart_object *recv);
+
+void checking_service_check_out(struct checking_service *p, struct smart_object *in);
+void checking_service_check_out_callback(struct checking_service *p, struct smart_object *recv);
+
 /*
  * request delegate
  */

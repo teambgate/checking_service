@@ -1,6 +1,6 @@
 {
         "request" : "post",
-        "path"  : "/checking_service/work_time/{ID}/_create?parent={PARENT_ID}",
+        "path"  : "/checking_service/work_time/{ID}/_create?parent={PARENT_ID}&routing=company",
         "data"  : {
                 "time_start"    : "{TIME_START}",
                 "date_start"    : "{DATE_START}",

@@ -20,6 +20,11 @@
                                                 "term" : {
                                                         "validated"   : 1
                                                 }
+                                        },
+                                        {
+                                                "term" : {
+                                                        "_routing"   : "company"
+                                                }
                                         }
                                 ]
                         }

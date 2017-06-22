@@ -1,6 +1,6 @@
 {
         "request" : "post",
-        "path"  : "/checking_service/user/{USER_NAME}/_create",
+        "path"  : "/checking_service/user/{USER_NAME}/_create?routing=company",
         "data"  : {
                 "name"                  : "{NAME}",
                 "user_pass"             : "{USER_PASS}",

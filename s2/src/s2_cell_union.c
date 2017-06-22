@@ -21,6 +21,7 @@ static jmethodID        __method_contains = NULL;
 
 static void __clear()
 {
+        JNIEnv *__jni_env = __jni_env_current_thread();
         if(__class) {
                 (*__jni_env)->DeleteGlobalRef(__jni_env, __class);
                 __class = NULL;
@@ -29,6 +30,7 @@ static void __clear()
 
 static void __setup()
 {
+        JNIEnv *__jni_env = __jni_env_current_thread();
         if(__class == NULL) {
                 cache_add(__clear);
 
@@ -44,6 +46,7 @@ static void __setup()
 
 struct s2_cell_union *s2_cell_union_alloc(jobject obj)
 {
+        JNIEnv *__jni_env = __jni_env_current_thread();
         __setup();
 
         struct s2_cell_union *p = smalloc(sizeof(struct s2_cell_union));
@@ -54,6 +57,7 @@ struct s2_cell_union *s2_cell_union_alloc(jobject obj)
 
 void s2_cell_union_free(struct s2_cell_union *p)
 {
+        JNIEnv *__jni_env = __jni_env_current_thread();
         __setup();
 
         (*__jni_env)->DeleteGlobalRef(__jni_env, p->obj);
@@ -62,6 +66,7 @@ void s2_cell_union_free(struct s2_cell_union *p)
 
 int s2_cell_union_contain(struct s2_cell_union *p, double lat, double lng)
 {
+        JNIEnv *__jni_env = __jni_env_current_thread();
         struct s2_lat_lng *latlng       = s2_lat_lng_alloc(lat, lng);
         struct s2_point *point          = s2_lat_lng_to_point(latlng);
 

@@ -1,6 +1,6 @@
 {
         "request" : "post",
-        "path"  : "/checking_service/permission_add_employee/{ID}/_create?parent={PARENT_ID}",
+        "path"  : "/checking_service/permission_add_employee/{ID}/_create?parent={PARENT_ID}&routing=company",
         "data"  : {
                 "active"        : 1
         }

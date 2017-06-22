@@ -12,11 +12,11 @@
                         },
                         "date_start" : {
                                 "type" : "date",
-                                "format": "HH:mm:ss"
+                                "format": "yyyy-MM-dd HH:mm:ss"
                         },
                         "date_end" : {
                                 "type" : "date",
-                                "format": "HH:mm:ss"
+                                "format": "yyyy-MM-dd HH:mm:ss"
                         }
                 }
         }

@@ -14,10 +14,17 @@
 #ifndef __CHECKING_SERVICE_S2_TYPES_H__
 #define __CHECKING_SERVICE_S2_TYPES_H__
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <cherry/types.h>
 #include <jni.h>
 
-extern JNIEnv* __jni_env;
+extern JavaVM* __jvm;
+extern struct map *__jni_env_map;
+
+JNIEnv *__jni_env_current_thread();
 
 struct s2_helper {
         jobject         obj;
@@ -43,5 +50,9 @@ struct s2_lat_lng {
 struct s2_point {
         jobject         obj;
 };
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

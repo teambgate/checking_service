@@ -21,6 +21,7 @@ extern "C" {
 #include <cherry/server/types.h>
 #include <smartfox/types.h>
 #include <common/types.h>
+#include <s2/types.h>
 
 extern struct cs_requester *local_requester;
 
@@ -31,6 +32,8 @@ struct checking_service {
 
         struct cs_requester     *supervisor_requester;
         struct cs_requester     *es_server_requester;
+
+        struct s2_helper        *s2_helper;
 
         u8                      command_flag;
         pthread_mutex_t         command_mutex;

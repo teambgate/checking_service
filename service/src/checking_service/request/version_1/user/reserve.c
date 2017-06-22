@@ -153,7 +153,7 @@ static void __reserve(struct cs_server *p, int fd, u32 mask, struct smart_object
         struct string *user_name        = smart_object_get_string(obj, qskey(&__key_user_name__), SMART_GET_REPLACE_IF_WRONG_TYPE);
         struct string *user_pass        = smart_object_get_string(obj, qskey(&__key_user_pass__), SMART_GET_REPLACE_IF_WRONG_TYPE);
 
-        struct string *current_time     = current_time_to_string();
+        struct string *current_time     = current_time_to_string(TIME_FORMAT_YY_MM_DD_HH_MM_SS);
 
         struct string *content = cs_request_string_from_file("res/checking_service/user/create/create.json", FILE_INNER);
         string_replace(content, "{USER_NAME}", user_name->ptr);

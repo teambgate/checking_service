@@ -36,7 +36,7 @@
                  ((char *)p->user_head.next - offsetof(struct supervisor , server));
 
          double offset = smart_object_get_double(p->config, qlkey("service_created_timeout"), SMART_GET_REPLACE_IF_WRONG_TYPE);
-         struct string *last_time = offset_time_to_string(-offset);
+         struct string *last_time = offset_date_time_to_string(-offset);
 
          struct string *es_version_code = smart_object_get_string(p->config, qlkey("es_version_code"), SMART_GET_REPLACE_IF_WRONG_TYPE);
          struct string *es_pass = smart_object_get_string(p->config, qlkey("es_pass"), SMART_GET_REPLACE_IF_WRONG_TYPE);
