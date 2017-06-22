@@ -197,3 +197,44 @@ ssize_t common_getpasswd (char *pw, size_t sz, int mask, FILE *fp)
         printf("\n");
         return idx; /* number of chars in passwd    */
 }
+
+int common_fix_date_time_string(struct string *p)
+{
+        int result = 1;
+        int y = 0, mo = 0, d = 0, h = 0, m = 0, s= 0;
+        int count;
+
+        string_trim(p);
+        if(p->len == 0) {
+                result = 0;
+                goto finish;
+        }
+
+        count = sscanf(p->ptr, "%d-%d-%d", &y, &mo, &d);
+        if (count == 3) {
+                char str[40];
+                memset(str, 0, 40);
+                sprintf(str, "%04d-%02d-%02d %02d:%02d:%02d", y, mo, d, h, m, s);
+                p->len = 0;
+                string_cat(p, str, strlen(str));
+                result = 1;
+                goto finish;
+        } else {
+                count = sscanf(p->ptr, "%d-%d-%d %d:%d:%d", &y, &mo, &d, &h, &m, &s);
+                if (count == 6) {
+                        char str[40];
+                        memset(str, 0, 40);
+                        sprintf(str, "%04d-%02d-%02d %02d:%02d:%02d", y, mo, d, h, m, s);
+                        p->len = 0;
+                        string_cat(p, str, strlen(str));
+                        result = 1;
+                        goto finish;
+                } else {
+                        result = 0;
+                        goto finish;
+                }
+        }
+
+finish:;
+        return result;
+}

@@ -72,6 +72,12 @@ void checking_service_check_in_callback(struct checking_service *p, struct smart
 void checking_service_check_out(struct checking_service *p, struct smart_object *in);
 void checking_service_check_out_callback(struct checking_service *p, struct smart_object *recv);
 
+void checking_service_check_search_by_date_by_user(struct checking_service *p, struct smart_object *in);
+void checking_service_check_search_by_date_by_user_callback(struct checking_service *p, struct smart_object *recv);
+
+void checking_service_work_time_search_by_date_by_user(struct checking_service *p, struct smart_object *in);
+void checking_service_work_time_search_by_date_by_user_callback(struct checking_service *p, struct smart_object *recv);
+
 /*
  * request delegate
  */
@@ -87,11 +93,13 @@ void checking_service_process_user_validate(struct cs_server *p, int fd, u32 mas
 
 void checking_service_process_check_in(struct cs_server *p, int fd, u32 mask, struct smart_object *obj);
 void checking_service_process_check_out(struct cs_server *p, int fd, u32 mask, struct smart_object *obj);
+void checking_service_process_check_search_by_date_by_user(struct cs_server *p, int fd, u32 mask, struct smart_object *obj);
 
 void checking_service_process_device_add(struct cs_server *p, int fd, u32 mask, struct smart_object *obj);
 
 void checking_service_process_work_time_new(struct cs_server *p, int fd, u32 mask, struct smart_object *obj);
 void checking_service_process_work_time_new_by_user(struct cs_server *p, int fd, u32 mask, struct smart_object *obj);
+void checking_service_process_work_time_search_by_date_by_user(struct cs_server *p, int fd, u32 mask, struct smart_object *obj);
 
 void checking_service_process_permission_add_work_time(struct cs_server *p, int fd, u32 mask, struct smart_object *obj);
 void checking_service_process_permission_add_employee(struct cs_server *p, int fd, u32 mask, struct smart_object *obj);

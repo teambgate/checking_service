@@ -43,6 +43,10 @@
 #include <common/cs_server.h>
 #include <common/util.h>
 
+#include <cherry/time.h>
+
+#include <cherry/crypt/md5.h>
+
 /*
  * response invalid data
  */
@@ -76,7 +80,6 @@ static void __response_success(struct cs_server *p, int fd, u32 mask, struct sma
         smart_object_free(res);
 }
 
-
 static int __validate_input(struct cs_server *p, int fd, u32 mask, struct smart_object *obj)
 {
         struct string *service_pass = smart_object_get_string(p->config, qlkey("service_pass"), SMART_GET_REPLACE_IF_WRONG_TYPE);
@@ -102,30 +105,47 @@ static int __validate_input(struct cs_server *p, int fd, u32 mask, struct smart_
                 return 0;
         }
 
-        return 1;
-}
+        struct string *user_pass = smart_object_get_string(obj, qskey(&__key_user_pass__), SMART_GET_REPLACE_IF_WRONG_TYPE);
+        string_trim(user_pass);
+        if(user_pass->len == 0) {
+                __response_invalid_data(p, fd, mask, obj, qlkey("Please provide password!"));
+                return 0;
+        }
+        if(user_pass->len < 8) {
+                __response_invalid_data(p, fd, mask, obj, qlkey("Password need have at least 8 characters!"));
+                return 0;
+        }
 
-static void __update_validated_callback(struct cs_server_callback_user_data *p, struct smart_object *result)
-{
-        struct smart_object *data = smart_object_get_object(result, qskey(&__key_data__), SMART_GET_REPLACE_IF_WRONG_TYPE);
-        int _version = smart_object_get_int(data, qlkey("_version"), SMART_GET_REPLACE_IF_WRONG_TYPE);
-        int _old_version = smart_object_get_int(p->obj, qlkey("_version"), SMART_GET_REPLACE_IF_WRONG_TYPE);
+        {
+                struct string *from = smart_object_get_string(obj, qskey(&__key_from__), SMART_GET_REPLACE_IF_WRONG_TYPE);
+                string_trim(from);
+                if(from->len == 0) {
+                        __response_invalid_data(p, fd, mask, obj, qlkey("Please provide date from!"));
+                        return 0;
+                }
 
-        if(_version > 0 && _version - 1 == _old_version) {
-                __response_success(p->p, p->fd, p->mask,  p->obj, qlkey("user name is validated successfully!"));
-        } else {
-                if(_version == 0) {
-                        __response_invalid_data(p->p, p->fd, p->mask,  p->obj, qlkey("error!"));
-                } else if(_old_version != _version) {
-                        __response_invalid_data(p->p, p->fd, p->mask,  p->obj, qlkey("error!"));
-                } else if(_old_version == _version) {
-                        __response_success(p->p, p->fd, p->mask,  p->obj, qlkey("user name has been validated already!"));
-                } else {
-                        __response_invalid_data(p->p, p->fd, p->mask,  p->obj, qlkey("error!"));
+                if( ! common_fix_date_time_string(from)) {
+                        __response_invalid_data(p, fd, mask, obj, qlkey("Please provide date from!"));
+                        return 0;
                 }
         }
 
-        cs_server_callback_user_data_free(p);
+        {
+                struct string *to = smart_object_get_string(obj, qskey(&__key_to__), SMART_GET_REPLACE_IF_WRONG_TYPE);
+                string_trim(to);
+                if(to->len == 0) {
+                        __response_invalid_data(p, fd, mask, obj, qlkey("Please provide date to!"));
+                        return 0;
+                }
+
+                if( ! common_fix_date_time_string(to)) {
+                        __response_invalid_data(p, fd, mask, obj, qlkey("Please provide date to!"));
+                        return 0;
+                }
+        }
+
+
+        return 1;
 }
 
 static void __search_callback(struct cs_server_callback_user_data *cud, struct smart_object *recv)
@@ -134,48 +154,34 @@ static void __search_callback(struct cs_server_callback_user_data *cud, struct s
                 ((char *)cud->p->user_head.next - offsetof(struct checking_service , server));
 
         struct smart_object *data = smart_object_get_object(recv, qskey(&__key_data__), SMART_GET_REPLACE_IF_WRONG_TYPE);
-
         struct smart_object *hits = smart_object_get_object(data, qlkey("hits"), SMART_GET_REPLACE_IF_WRONG_TYPE);
-
         int total = smart_object_get_int(hits, qlkey("total"), SMART_GET_REPLACE_IF_WRONG_TYPE);
 
-        if(total == 1) {
+        if(total > 0) {
                 struct smart_array *hits_hits     = smart_object_get_array(hits, qlkey("hits"), SMART_GET_REPLACE_IF_WRONG_TYPE);
-                struct smart_object *user     = smart_array_get_object(hits_hits, 0, SMART_GET_REPLACE_IF_WRONG_TYPE);
 
-                struct string *_id              = smart_object_get_string(user, qlkey("_id"), SMART_GET_REPLACE_IF_WRONG_TYPE);
-                int _version                     = smart_object_get_int(user, qlkey("_version"), SMART_GET_REPLACE_IF_WRONG_TYPE);
-                struct smart_object *_source      = smart_object_get_object(user, qlkey("_source"), SMART_GET_REPLACE_IF_WRONG_TYPE);
+                struct smart_object *res = smart_object_alloc();
+                smart_object_set_long(res, qskey(&__key_request_id__),
+                        smart_object_get_long(cud->obj, qskey(&__key_request_id__), SMART_GET_REPLACE_IF_WRONG_TYPE));
+                smart_object_set_bool(res, qskey(&__key_result__), 1);
+                smart_object_set_string(res, qskey(&__key_message__), qlkey("successfully"));
 
-                int validated                   = smart_object_get_int(_source, qskey(&__key_validated__), SMART_GET_REPLACE_IF_WRONG_TYPE);
-
-                if(validated) {
-                        __response_success(cud->p, cud->fd, cud->mask,  cud->obj, qlkey("This user name has been validated already!"));
-                        cs_server_callback_user_data_free(cud);
-                } else {
-                        /*
-                         * put _version into obj to recompare next stage
-                         */
-                        smart_object_set_int(cud->obj, qlkey("_version"), _version);
-                        /*
-                         * try validate successfuly
-                         */
-                        struct string *es_version_code = smart_object_get_string(cud->p->config, qlkey("es_version_code"), SMART_GET_REPLACE_IF_WRONG_TYPE);
-                        struct string *es_pass = smart_object_get_string(cud->p->config, qlkey("es_pass"), SMART_GET_REPLACE_IF_WRONG_TYPE);
-
-                        struct string *content = cs_request_string_from_file("res/checking_service/user/create/update_validated.json", FILE_INNER);
-                        string_replace(content, "{USER_NAME}", _id->ptr);
-                        string_replace_int(content, "{VERSION_NUMBER}", _version);
-
-                        struct smart_object *request_data = cs_request_data_from_string(qskey(content),
-                                qskey(es_version_code), qskey(es_pass));
-                        string_free(content);
-
-                        cs_request_alloc(cs->es_server_requester, request_data,
-                                (cs_request_callback)__update_validated_callback, cud);
+                struct smart_object *res_data = smart_object_get_object(res, qskey(&__key_data__), SMART_GET_REPLACE_IF_WRONG_TYPE);
+                struct smart_array *wtimes = smart_object_get_array(res_data, qskey(&__key_work_times__), SMART_GET_REPLACE_IF_WRONG_TYPE);
+                int i;
+                for_i(i, total) {
+                        struct smart_object *w        = smart_array_get_object(hits_hits, i, SMART_GET_REPLACE_IF_WRONG_TYPE);
+                        struct smart_object *_source    = smart_object_get_object(w, qlkey("_source"), SMART_GET_REPLACE_IF_WRONG_TYPE);
+                        smart_array_add_object(wtimes, smart_object_clone(_source));
                 }
+
+                struct string *d        = smart_object_to_json(res);
+                cs_server_send_to_client(cud->p, cud->fd, cud->mask, d->ptr, d->len, 0);
+                string_free(d);
+                smart_object_free(res);
+
         } else {
-                __response_invalid_data(cud->p, cud->fd, cud->mask,  cud->obj, qlkey("user name is not registered!"));
+                __response_success(cud->p, cud->fd, cud->mask,  cud->obj, qlkey("empty!"));
                 cs_server_callback_user_data_free(cud);
         }
 }
@@ -185,13 +191,20 @@ static void __search(struct cs_server *p, int fd, u32 mask, struct smart_object 
         struct checking_service *cs = (struct checking_service *)
                 ((char *)p->user_head.next - offsetof(struct checking_service , server));
 
-        struct string *user_name = smart_object_get_string(obj, qskey(&__key_user_name__), SMART_GET_REPLACE_IF_WRONG_TYPE);
+        struct string *user_name        = smart_object_get_string(obj, qskey(&__key_user_name__), SMART_GET_REPLACE_IF_WRONG_TYPE);
+        struct string *user_pass        = smart_object_get_string(obj, qskey(&__key_user_pass__), SMART_GET_REPLACE_IF_WRONG_TYPE);
+        struct string *from             = smart_object_get_string(obj, qskey(&__key_from__), SMART_GET_REPLACE_IF_WRONG_TYPE);
+        struct string *to               = smart_object_get_string(obj, qskey(&__key_to__), SMART_GET_REPLACE_IF_WRONG_TYPE);
 
-        struct string *es_version_code = smart_object_get_string(p->config, qlkey("es_version_code"), SMART_GET_REPLACE_IF_WRONG_TYPE);
-        struct string *es_pass = smart_object_get_string(p->config, qlkey("es_pass"), SMART_GET_REPLACE_IF_WRONG_TYPE);
+        struct string *es_version_code = smart_object_get_string(cs->config, qlkey("es_version_code"), SMART_GET_REPLACE_IF_WRONG_TYPE);
+        struct string *es_pass = smart_object_get_string(cs->config, qlkey("es_pass"), SMART_GET_REPLACE_IF_WRONG_TYPE);
 
-        struct string *content = cs_request_string_from_file("res/checking_service/user/create/search_by_username.json", FILE_INNER);
+        struct string *content = cs_request_string_from_file("res/checking_service/work_time/search/search_by_date_by_user.json", FILE_INNER);
         string_replace(content, "{USER_NAME}", user_name->ptr);
+        string_replace(content, "{USER_PASS}", user_pass->ptr);
+        string_replace(content, "{FROM}", from->ptr);
+        string_replace(content, "{TO}", to->ptr);
+        string_replace_int(content, "{SIZE}", date_time_differents(from->ptr, to->ptr) + 1);
 
         struct smart_object *request_data = cs_request_data_from_string(qskey(content),
                 qskey(es_version_code), qskey(es_pass));
@@ -203,7 +216,8 @@ static void __search(struct cs_server *p, int fd, u32 mask, struct smart_object 
                 (cs_request_callback)__search_callback, cud);
 }
 
-void checking_service_process_user_validate_v1(struct cs_server *p, int fd, u32 mask, struct smart_object *obj)
+
+void checking_service_process_work_time_search_by_date_by_user_v1(struct cs_server *p, int fd, u32 mask, struct smart_object *obj)
 {
         if( ! __validate_input(p, fd, mask, obj)) {
                 return;

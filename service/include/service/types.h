@@ -40,6 +40,10 @@ struct checking_service {
         pthread_cond_t          command_cond;
 };
 
+struct local_supporter {
+        struct list_head        server;
+};
+
 #ifdef __cplusplus
 }
 #endif

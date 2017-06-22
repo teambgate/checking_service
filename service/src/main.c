@@ -30,6 +30,8 @@
 
 #include <common/request.h>
 
+#include <cherry/time.h>
+
 static JavaVM*  jvm;
 JavaVM*         __jvm;
 struct map *    __jni_env_map;
@@ -145,7 +147,9 @@ get_line:;
         if(local_service->command_flag) {
                 pthread_mutex_unlock(&local_service->command_mutex);
                 memset(line, 0, BUFFER_LEN);
+                app_log( PRINT_GRN);
                 if(fgets(line, BUFFER_LEN, stdin) != NULL) {
+                        app_log( PRINT_RESET);
                         struct smart_object *com = __parse_input(line, BUFFER_LEN);
 
                         struct string *cmd = smart_object_get_string(com, qlkey("cmd"), SMART_GET_REPLACE_IF_WRONG_TYPE);
@@ -180,6 +184,10 @@ get_line:;
                                 checking_service_check_in(local_service, com);
                         } else if(strcmp(cmd->ptr, "test_check_out") == 0) {
                                 checking_service_check_out(local_service, com);
+                        } else if(strcmp(cmd->ptr, "test_check_search_by_date_by_user") == 0) {
+                                checking_service_check_search_by_date_by_user(local_service, com);
+                        } else if(strcmp(cmd->ptr, "test_work_time_search_by_date_by_user") == 0) {
+                                checking_service_work_time_search_by_date_by_user(local_service, com);
                         } else {
                                 if(strcmp(cmd->ptr, "help") != 0) {
                                         app_log("command not found! Commands available :\n");
@@ -216,6 +224,10 @@ get_line:;
                                 app_log("\t\ttest check in\n\n");
                                 app_log("- " PRINT_YEL "test_check_out\n" PRINT_RESET);
                                 app_log("\t\ttest check out\n\n");
+                                app_log("- " PRINT_YEL "test_check_search_by_date_by_user\n" PRINT_RESET);
+                                app_log("\t\ttest search user checks\n\n");
+                                app_log("- " PRINT_YEL "test_work_time_search_by_date_by_user\n" PRINT_RESET);
+                                app_log("\t\ttest search user work times\n\n");
                                 app_log("\n");
                         }
 

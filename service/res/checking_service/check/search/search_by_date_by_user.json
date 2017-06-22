@@ -1,0 +1,58 @@
+{
+        "request" : "get",
+        "path"  : "/checking_service/check/_search?size={SIZE}",
+        "data"  : {
+                "version": true,
+                "query" : {
+                        "bool": {
+                                "must" : [
+                                        {
+                                                "term" : {
+                                                        "_routing"   : "company"
+                                                }
+                                        },
+                                        {
+                                                "range" : {
+                                                        "check_in" : {
+                                                                "from"  : "{FROM}",
+                                                                "to"    : "{TO}"
+                                                        }
+                                                }
+                                        },
+                                        {
+                                                "has_parent" : {
+                                                        "parent_type" : "user",
+                                                        "query" : {
+                                                                "bool" : {
+                                                                        "must" : [
+                                                                                {
+                                                                                        "term" : {
+                                                                                                "_id"   : "{USER_NAME}"
+                                                                                        }
+                                                                                },
+                                                                                {
+                                                                                        "term" : {
+                                                                                                "user_pass"   : "{USER_PASS}"
+                                                                                        }
+                                                                                },
+                                                                                {
+                                                                                        "term" : {
+                                                                                                "validated" : 1
+                                                                                        }
+                                                                                },
+                                                                                {
+                                                                                        "term" : {
+                                                                                                "_routing"   : "company"
+                                                                                        }
+                                                                                }
+                                                                        ]
+                                                                }
+                                                        }
+                                                }
+                                        }
+                                ]
+                        }
+
+                }
+        }
+}

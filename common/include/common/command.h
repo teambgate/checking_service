@@ -40,11 +40,13 @@ extern struct string __cmd_user_validate__;
 
 extern struct string __cmd_check_in__;
 extern struct string __cmd_check_out__;
+extern struct string __cmd_check_search_by_date_by_user__;
 
 extern struct string __cmd_device_add__;
 
 extern struct string __cmd_work_time_new__;
 extern struct string __cmd_work_time_new_by_user__;
+extern struct string __cmd_work_time_search_by_date_by_user__;
 
 extern struct string __cmd_permission_add_work_time__;
 extern struct string __cmd_permission_add_employee__;

@@ -114,26 +114,37 @@ struct checking_service *checking_service_alloc(u8 local_only)
         if(local_only) {
                 map_set(c->delegates, qskey(&__cmd_service_register__),
                         &(cs_server_delegate){checking_service_process_service_register_username});
+
                 map_set(c->delegates, qskey(&__cmd_service_validate__),
                         &(cs_server_delegate){checking_service_process_service_validate_username});
+
                 map_set(c->delegates, qskey(&__cmd_location_register__),
                         &(cs_server_delegate){checking_service_process_location_register});
+
                 map_set(c->delegates, qskey(&__cmd_location_update_ip_port__),
                         &(cs_server_delegate){checking_service_process_location_update_ip});
+
                 map_set(c->delegates, qskey(&__cmd_location_update_latlng__),
                         &(cs_server_delegate){checking_service_process_location_update_latlng});
+
                 map_set(c->delegates, qskey(&__cmd_user_reserve__),
                         &(cs_server_delegate){checking_service_process_user_reserve});
+
                 map_set(c->delegates, qskey(&__cmd_user_validate__),
                         &(cs_server_delegate){checking_service_process_user_validate});
+
                 map_set(c->delegates, qskey(&__cmd_device_add__),
                         &(cs_server_delegate){checking_service_process_device_add});
+
                 map_set(c->delegates, qskey(&__cmd_work_time_new__),
                         &(cs_server_delegate){checking_service_process_work_time_new});
+
                 map_set(c->delegates, qskey(&__cmd_permission_add_employee__),
                         &(cs_server_delegate){checking_service_process_permission_add_employee});
+
                 map_set(c->delegates, qskey(&__cmd_permission_add_work_time__),
                         &(cs_server_delegate){checking_service_process_permission_add_work_time});
+                        
                 map_set(c->delegates, qskey(&__cmd_permission_clear_checkout__),
                         &(cs_server_delegate){checking_service_process_permission_clear_checkout});
 
@@ -142,19 +153,36 @@ struct checking_service *checking_service_alloc(u8 local_only)
                  */
                 map_set(c->delegates, qskey(&__cmd_check_in__),
                         &(cs_server_delegate){checking_service_process_check_in});
+
                 map_set(c->delegates, qskey(&__cmd_check_out__),
                         &(cs_server_delegate){checking_service_process_check_out});
+
+                map_set(c->delegates, qskey(&__cmd_check_search_by_date_by_user__),
+                        &(cs_server_delegate){checking_service_process_check_search_by_date_by_user});
+
+                map_set(c->delegates, qskey(&__cmd_work_time_search_by_date_by_user__),
+                        &(cs_server_delegate){checking_service_process_work_time_search_by_date_by_user});
         } else {
                 map_set(c->delegates, qskey(&__cmd_user_reserve__),
                         &(cs_server_delegate){checking_service_process_user_reserve});
+
                 map_set(c->delegates, qskey(&__cmd_device_add__),
                         &(cs_server_delegate){checking_service_process_device_add});
+
                 map_set(c->delegates, qskey(&__cmd_work_time_new_by_user__),
                         &(cs_server_delegate){checking_service_process_work_time_new_by_user});
+
                 map_set(c->delegates, qskey(&__cmd_check_in__),
                         &(cs_server_delegate){checking_service_process_check_in});
+
                 map_set(c->delegates, qskey(&__cmd_check_out__),
                         &(cs_server_delegate){checking_service_process_check_out});
+
+                map_set(c->delegates, qskey(&__cmd_check_search_by_date_by_user__),
+                        &(cs_server_delegate){checking_service_process_check_search_by_date_by_user});
+
+                map_set(c->delegates, qskey(&__cmd_work_time_search_by_date_by_user__),
+                        &(cs_server_delegate){checking_service_process_work_time_search_by_date_by_user});
         }
 
         __load_es_server(p);

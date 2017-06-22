@@ -31,6 +31,8 @@ struct string *common_get_mac_address();
 
 ssize_t common_getpasswd (char *pw, size_t sz, int mask, FILE *fp);
 
+int common_fix_date_time_string(struct string *p);
+
 #ifdef __cplusplus
 }
 #endif

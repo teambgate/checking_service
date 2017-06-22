@@ -56,6 +56,11 @@ extern struct string    __key_date_start__;
 extern struct string    __key_date_end__;
 extern struct string    __key_check_in__;
 extern struct string    __key_check_out__;
+extern struct string    __key_from__;
+extern struct string    __key_to__;
+extern struct string    __key_size__;
+extern struct string    __key_checks__;
+extern struct string    __key_work_times__;
 
 #ifdef __cplusplus
 }
