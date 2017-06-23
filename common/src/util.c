@@ -29,6 +29,8 @@
 #include <netinet/in.h>
 #include <cherry/unistd.h>
 #include <termios.h>
+#include <ifaddrs.h>
+#include <unistd.h>
 
 #define MAXPW 1024
 
@@ -237,4 +239,51 @@ int common_fix_date_time_string(struct string *p)
 
 finish:;
         return result;
+}
+
+struct string *common_get_local_ip_adress()
+{
+        struct string *result = string_alloc(0);
+
+        struct ifaddrs * ifAddrStruct=NULL;
+        struct ifaddrs * ifa=NULL;
+        void * tmpAddrPtr=NULL;
+
+        getifaddrs(&ifAddrStruct);
+
+        for (ifa = ifAddrStruct; ifa != NULL; ifa = ifa->ifa_next) {
+                if (!ifa->ifa_addr) {
+                        continue;
+                }
+                if (ifa->ifa_addr->sa_family == AF_INET) { // check it is IP4
+                        // is a valid IP4 Address
+                        tmpAddrPtr=&((struct sockaddr_in *)ifa->ifa_addr)->sin_addr;
+                        char addressBuffer[INET_ADDRSTRLEN];
+                        inet_ntop(AF_INET, tmpAddrPtr, addressBuffer, INET_ADDRSTRLEN);
+
+                        if(strncmp(addressBuffer, "127.0.0.1", 3) != 0
+                                && strncmp(addressBuffer, "::ffff:127.0.0.1", 10) != 0
+                                && strncmp(addressBuffer, "0.0.0.0", 1) != 0) {
+                                result->len = 0;
+                                string_cat(result, addressBuffer, strlen(addressBuffer));
+                        }
+                } else if (ifa->ifa_addr->sa_family == AF_INET6) { // check it is IP6
+                        // is a valid IP6 Address
+                        // tmpAddrPtr=&((struct sockaddr_in6 *)ifa->ifa_addr)->sin6_addr;
+                        // char addressBuffer[INET6_ADDRSTRLEN];
+                        // inet_ntop(AF_INET6, tmpAddrPtr, addressBuffer, INET6_ADDRSTRLEN);
+                        //printf("%s IP Address %s\n", ifa->ifa_name, addressBuffer);
+                }
+        }
+        if (ifAddrStruct!=NULL) freeifaddrs(ifAddrStruct);
+
+        return result;
+}
+
+void common_fill_local_ip_address(struct string *p)
+{
+        struct string *tmp = common_get_local_ip_adress();
+        p->len = 0;
+        string_cat_string(p, tmp);
+        string_free(tmp);
 }

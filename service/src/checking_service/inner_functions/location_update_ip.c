@@ -63,8 +63,13 @@ void checking_service_location_update_ip(struct checking_service *p, struct smar
 
         ADD_INFO(user_name,     "Enter user_name        : ", "user_name");
         ADD_PASS(user_pass,     "Enter user_pass        : ", "user_pass");
-        ADD_INFO(ip,            "Enter ip               : ", "ip");
-        ADD_INFO(port,          "Enter port             : ", "port");
+
+        struct string *ip = smart_object_get_string(in, qlkey("ip"), SMART_GET_REPLACE_IF_WRONG_TYPE);
+        common_fill_local_ip_address(ip);
+        app_log("Enter ip               : %s\n", ip->ptr);
+
+        int port = smart_object_get_int(p->config, qlkey("service_port"), SMART_GET_REPLACE_IF_WRONG_TYPE);
+        app_log("Enter port             : %d\n", port);
 
         struct string *device_id = common_get_mac_address();
 
@@ -82,7 +87,7 @@ void checking_service_location_update_ip(struct checking_service *p, struct smar
         smart_object_set_string(data, qskey(&__key_pass__),qskey(pass));
 
         smart_object_set_string(data, qskey(&__key_ip__), qskey(ip));
-        smart_object_set_int(data, qskey(&__key_port__), atoi(port->ptr));
+        smart_object_set_int(data, qskey(&__key_port__), port);
         smart_object_set_string(data, qskey(&__key_user_name__), qskey(user_name));
         smart_object_set_string(data, qskey(&__key_user_pass__), qskey(user_pass));
         smart_object_set_string(data, qskey(&__key_device_id__), qskey(device_id));

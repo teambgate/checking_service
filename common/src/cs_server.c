@@ -317,6 +317,11 @@ end:;
 
 void cs_server_start(struct cs_server *ws, u16 port)
 {
+        #define MAX_RECV_BUF_LEN 99999
+        char *recvbuf           = smalloc(sizeof(char) * MAX_RECV_BUF_LEN);
+
+        struct array *actives   = array_alloc(sizeof(u32), ORDERED);
+
         struct sockaddr_storage remoteaddr;
         socklen_t addrlen;
         i32 newfd;
@@ -380,14 +385,13 @@ void cs_server_start(struct cs_server *ws, u16 port)
 
         file_descriptor_set_add(ws->master, ws->listener);
         ws->fdmax               = ws->listener;
-        struct array *actives   = array_alloc(sizeof(u32), ORDERED);
 
-        #define MAX_RECV_BUF_LEN 99999
-        char *recvbuf           = smalloc(sizeof(char) * MAX_RECV_BUF_LEN);
+
         int nbytes              = 0;
-        struct timeval t1;
+        struct timeval tcurrent, tbegin;
         double elapsedTime;
-        gettimeofday(&t1, NULL);
+        gettimeofday(&tcurrent, NULL);
+        gettimeofday(&tbegin, NULL);
         struct list_head *head;
 
         struct timeval select_timeout;
@@ -420,17 +424,17 @@ void cs_server_start(struct cs_server *ws, u16 port)
                 /*
                  * process handlers
                  */
-                gettimeofday(&t1, NULL);
+                gettimeofday(&tcurrent, NULL);
                 list_for_each_secure(head, &ws->handlers, {
                         struct cs_server_handler *handler = (struct cs_server_handler *)
                                 ((char *)head - offsetof(struct cs_server_handler, head));
-                        elapsedTime = (t1.tv_sec - handler->last_executed_time.tv_sec);
-                        elapsedTime += (t1.tv_usec - handler->last_executed_time.tv_usec) / 1000000.0;
+                        elapsedTime = (tcurrent.tv_sec - handler->last_executed_time.tv_sec);
+                        elapsedTime += (tcurrent.tv_usec - handler->last_executed_time.tv_usec) / 1000000.0;
                         if(elapsedTime >= handler->time_rate) {
                                 if(handler->delegate) {
                                         handler->delegate(ws);
                                 }
-                                handler->last_executed_time = t1;
+                                handler->last_executed_time = tcurrent;
                         }
                 });
                 /*
@@ -520,14 +524,31 @@ void cs_server_start(struct cs_server *ws, u16 port)
                         pthread_mutex_lock(&ws->client_data_mutex);
                 }
                 pthread_mutex_unlock(&ws->client_data_mutex);
+
+        check_life_time:;
+                if(ws->lifetime > 0) {
+                        gettimeofday(&tcurrent, NULL);
+
+                        elapsedTime = (tcurrent.tv_sec - tbegin.tv_sec);
+                        elapsedTime += (tcurrent.tv_usec - tbegin.tv_usec) / 1000000.0;
+
+                        if(elapsedTime >= (double)ws->lifetime) {
+                                goto finish;
+                        }
+                }
         }
-        finish:;
+finish:;
         debug("cs_server: shutdown\n");
-        shutdown(ws->listener, SHUT_RDWR);
-        socket_close(ws->listener);
+        if(ws->listener > 0) {
+                shutdown(ws->listener, SHUT_RDWR);
+                socket_close(ws->listener);
+        }
         string_free(ports);
         sfree(recvbuf);
         array_free(actives);
+        ws->listener = 0;
+        ws->fdmax = 0;
+        file_descriptor_set_clean(ws->master);
 
         #undef MAX_RECV_BUF_LEN
 }
@@ -557,6 +578,7 @@ struct cs_server *cs_server_alloc(u8 local_only)
         p->local_only           = local_only;
 
         p->timeout              = -1;
+        p->lifetime             = -1;
 
         return p;
 }

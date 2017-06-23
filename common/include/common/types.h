@@ -36,7 +36,11 @@ typedef void(*cs_request_callback)(void*, struct smart_object *);
 
 struct cs_request {
         struct list_head        head;
-        struct smart_object       *data;
+        struct smart_object     *data;
+
+        struct string           *host;
+        u16                     port;
+        int                     timeout;
 };
 
 struct cs_response {
@@ -47,37 +51,42 @@ struct cs_response {
 };
 
 struct cs_requester {
-        struct list_head        list;
+        struct list_head                list;
 
-        struct map              *waits;
+        struct map                      *waits;
 
-        int                     listener;
-        i64                     total;
-        float                   life_time;
-        int                     *send_valid;
-        int                     *read_valid;
+        int                             listener;
+        i64                             total;
+        float                           life_time;
+        int                             *send_valid;
+        int                             *read_valid;
 
-        pthread_mutex_t         lock;
-        pthread_mutex_t         wait_lock;
+        pthread_mutex_t                 lock;
+        pthread_mutex_t                 wait_lock;
 
-        struct string           *buff;
-        u32                     requested_len;
+        struct string                   *buff;
+        u32                             requested_len;
 
-        pthread_mutex_t         run_mutex;
-        pthread_cond_t          run_cond;
+        pthread_mutex_t                 run_mutex;
+        pthread_cond_t                  run_cond;
 
-        pthread_mutex_t         write_mutex;
-        pthread_cond_t          write_cond;
+        pthread_mutex_t                 write_mutex;
+        pthread_cond_t                  write_cond;
 
-        pthread_mutex_t         read_mutex;
-        pthread_cond_t          read_cond;
+        pthread_mutex_t                 read_mutex;
+        pthread_cond_t                  read_cond;
 
-        struct string           *host;
-        u16                     port;
+        struct string                   *host;
+        u16                             port;
 
-        u8                      valid;
+        u8                              valid;
 
-        struct timeval          t1, t2;
+        struct timeval                  t1, t2;
+
+        struct file_descriptor_set      *wset;
+        struct file_descriptor_set      *eset;
+        struct array                    *actives;
+        struct array                    *e_actives;
 };
 
 /*
@@ -134,6 +143,7 @@ struct cs_server {
         struct smart_object             *config;
 
         i32                             timeout;
+        i32                             lifetime;
 
         u8                              local_only;
 };

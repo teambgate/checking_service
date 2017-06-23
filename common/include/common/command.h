@@ -52,6 +52,8 @@ extern struct string __cmd_permission_add_work_time__;
 extern struct string __cmd_permission_add_employee__;
 extern struct string __cmd_permission_clear_checkout__;
 
+extern struct string __cmd_local_supporter_get_code__;
+
 #ifdef __cplusplus
 }
 #endif

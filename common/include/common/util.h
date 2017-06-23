@@ -33,6 +33,10 @@ ssize_t common_getpasswd (char *pw, size_t sz, int mask, FILE *fp);
 
 int common_fix_date_time_string(struct string *p);
 
+struct string *common_get_local_ip_adress();
+
+void common_fill_local_ip_address(struct string *p);
+
 #ifdef __cplusplus
 }
 #endif

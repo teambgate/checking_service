@@ -22,6 +22,8 @@
 #include <smartfox/data.h>
 #include <common/key.h>
 #include <common/command.h>
+#include <common/error.h>
+
 #include <pthread.h>
 #include <cherry/lock.h>
 #include <sys/time.h>
@@ -34,6 +36,8 @@
 #include <arpa/inet.h>
 #include <signal.h>
 #include <netinet/in.h>
+#include <fcntl.h>
+#include <cherry/server/file_descriptor.h>
 
 static struct smart_object *__build_request_data(struct smart_object *obj,
         char *version, size_t version_len,
@@ -136,6 +140,71 @@ struct cs_request *cs_request_alloc(struct cs_requester *p, struct smart_object 
 
         struct cs_request *r    = smalloc(sizeof(struct cs_request));
         r->data                 = data;
+        r->host                 = string_alloc(0);
+        r->port                 = 0;
+        r->timeout              = -1;
+
+        struct smart_number num;
+        num._generic_integer    = p->total++;
+        smart_object_set(r->data, qskey(&__key_request_id__), SMART_LONG, qpkey(num));
+
+        list_add_tail(&r->head, &p->list);
+
+        struct cs_response *res = __cs_response_alloc(callback, ctx);
+        res->num = num._int;
+
+        pthread_mutex_lock(&p->wait_lock);
+        map_set(p->waits, qpkey(num), &res);
+        pthread_mutex_unlock(&p->wait_lock);
+
+        pthread_mutex_unlock(&p->run_mutex);
+        pthread_cond_signal(&p->run_cond);
+
+        return r;
+}
+
+struct cs_request *cs_request_alloc_with_host(struct cs_requester *p, struct smart_object *data,
+        cs_request_callback callback, void *ctx, char *host, size_t host_len, u16 port)
+{
+        pthread_mutex_lock(&p->run_mutex);
+
+        struct cs_request *r    = smalloc(sizeof(struct cs_request));
+        r->data                 = data;
+        r->host                 = string_alloc_chars(host, host_len);
+        r->port                 = port;
+        r->timeout              = -1;
+
+        struct smart_number num;
+        num._generic_integer    = p->total++;
+        smart_object_set(r->data, qskey(&__key_request_id__), SMART_LONG, qpkey(num));
+
+        list_add_tail(&r->head, &p->list);
+
+        struct cs_response *res = __cs_response_alloc(callback, ctx);
+        res->num = num._int;
+
+        pthread_mutex_lock(&p->wait_lock);
+        map_set(p->waits, qpkey(num), &res);
+        pthread_mutex_unlock(&p->wait_lock);
+
+        pthread_mutex_unlock(&p->run_mutex);
+        pthread_cond_signal(&p->run_cond);
+
+        return r;
+}
+
+struct cs_request *cs_request_alloc_with_param(struct cs_requester *p, struct smart_object *data,
+        cs_request_callback callback, void *ctx, struct cs_request_param param)
+{
+        pthread_mutex_lock(&p->run_mutex);
+
+        struct cs_request *r    = smalloc(sizeof(struct cs_request));
+        r->data                 = data;
+
+        r->host                 = param.host ?
+                string_alloc_chars(param.host, strlen(param.host)) : string_alloc(0);
+        r->port                 = param.port;
+        r->timeout              = param.timeout;
 
         struct smart_number num;
         num._generic_integer    = p->total++;
@@ -160,6 +229,7 @@ void cs_request_free(struct cs_request *p)
 {
         list_del(&p->head);
         if(p->data) smart_object_free(p->data);
+        string_free(p->host);
         sfree(p);
 }
 
@@ -172,7 +242,7 @@ static int __try_write(struct cs_requester *p, char *msg, size_t slen)
         char *ptr               = msg;
         u32 num                 = htonl((u32)len);
         int first = send(p->listener, &num, sizeof(num), MSG_NOSIGNAL);
-
+        app_log("sended first %d\n", first);
         if(first <= 0) {
                 p->valid = 0;
                 pthread_mutex_unlock(&p->write_mutex);
@@ -181,6 +251,7 @@ static int __try_write(struct cs_requester *p, char *msg, size_t slen)
 
         while(bytes_send < slen) {
                 int sent = send(p->listener, ptr, len, MSG_NOSIGNAL);
+                app_log("sended %d\n", sent);
                 bytes_send += sent;
                 if(bytes_send <= 0 || sent <= 0) {
                         p->valid = 0;
@@ -194,6 +265,29 @@ static int __try_write(struct cs_requester *p, char *msg, size_t slen)
 
         return 1;
 }
+
+static void __response_timeout(struct cs_requester *p, struct cs_request *r)
+{
+        struct smart_object *data = smart_object_alloc();
+        smart_object_set_long(data, qskey(&__key_request_id__), smart_object_get_long(r->data, qskey(&__key_request_id__), SMART_GET_REPLACE_IF_WRONG_TYPE));
+        smart_object_set_bool(data, qskey(&__key_result__), 0);
+        smart_object_set_string(data, qskey(&__key_message__), qlkey("timeout"));
+        smart_object_set_long(data, qskey(&__key_error__), ERROR_TIMEOUT);
+
+        struct smart_data *id     = map_get(data->data, struct smart_data *, qskey(&__key_request_id__));
+        pthread_mutex_lock(&p->wait_lock);
+        struct cs_response *res = map_get(p->waits, struct cs_response *, qpkey(id->_number));
+        if(res) {
+                map_remove_key(p->waits, qpkey(id->_number));
+                res->data       = data;
+        }
+        pthread_mutex_unlock(&p->wait_lock);
+        if(res) {
+                if(res->callback) res->callback(res->ctx, res->data);
+                __cs_response_free(res);
+        }
+}
+
 
 /*
  * cs requester
@@ -229,20 +323,28 @@ get_head:;
         }
 
         pthread_mutex_lock(&p->read_mutex);
-        while(!cs_requester_reconnect(p)) {
-                debug("try reconnect\n");
-                sleep(1);
+        struct cs_request *r    = (struct cs_request *)
+                ((char *)head - offsetof(struct cs_request, head));
+        struct string *d        = smart_object_to_json(r->data);
+
+        while(!cs_requester_reconnect(p, r->host->ptr, r->host->len,
+                        r->port, r->timeout <= 0 ? 5 : r->timeout)) {
+                /*
+                 * treat all reconnection fails as timeout
+                 */
                 if((*send_valid) == 0) {
                         pthread_mutex_unlock(&p->run_mutex);
                         pthread_mutex_unlock(&p->read_mutex);
                         goto finish;
+                } else {
+                        __response_timeout(p, r);
+                        pthread_mutex_unlock(&p->run_mutex);
+                        pthread_mutex_unlock(&p->read_mutex);
+                        goto head_done;
                 }
         }
         p->valid = 1;
 
-        struct cs_request *r    = (struct cs_request *)
-                ((char *)head - offsetof(struct cs_request, head));
-        struct string *d        = smart_object_to_json(r->data);
         debug("start write\n");
         __try_write(p, qskey(d));
 
@@ -261,7 +363,7 @@ check_life_time:;
         /*
          * wait until server disconnect this socket
          */
-        if(p->listener) {
+        if(p->listener >= 0) {
                 pthread_mutex_lock(&p->write_mutex);
                 pthread_cond_wait(&p->write_cond, &p->write_mutex);
 
@@ -319,11 +421,11 @@ check_bytes:;
 
                 shutdown(p->listener, SHUT_RDWR);
                 close(p->listener);
-                p->listener = 0;
+                p->listener = -1;
                 debug("client closed!\n");
 
                 pthread_cond_signal(&p->write_cond);
-                if(p->listener == 0) {
+                if(p->listener < 0) {
                         pthread_cond_wait(&p->read_cond, &p->read_mutex);
                         if((*read_valid) == 0) {
                                 pthread_mutex_unlock(&p->read_mutex);
@@ -414,13 +516,17 @@ struct cs_requester *cs_requester_alloc()
         struct cs_requester *p  = smalloc(sizeof(struct cs_requester));
         p->total                = 0;
         p->life_time            = 60;
-        p->listener             = 0;
+        p->listener             = -1;
         p->buff                 = string_alloc(0);
         p->requested_len        = 0;
         p->host                 = string_alloc(0);
         p->port                 = 0;
         INIT_LIST_HEAD(&p->list);
-        // spin_lock_init(&p->lock, 0);
+
+        p->wset                 = file_descriptor_set_alloc();
+        p->eset                 = file_descriptor_set_alloc();
+        p->actives              = array_alloc(sizeof(u32), ORDERED);
+        p->e_actives              = array_alloc(sizeof(u32), ORDERED);
 
         p->valid                = 1;
 
@@ -457,11 +563,22 @@ static void *get_in_addr(struct sockaddr *sa)
     return &(((struct sockaddr_in6*)sa)->sin6_addr);
 }
 
-int cs_requester_reconnect(struct cs_requester *requester)
+static int __set_blocking(int fd, int blocking)
+{
+        int flags = fcntl(fd, F_GETFL, 0);
+        if (flags < 0) return 0;
+        flags = blocking == 1 ? (flags &~ O_NONBLOCK) : (flags | O_NONBLOCK);
+        return (fcntl(fd, F_SETFL, flags) == 0) ? 1 : 0;
+}
+
+int cs_requester_reconnect(struct cs_requester *requester, char *host, size_t host_len, u16 port, int timeout)
 {
         debug("start reconnect\n");
-        char *host = requester->host->ptr;
-        u16 port = requester->port;
+
+        if(host_len == 0) {
+                host = requester->host->ptr;
+                port = requester->port;
+        }
 
         int numbytes;
         struct addrinfo hints, *servinfo, *p;
@@ -479,6 +596,7 @@ int cs_requester_reconnect(struct cs_requester *requester)
         if ((rv = getaddrinfo(host, ports->ptr, &hints, &servinfo)) != 0) {
                 fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
                 string_free(ports);
+                requester->listener = -1;
                 return 0;
         }
         string_free(ports);
@@ -493,11 +611,50 @@ int cs_requester_reconnect(struct cs_requester *requester)
                 }
                 debug("try listen 2\n");
 
-                if (connect(requester->listener, p->ai_addr, p->ai_addrlen) == -1) {
+                __set_blocking(requester->listener, 0);
+                file_descriptor_set_clean(requester->wset);
+                file_descriptor_set_clean(requester->eset);
+                file_descriptor_set_add(requester->wset, requester->listener);
+                file_descriptor_set_add(requester->eset, requester->listener);
+
+                struct timeval select_timeout;
+                select_timeout.tv_sec   = timeout;
+                select_timeout.tv_usec  = 0;
+                int connect_result = connect(requester->listener, p->ai_addr, p->ai_addrlen);
+                debug("native ui : connect %d\n", connect_result);
+                debug("native ui : listener %d\n", requester->listener);
+                if (connect_result == -1) {
+                        if(select(requester->listener + 1, requester->eset->set->ptr, requester->wset->set->ptr, NULL, &select_timeout) == -1) {
+                                goto connect_failed;
+                        }
+
+                        array_force_len(requester->actives, 0);
+                        array_force_len(requester->e_actives, 0);
+                        file_descriptor_set_get_active(requester->wset, requester->actives);
+                        file_descriptor_set_get_active(requester->eset, requester->e_actives);
+
+                        app_log("native ui w : %d | e : %d\n", requester->actives->len, requester->e_actives->len);
+
+                        int i;
+                        for_i(i, requester->actives->len) {
+                                u32 ls = array_get(requester->actives, u32, i);
+                                debug("native ui : active %u\n", ls);
+                        }
+
+                        if(requester->actives->len) {
+                                __set_blocking(requester->listener, 1);
+                                goto end_try_connect;
+                        }
+
+                connect_failed:;
+                        __set_blocking(requester->listener, 1);
                         close(requester->listener);
+                        requester->listener = -1;
                         perror("client: connect");
                         continue;
                 }
+
+        end_try_connect:;
                 debug("try listen 3\n");
 
                 break;
@@ -576,5 +733,11 @@ void cs_requester_free(struct cs_requester *p)
         shutdown(p->listener, SHUT_RDWR);
         close(p->listener);
         string_free(p->host);
+
+        file_descriptor_set_free(p->wset);
+        file_descriptor_set_free(p->eset);
+        array_free(p->actives);
+        array_free(p->e_actives);
+
         sfree(p);
 }

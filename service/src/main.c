@@ -25,6 +25,7 @@
 
 #include <smartfox/data.h>
 #include <service/checking_service.h>
+#include <service/local_supporter.h>
 
 #include <pthread.h>
 
@@ -32,15 +33,37 @@
 
 #include <cherry/time.h>
 
+#include <common/util.h>
+
+/*
+ * define extern variables
+ */
 static JavaVM*  jvm;
 JavaVM*         __jvm;
 struct map *    __jni_env_map;
 
+struct smart_object     *__shared_ram_config__;
+pthread_mutex_t         __shared_ram_config_mutex__;
+
+/*
+ * define public and private service
+ */
 static struct checking_service  *public_service = NULL;
 static struct checking_service  *local_service  = NULL;
 
+/*
+ * define local supporter
+ */
+static struct local_supporter   *local_supporter = NULL;
+
+/*
+ * local requester
+ */
 struct cs_requester *local_requester = NULL;
 
+/*
+ * setup JNI
+ */
 static void __setup_jni()
 {
         JNIEnv*                 env;
@@ -247,38 +270,76 @@ static void __start_service(void *d)
         checking_service_start(service);
 }
 
+static void __start_local_supporter(void *d)
+{
+        struct local_supporter *supporter = (struct local_supporter *)d;
+        local_supporter_start(supporter);
+}
+
 int main( int argc, char** argv )
 {
         srand ( time(NULL) );
 
         __setup_jni();
 
+        __shared_ram_config__ = smart_object_alloc();
+        pthread_mutex_init(&__shared_ram_config_mutex__, NULL);
+
         local_service   = checking_service_alloc(CS_SERVER_LOCAL);
         public_service  = checking_service_alloc(CS_SERVER_PUBLIC);
+        local_supporter = local_supporter_alloc();
 
         local_requester = cs_requester_alloc();
         u16 port        = smart_object_get_short(local_service->config, qlkey("service_local_port"), SMART_GET_REPLACE_IF_WRONG_TYPE);
-        cs_requester_connect(local_requester, "127.0.0.1", port);
+        cs_requester_connect(local_requester, "192.168.1.246", 9898);
 
-        pthread_t tid[3];
+        pthread_t tid[4];
         pthread_create(&tid[0], NULL, (void*(*)(void*))__read_input, (void*)NULL);
         pthread_create(&tid[1], NULL, (void*(*)(void*))__start_service, (void*)local_service);
         pthread_create(&tid[2], NULL, (void*(*)(void*))__start_service, (void*)public_service);
+        pthread_create(&tid[3], NULL, (void*(*)(void*))__start_local_supporter, (void*)local_supporter);
 
         int i;
-        for(i = 1 ; i < 3; i++) {
+        for(i = 1 ; i < 4; i++) {
                 int rc = pthread_join(tid[i], NULL);
                 if (rc) {
                        break;
                 }
         }
 
+finish:;
+        /*
+         * deallocate local and public services
+         */
         checking_service_free(local_service);
         checking_service_free(public_service);
+
+        /*
+         * deallocate local supporter
+         */
+        local_supporter_free(local_supporter);
+
+        /*
+         * deallocate jni map
+         */
         map_free(__jni_env_map);
+
+        /*
+         * deallocate shared ram config
+         */
+        smart_object_free(__shared_ram_config__);
+        pthread_mutex_destroy(&__shared_ram_config_mutex__);
+
+        /*
+         * clean memory pool
+         */
         cache_free();
         dim_memory();
 
+        /*
+         * destroy JVM
+         */
         (*jvm)->DestroyJavaVM( jvm );
+
         return 0;
 }

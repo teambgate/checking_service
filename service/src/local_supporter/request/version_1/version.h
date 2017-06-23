@@ -11,24 +11,11 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  */
-#ifndef __CHECKING_SERVICE_COMMON_ERROR_H__
-#define __CHECKING_SERVICE_COMMON_ERROR_H__
+#ifndef __CHECKING_SERVICE_LOCAL_SUPPORTER_REQUEST_VERSION_1_VERSION_H__
+#define __CHECKING_SERVICE_LOCAL_SUPPORTER_REQUEST_VERSION_1_VERSION_H__
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include <service/types.h>
 
-#include <common/types.h>
-
-enum {
-        ERROR_VERSION_INVALID,
-        ERROR_DATA_INVALID,
-        ERROR_SERVER_INVALID,
-        ERROR_TIMEOUT
-};
-
-#ifdef __cplusplus
-}
-#endif
+void local_supporter_process_get_code_v1(struct cs_server *p, int fd, u32 mask, struct smart_object *obj);
 
 #endif

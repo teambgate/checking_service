@@ -144,7 +144,7 @@ struct checking_service *checking_service_alloc(u8 local_only)
 
                 map_set(c->delegates, qskey(&__cmd_permission_add_work_time__),
                         &(cs_server_delegate){checking_service_process_permission_add_work_time});
-                        
+
                 map_set(c->delegates, qskey(&__cmd_permission_clear_checkout__),
                         &(cs_server_delegate){checking_service_process_permission_clear_checkout});
 

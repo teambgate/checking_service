@@ -98,6 +98,9 @@ void checking_service_check_in_callback(struct checking_service *p, struct smart
                 app_log( PRINT_CYN "%s\n\n" PRINT_RESET, message->ptr);
         } else {
                 app_log( PRINT_RED "%s\n\n" PRINT_RESET, message->ptr);
+                struct string *json = smart_object_to_json(recv);
+                app_log( PRINT_RED "%s\n\n" PRINT_RESET, json->ptr);
+                string_free(json);
         }
 
         p->command_flag = 1;

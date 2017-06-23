@@ -40,6 +40,9 @@ struct checking_service {
         pthread_cond_t          command_cond;
 };
 
+extern struct smart_object      *__shared_ram_config__;
+extern pthread_mutex_t          __shared_ram_config_mutex__;
+
 struct local_supporter {
         struct list_head        server;
 };

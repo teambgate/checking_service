@@ -64,6 +64,18 @@ static void __response_invalid_data(struct cs_server *p, int fd, u32 mask, struc
         smart_object_set_string(res, qskey(&__key_message__), msg, msg_len);
         smart_object_set_long(res, qskey(&__key_error__), ERROR_DATA_INVALID);
 
+        /*
+         * return local ip and local port
+         */
+        struct smart_object *data_res = smart_object_get_object(res, qskey(&__key_data__), SMART_GET_REPLACE_IF_WRONG_TYPE);
+        pthread_mutex_lock(&__shared_ram_config_mutex__);
+        struct string *__ram_local_ip = smart_object_get_string(__shared_ram_config__, qskey(&__key_local_ip__), SMART_GET_REPLACE_IF_WRONG_TYPE);
+        int __ram_local_port = smart_object_get_int(__shared_ram_config__, qskey(&__key_local_port__), SMART_GET_REPLACE_IF_WRONG_TYPE);
+
+        smart_object_set_string(data_res, qskey(&__key_local_ip__), qskey(__ram_local_ip));
+        smart_object_set_int(data_res, qskey(&__key_local_port__), __ram_local_port);
+        pthread_mutex_unlock(&__shared_ram_config_mutex__);
+
         struct string *d        = smart_object_to_json(res);
         cs_server_send_to_client(p, fd, mask, d->ptr, d->len, 0);
         string_free(d);
@@ -250,8 +262,23 @@ static void __search_check_callback(struct cs_server_callback_user_data *cud, st
                 if(s2_cell_union_contain(scu, lat, lon)) {
                         __check_in(cud);
                 } else {
-                        __response_invalid_data(cud->p, cud->fd, cud->mask,  cud->obj, qlkey("checkin error!"));
-                        cs_server_callback_user_data_free(cud);
+                        /*
+                         * check if client is local
+                         */
+                        struct string *local_code = smart_object_get_string(cud->obj, qskey(&__key_local_code__), SMART_GET_REPLACE_IF_WRONG_TYPE);
+                        pthread_mutex_lock(&__shared_ram_config_mutex__);
+                        struct string *__ram_local_code = smart_object_get_string(__shared_ram_config__, qskey(&__key_local_code__), SMART_GET_REPLACE_IF_WRONG_TYPE);
+                        string_trim(local_code);
+                        string_trim(__ram_local_code);
+                        int same = strcmp(local_code->ptr, __ram_local_code->ptr) == 0 && local_code->len;
+                        pthread_mutex_unlock(&__shared_ram_config_mutex__);
+
+                        if(same) {
+                                __check_in(cud);
+                        } else {
+                                __response_invalid_data(cud->p, cud->fd, cud->mask,  cud->obj, qlkey("checkin error!"));
+                                cs_server_callback_user_data_free(cud);
+                        }
                 }
 
                 s2_cell_union_free(scu);

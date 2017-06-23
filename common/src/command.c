@@ -44,3 +44,5 @@ struct string __cmd_work_time_search_by_date_by_user__  = SET_STRING("work_time_
 struct string __cmd_permission_add_work_time__          = SET_STRING("permission_add_work_time")
 struct string __cmd_permission_add_employee__           = SET_STRING("permission_add_employee")
 struct string __cmd_permission_clear_checkout__         = SET_STRING("permission_clear_checkout")
+
+struct string __cmd_local_supporter_get_code__          = SET_STRING("local_supporter_get_code")
