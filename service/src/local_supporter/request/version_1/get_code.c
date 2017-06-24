@@ -57,6 +57,8 @@ static void __response_invalid_data(struct cs_server *p, int fd, u32 mask, struc
         smart_object_set_bool(res, qskey(&__key_result__), 0);
         smart_object_set_string(res, qskey(&__key_message__), msg, msg_len);
         smart_object_set_long(res, qskey(&__key_error__), ERROR_DATA_INVALID);
+        struct string *cmd = smart_object_get_string(obj, qskey(&__key_cmd__), SMART_GET_REPLACE_IF_WRONG_TYPE);
+        smart_object_set_string(res, qskey(&__key_cmd__), qskey(cmd));
 
         struct string *d        = smart_object_to_json(res);
         cs_server_send_to_client(p, fd, mask, d->ptr, d->len, 0);
@@ -83,6 +85,8 @@ static void __get_code(struct cs_server_callback_user_data *cud)
         smart_object_set_long(res, qskey(&__key_request_id__), smart_object_get_long(cud->obj, qskey(&__key_request_id__), 0));
         smart_object_set_bool(res, qskey(&__key_result__), 1);
         smart_object_set_string(res, qskey(&__key_message__), qlkey("success"));
+        struct string *cmd = smart_object_get_string(cud->obj, qskey(&__key_cmd__), SMART_GET_REPLACE_IF_WRONG_TYPE);
+        smart_object_set_string(res, qskey(&__key_cmd__), qskey(cmd));
 
         struct smart_object *res_data = smart_object_get_object(res, qskey(&__key_data__), SMART_GET_REPLACE_IF_WRONG_TYPE);
 
@@ -104,8 +108,6 @@ void local_supporter_process_get_code_v1(struct cs_server *p, int fd, u32 mask, 
         if( ! __validate_input(p, fd, mask, obj)) {
                 return;
         }
-
         struct cs_server_callback_user_data *cud = cs_server_callback_user_data_alloc(p, fd, mask, obj);
-
         __get_code(cud);
 }

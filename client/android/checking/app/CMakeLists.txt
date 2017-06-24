@@ -14,19 +14,24 @@ add_definitions(-DAPP_DEBUG=1)
 add_definitions(-DGFX=OGL -DIMAGE_TYPE=IMAGE_DROID)
 add_definitions(-DUSER_BUILD_ANDROID=true)
 
-include_directories(../../../cherry/include)
-include_directories(../../../cherry/smartfox/include)
-include_directories(../../../checking_service/common/include)
-include_directories(../../../native_ui/include)
-include_directories(../../../cherry/android_lib/libzip)
+include_directories(../../../../../cherry/include)
+include_directories(../../../../../cherry/smartfox/include)
+include_directories(../../../../../other/android-ifaddrs)
+include_directories(../../../../../checking_service/common/include)
+include_directories(../../../../../checking_service/client/include)
+include_directories(../../../../../native_ui/include)
+include_directories(../../../../../cherry/android_lib/libzip)
 
 file(GLOB_RECURSE SOURCES
-    "../../../cherry/android_lib/libzip/*.c"
-    "../../../cherry/kernel/*.c"
-    "../../../cherry/xml/*.c"
-    "../../../cherry/smartfox/*.c"
-    "../../../checking_service/common/*.c"
-    "../../../native_ui/src/*.c"
+    "../../../../../cherry/android_lib/libzip/*.c"
+    "../../../../../cherry/kernel/*.c"
+    "../../../../../cherry/server/*.c"
+    "../../../../../cherry/xml/*.c"
+    "../../../../../cherry/smartfox/*.c"
+    "../../../../../checking_service/common/*.c"
+    "../../../../../checking_service/client/src/*.c"
+    "../../../../../native_ui/src/*.c"
+    "../../../../../other/android-ifaddrs/*.c"
     )
 
 add_library( # Sets the name of the library.

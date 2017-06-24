@@ -397,6 +397,8 @@ void cs_server_start(struct cs_server *ws, u16 port)
         struct timeval select_timeout;
         struct timeval *select_timeout_ptr = NULL;
 
+        struct string *local_ip = string_alloc(0);
+
         while(1) {
                 /*
                  * listen for next incomming sockets
@@ -420,6 +422,8 @@ void cs_server_start(struct cs_server *ws, u16 port)
                         break;
                 }
                 debug("cs_server: process select\n");
+
+                common_fill_local_ip_address(local_ip);
 
                 /*
                  * process handlers
@@ -464,6 +468,7 @@ void cs_server_start(struct cs_server *ws, u16 port)
                                                 remoteIP, INET6_ADDRSTRLEN);
 
                                         if(ws->local_only
+                                                && strcmp(client_host, local_ip->ptr) != 0
                                                 && strcmp(client_host, "127.0.0.1") != 0
                                                 && strcmp(client_host, "::ffff:127.0.0.1") != 0
                                                 && strcmp(client_host, "::1") != 0) {

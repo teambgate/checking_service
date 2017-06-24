@@ -151,28 +151,28 @@
     </view>
     <view width="match_parent" height="fill_parent" type="size_horizontal">
         <view width="fill_parent" height="match_parent" type="relative">
-            <view width="32" height="32" align="center" border="#2980b9" round="16" margin_bottom="1"/>
-            <view width="24" height="24" align="center" color="#2ECC71" round="12" margin_bottom="1"/>
+            <view width="32" height="32" align="center" border="#2980b9" round="16"/>
+            <view width="24" height="24" align="center" color="#2ECC71" round="12"/>
             <label align="center" text_color="#ffffff" width="match_parent"
                 height="10" font="Arial" font_size="14" text_align="center" multiline="false">26</label>
         </view>
         <view width="fill_parent" height="match_parent" type="relative">
-            <view width="24" height="24" align="center" color="#2ECC71" round="12" margin_bottom="1"/>
+            <view width="24" height="24" align="center" color="#2ECC71" round="12"/>
             <label align="center" text_color="#ffffff" width="match_parent"
                 height="10" font="Arial" font_size="14" text_align="center" multiline="false">27</label>
         </view>
         <view width="fill_parent" height="match_parent" type="relative">
-            <view width="24" height="24" align="center" color="#2ECC71" round="12" margin_bottom="1"/>
+            <view width="24" height="24" align="center" color="#2ECC71" round="12"/>
             <label align="center" text_color="#ffffff" width="match_parent"
                 height="10" font="Arial" font_size="14" text_align="center" multiline="false">28</label>
         </view>
         <view width="fill_parent" height="match_parent" type="relative">
-            <view width="24" height="24" align="center" color="#2ECC71" round="12" margin_bottom="1"/>
+            <view width="24" height="24" align="center" color="#2ECC71" round="12"/>
             <label align="center" text_color="#ffffff" width="match_parent"
                 height="10" font="Arial" font_size="14" text_align="center" multiline="false">29</label>
         </view>
         <view width="fill_parent" height="match_parent" type="relative">
-            <view width="24" height="24" align="center" color="#F64747" round="12" margin_bottom="1"/>
+            <view width="24" height="24" align="center" color="#F64747" round="12"/>
             <label align="center" text_color="#ffffff" width="match_parent"
                 height="10" font="Arial" font_size="14" text_align="center" multiline="false">30</label>
         </view>

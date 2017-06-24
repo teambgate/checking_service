@@ -39,6 +39,8 @@
 #include <fcntl.h>
 #include <cherry/server/file_descriptor.h>
 
+#define DEFAULT_TIMEOUT 30
+
 static struct smart_object *__build_request_data(struct smart_object *obj,
         char *version, size_t version_len,
         char *pass, size_t pass_len)
@@ -152,6 +154,8 @@ struct cs_request *cs_request_alloc(struct cs_requester *p, struct smart_object 
 
         struct cs_response *res = __cs_response_alloc(callback, ctx);
         res->num = num._int;
+        struct string *cmd      = smart_object_get_string(data, qskey(&__key_cmd__), SMART_GET_REPLACE_IF_WRONG_TYPE);
+        res->cmd = string_alloc_chars(qskey(cmd));
 
         pthread_mutex_lock(&p->wait_lock);
         map_set(p->waits, qpkey(num), &res);
@@ -182,6 +186,8 @@ struct cs_request *cs_request_alloc_with_host(struct cs_requester *p, struct sma
 
         struct cs_response *res = __cs_response_alloc(callback, ctx);
         res->num = num._int;
+        struct string *cmd      = smart_object_get_string(data, qskey(&__key_cmd__), SMART_GET_REPLACE_IF_WRONG_TYPE);
+        res->cmd = string_alloc_chars(qskey(cmd));
 
         pthread_mutex_lock(&p->wait_lock);
         map_set(p->waits, qpkey(num), &res);
@@ -214,6 +220,8 @@ struct cs_request *cs_request_alloc_with_param(struct cs_requester *p, struct sm
 
         struct cs_response *res = __cs_response_alloc(callback, ctx);
         res->num = num._int;
+        struct string *cmd      = smart_object_get_string(data, qskey(&__key_cmd__), SMART_GET_REPLACE_IF_WRONG_TYPE);
+        res->cmd = string_alloc_chars(qskey(cmd));
 
         pthread_mutex_lock(&p->wait_lock);
         map_set(p->waits, qpkey(num), &res);
@@ -242,7 +250,6 @@ static int __try_write(struct cs_requester *p, char *msg, size_t slen)
         char *ptr               = msg;
         u32 num                 = htonl((u32)len);
         int first = send(p->listener, &num, sizeof(num), MSG_NOSIGNAL);
-        app_log("sended first %d\n", first);
         if(first <= 0) {
                 p->valid = 0;
                 pthread_mutex_unlock(&p->write_mutex);
@@ -251,7 +258,6 @@ static int __try_write(struct cs_requester *p, char *msg, size_t slen)
 
         while(bytes_send < slen) {
                 int sent = send(p->listener, ptr, len, MSG_NOSIGNAL);
-                app_log("sended %d\n", sent);
                 bytes_send += sent;
                 if(bytes_send <= 0 || sent <= 0) {
                         p->valid = 0;
@@ -266,10 +272,10 @@ static int __try_write(struct cs_requester *p, char *msg, size_t slen)
         return 1;
 }
 
-static void __response_timeout(struct cs_requester *p, struct cs_request *r)
+static void __response_timeout_by_id(struct cs_requester *p, i64 rid)
 {
         struct smart_object *data = smart_object_alloc();
-        smart_object_set_long(data, qskey(&__key_request_id__), smart_object_get_long(r->data, qskey(&__key_request_id__), SMART_GET_REPLACE_IF_WRONG_TYPE));
+        smart_object_set_long(data, qskey(&__key_request_id__), rid);
         smart_object_set_bool(data, qskey(&__key_result__), 0);
         smart_object_set_string(data, qskey(&__key_message__), qlkey("timeout"));
         smart_object_set_long(data, qskey(&__key_error__), ERROR_TIMEOUT);
@@ -280,12 +286,18 @@ static void __response_timeout(struct cs_requester *p, struct cs_request *r)
         if(res) {
                 map_remove_key(p->waits, qpkey(id->_number));
                 res->data       = data;
+                smart_object_set_string(data, qskey(&__key_cmd__), qskey(res->cmd));
         }
         pthread_mutex_unlock(&p->wait_lock);
         if(res) {
                 if(res->callback) res->callback(res->ctx, res->data);
                 __cs_response_free(res);
         }
+}
+
+static void __response_timeout(struct cs_requester *p, struct cs_request *r)
+{
+        __response_timeout_by_id(p, smart_object_get_long(r->data, qskey(&__key_request_id__), SMART_GET_REPLACE_IF_WRONG_TYPE));
 }
 
 
@@ -326,9 +338,10 @@ get_head:;
         struct cs_request *r    = (struct cs_request *)
                 ((char *)head - offsetof(struct cs_request, head));
         struct string *d        = smart_object_to_json(r->data);
+        p->current_request_id   = map_get(r->data->data, struct smart_data *, qskey(&__key_request_id__))->_number;
 
         while(!cs_requester_reconnect(p, r->host->ptr, r->host->len,
-                        r->port, r->timeout <= 0 ? 5 : r->timeout)) {
+                        r->port, r->timeout <= 0 ? DEFAULT_TIMEOUT : r->timeout)) {
                 /*
                  * treat all reconnection fails as timeout
                  */
@@ -400,6 +413,8 @@ static void *cs_requester_read(struct cs_requester *p)
         }
         pthread_mutex_unlock(&p->read_mutex);
 
+        int received_data = 0;
+
 process_request:;
         if((*read_valid) == 0)
                 goto finish;
@@ -419,10 +434,15 @@ check_bytes:;
         if(nbytes <= 0) {
                 pthread_mutex_lock(&p->read_mutex);
 
+                if(received_data == 0) {
+                        __response_timeout_by_id(p, p->current_request_id._long);
+                }
+
                 shutdown(p->listener, SHUT_RDWR);
                 close(p->listener);
                 p->listener = -1;
                 debug("client closed!\n");
+                received_data = 0;
 
                 pthread_cond_signal(&p->write_cond);
                 if(p->listener < 0) {
@@ -435,6 +455,8 @@ check_bytes:;
                 pthread_mutex_unlock(&p->read_mutex);
                 goto check_life_time;
         }
+
+        received_data = 1;
 
 check:;
         if(msg_len <= 0) {
@@ -487,6 +509,7 @@ receive_full_packet:;
         if(res) {
                 map_remove_key(p->waits, qpkey(id->_number));
                 res->data       = data;
+                smart_object_set_string(data, qskey(&__key_cmd__), qskey(res->cmd));
         }
         pthread_mutex_unlock(&p->wait_lock);
         if(res) {
@@ -624,7 +647,7 @@ int cs_requester_reconnect(struct cs_requester *requester, char *host, size_t ho
                 debug("native ui : connect %d\n", connect_result);
                 debug("native ui : listener %d\n", requester->listener);
                 if (connect_result == -1) {
-                        if(select(requester->listener + 1, requester->eset->set->ptr, requester->wset->set->ptr, NULL, &select_timeout) == -1) {
+                        if(select(requester->listener + 1, NULL, requester->wset->set->ptr, requester->eset->set->ptr, &select_timeout) == -1) {
                                 goto connect_failed;
                         }
 
@@ -633,16 +656,32 @@ int cs_requester_reconnect(struct cs_requester *requester, char *host, size_t ho
                         file_descriptor_set_get_active(requester->wset, requester->actives);
                         file_descriptor_set_get_active(requester->eset, requester->e_actives);
 
-                        app_log("native ui w : %d | e : %d\n", requester->actives->len, requester->e_actives->len);
-
+                        debug("native ui w : %d | e : %d\n", requester->actives->len, requester->e_actives->len);
+                        int right = 0;
                         int i;
                         for_i(i, requester->actives->len) {
                                 u32 ls = array_get(requester->actives, u32, i);
+                                if(ls == requester->listener) {
+                                    right = 1;
+                                }
                                 debug("native ui : active %u\n", ls);
                         }
 
-                        if(requester->actives->len) {
+                        for_i(i, requester->e_actives->len) {
+                            u32 ls = array_get(requester->e_actives, u32, i);
+                            if(ls == requester->listener) {
+                                right = 0;
+                            }
+                            debug("native ui : active %u\n", ls);
+                        }
+
+                        if(right) {
                                 __set_blocking(requester->listener, 1);
+                                struct timeval tv;
+                                tv.tv_sec = timeout;
+                                tv.tv_usec = 0;
+                                setsockopt(requester->listener, SOL_SOCKET, SO_RCVTIMEO,
+                                        (const char*)&tv, sizeof(struct timeval));
                                 goto end_try_connect;
                         }
 

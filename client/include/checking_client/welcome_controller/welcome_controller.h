@@ -32,6 +32,7 @@ void welcome_controller_on_touch_search_around(struct native_view_controller *p,
 
 void welcome_controller_on_touch_search_ip(struct native_view_controller *p, struct native_view *sender, u8 type);
 
+void welcome_controller_on_listen_search_around(struct native_view_controller *p, struct smart_object *obj);
 
 #ifdef __cplusplus
 }

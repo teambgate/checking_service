@@ -11,18 +11,22 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  */
-#ifndef __CHECKING_SERVICE_CHECKING_CLIENT_TYPES_H__
-#define __CHECKING_SERVICE_CHECKING_CLIENT_TYPES_H__
+#ifndef __CHECKING_SERVICE_CHECKING_CLIENT_REQUEST_FUNCTIONS_SEARCH_AROUND_H__
+#define __CHECKING_SERVICE_CHECKING_CLIENT_REQUEST_FUNCTIONS_SEARCH_AROUND_H__
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#include <native_ui/types.h>
-#include <common/types.h>
-#include <smartfox/types.h>
+#include <checking_client/request/types.h>
 
-typedef void(*view_controller_command_delegate)(struct native_view_controller *, struct smart_object *);
+struct checking_client_request_search_around_param {
+        double lat;
+        double lon;
+};
+
+void checking_client_requester_search_around(struct checking_client_requester *p,
+        struct checking_client_request_search_around_param param);
 
 #ifdef __cplusplus
 }

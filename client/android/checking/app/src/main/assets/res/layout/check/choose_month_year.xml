@@ -1,4 +1,4 @@
-<view width="match_parent" height="match_parent" type="relative" align="center" visible="false">
+<view width="match_parent" height="match_parent" type="relative" align="center" visible="true">
     <!-- choose month view-->
     <listview type="vertical" align="left|center" margin_left="10" width="135"
         height="match_parent" padding_top="20" border="#d1d1d1" color="#ffffffe1" round="4" clip="true" touch="true">

@@ -46,7 +46,7 @@
                     <!-- calendar view-->
                     <link src="res/layout/check/calendar.xml"/>
                 </view>
-                <link src="res/layout/check/choose_month_year.xml" />
+                <link src="res/layout/check/choose_month_year.xml" visible="false"/>
             </view>
         </view>
     </listview>

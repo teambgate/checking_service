@@ -13,7 +13,11 @@
 #include <native_ui/parser.h>
 #include <native_ui/native_ui_manager.h>
 #include <native_ui/action.h>
-#include <native_ui/test.h>
+#import <native_ui/view.h>
+#import <native_ui/view_controller.h>
+#import <native_ui/align.h>
+#import <native_ui/action.h>
+#import <native_ui/touch_handle.h>
 
 #include <common/request.h>
 #include <cherry/unistd.h>
@@ -22,6 +26,8 @@
 #include <common/command.h>
 #include <locale.h>
 #include <time.h>
+
+#import <checking_client/controller_utils.h>
 
 extern "C" {
 zip *APKArchive;
@@ -58,7 +64,7 @@ extern "C" {
     static void test_search()
     {
         struct cs_requester *p  = cs_requester_alloc();
-        int ret = cs_requester_connect(p, "192.168.1.13", 9898);
+        int ret = cs_requester_connect(p, "192.168.1.15", 9898);
         debug("native ui init requester : %d\n", ret);
 
         {
@@ -90,7 +96,9 @@ extern "C" {
             // struct smart_object *obj = smart_object_alloc();
             // smart_object_set_string(obj, qskey(&__key_name__), qlkey("Johan"));
             smart_object_set_object(data, qskey(&__key_data__), d);
-            cs_request_alloc(p, data, callback, p);
+            cs_request_alloc_with_param(p, data, callback, p, (struct cs_request_param){
+                    .timeout = 20
+            });
         }
     }
 }
@@ -112,6 +120,10 @@ Java_com_example_apple_myapplication_MainActivity_initNativeJNI(
     __activity = __jni_env->NewGlobalRef(activity);
 
     //native_ui_test();
+/*
+     * register view controller allocator
+     */
+    native_view_controller_set_from_name_delegate(checking_client_native_view_controller_alloc);
 
     /*
      * create root

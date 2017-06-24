@@ -211,6 +211,8 @@ get_line:;
                                 checking_service_check_search_by_date_by_user(local_service, com);
                         } else if(strcmp(cmd->ptr, "test_work_time_search_by_date_by_user") == 0) {
                                 checking_service_work_time_search_by_date_by_user(local_service, com);
+                        } else if(strcmp(cmd->ptr, "get_code") == 0) {
+                                checking_service_get_code(local_service, com);
                         } else {
                                 if(strcmp(cmd->ptr, "help") != 0) {
                                         app_log("command not found! Commands available :\n");
@@ -251,6 +253,8 @@ get_line:;
                                 app_log("\t\ttest search user checks\n\n");
                                 app_log("- " PRINT_YEL "test_work_time_search_by_date_by_user\n" PRINT_RESET);
                                 app_log("\t\ttest search user work times\n\n");
+                                app_log("- " PRINT_YEL "get_code\n" PRINT_RESET);
+                                app_log("\t\tget check in code today\n\n");
                                 app_log("\n");
                         }
 
@@ -266,12 +270,14 @@ get_line:;
 
 static void __start_service(void *d)
 {
+        srand ( time(NULL) );
         struct checking_service *service = (struct checking_service *)d;
         checking_service_start(service);
 }
 
 static void __start_local_supporter(void *d)
 {
+        srand ( time(NULL) );
         struct local_supporter *supporter = (struct local_supporter *)d;
         local_supporter_start(supporter);
 }
@@ -291,7 +297,7 @@ int main( int argc, char** argv )
 
         local_requester = cs_requester_alloc();
         u16 port        = smart_object_get_short(local_service->config, qlkey("service_local_port"), SMART_GET_REPLACE_IF_WRONG_TYPE);
-        cs_requester_connect(local_requester, "192.168.1.246", 9898);
+        cs_requester_connect(local_requester, "127.0.0.1", port);
 
         pthread_t tid[4];
         pthread_create(&tid[0], NULL, (void*(*)(void*))__read_input, (void*)NULL);

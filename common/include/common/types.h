@@ -45,7 +45,8 @@ struct cs_request {
 
 struct cs_response {
         int                     num;
-        struct smart_object       *data;
+        struct smart_object     *data;
+        struct string           *cmd;
         void                    *ctx;
         cs_request_callback     callback;
 };
@@ -82,6 +83,8 @@ struct cs_requester {
         u8                              valid;
 
         struct timeval                  t1, t2;
+
+        struct smart_number             current_request_id;
 
         struct file_descriptor_set      *wset;
         struct file_descriptor_set      *eset;

@@ -1,7 +1,7 @@
 <touch key="open"/>
 <controller name="root_view_controller"/>
 <view width="match_parent" height="match_parent" type="relative" align="center" hash="first_image" scale="1">
-        <link src="res/layout/check/check.xml"/>
+        <link src="res/layout/welcome/welcome.xml"/>
         <!--&lt;!&ndash; <link src="res/layout/room.xml"/> &ndash;&gt;-->
         <!--&lt;!&ndash; <view width="375" height="667" color="#ff0000" align="center" anchor_x="1.0" anchor_y="0.5" margin_right="354.1667" rotation_y="-85"/> &ndash;&gt;-->
         <!--&lt;!&ndash; <view width="375" height="667" color="#0000ff" align="center" anchor_x="0" anchor_y="0.5" rotation_y="5" margin_left="20.8333"> &ndash;&gt;-->

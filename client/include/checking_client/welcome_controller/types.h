@@ -28,7 +28,13 @@ enum {
 };
 
 struct welcome_controller_data {
-        u8      state;
+        u8                                                      state;
+
+        struct checking_client_requester_response_context       *response_context;
+
+        struct map                                              *cmd_delegate;
+
+        u8                                                      searching_around;
 };
 
 #ifdef __cplusplus

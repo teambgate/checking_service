@@ -35,8 +35,10 @@ struct local_supporter *local_supporter_alloc()
         struct local_supporter *p       = smalloc(sizeof(struct local_supporter));
         INIT_LIST_HEAD(&p->server);
 
-        struct cs_server *c             = cs_server_alloc(CS_SERVER_LOCAL);
+        struct cs_server *c             = cs_server_alloc(CS_SERVER_PUBLIC);
         list_add_tail(&c->user_head, &p->server);
+
+        c->config                       = smart_object_from_json_file("res/config.json", FILE_INNER);
 
         map_set(c->delegates, qskey(&__cmd_local_supporter_get_code__),
                 &(cs_server_delegate){local_supporter_process_get_code});

@@ -57,6 +57,8 @@ static void __response_invalid_data(struct cs_server *p, int fd, u32 mask, struc
         smart_object_set_bool(res, qskey(&__key_result__), 0);
         smart_object_set_string(res, qskey(&__key_message__), msg, msg_len);
         smart_object_set_long(res, qskey(&__key_error__), ERROR_DATA_INVALID);
+        struct string *cmd = smart_object_get_string(obj, qskey(&__key_cmd__), SMART_GET_REPLACE_IF_WRONG_TYPE);
+        smart_object_set_string(res, qskey(&__key_cmd__), qskey(cmd));
 
         struct string *d        = smart_object_to_json(res);
         cs_server_send_to_client(p, fd, mask, d->ptr, d->len, 0);
@@ -73,6 +75,8 @@ static void __response_success(struct cs_server *p, int fd, u32 mask, struct sma
         smart_object_set_long(res, qskey(&__key_request_id__), smart_object_get_long(obj, qskey(&__key_request_id__), 0));
         smart_object_set_bool(res, qskey(&__key_result__), 1);
         smart_object_set_string(res, qskey(&__key_message__), msg, msg_len);
+        struct string *cmd = smart_object_get_string(obj, qskey(&__key_cmd__), SMART_GET_REPLACE_IF_WRONG_TYPE);
+        smart_object_set_string(res, qskey(&__key_cmd__), qskey(cmd));
 
         struct string *d        = smart_object_to_json(res);
         cs_server_send_to_client(p, fd, mask, d->ptr, d->len, 0);
@@ -165,6 +169,8 @@ static void __search_callback(struct cs_server_callback_user_data *cud, struct s
                         smart_object_get_long(cud->obj, qskey(&__key_request_id__), SMART_GET_REPLACE_IF_WRONG_TYPE));
                 smart_object_set_bool(res, qskey(&__key_result__), 1);
                 smart_object_set_string(res, qskey(&__key_message__), qlkey("successfully"));
+                struct string *cmd = smart_object_get_string(cud->obj, qskey(&__key_cmd__), SMART_GET_REPLACE_IF_WRONG_TYPE);
+                smart_object_set_string(res, qskey(&__key_cmd__), qskey(cmd));
 
                 struct smart_object *res_data = smart_object_get_object(res, qskey(&__key_data__), SMART_GET_REPLACE_IF_WRONG_TYPE);
                 struct smart_array *wtimes = smart_object_get_array(res_data, qskey(&__key_work_times__), SMART_GET_REPLACE_IF_WRONG_TYPE);

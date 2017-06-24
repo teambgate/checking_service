@@ -78,6 +78,9 @@ void checking_service_check_search_by_date_by_user_callback(struct checking_serv
 void checking_service_work_time_search_by_date_by_user(struct checking_service *p, struct smart_object *in);
 void checking_service_work_time_search_by_date_by_user_callback(struct checking_service *p, struct smart_object *recv);
 
+void checking_service_get_code(struct checking_service *p, struct smart_object *in);
+void checking_service_get_code_callback(struct checking_service *p, struct smart_object *recv);
+
 /*
  * request delegate
  */

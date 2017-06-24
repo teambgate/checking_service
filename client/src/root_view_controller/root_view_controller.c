@@ -17,7 +17,7 @@
 
 static void __root_view_controller_on_linked(struct native_view_controller *p)
 {
-        debug("LINKED\n");
+        
 }
 
 static void __root_view_controller_on_removed(struct native_view_controller *p)

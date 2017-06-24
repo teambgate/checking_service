@@ -1,0 +1,11 @@
+{
+        "service_host"                  : "192.168.1.15",
+        "service_port"                  : 8989,
+        "service_pass"                  : "123456",
+        "service_version_code"          : "1",
+
+        "supervisor_host"               : "192.168.1.15",
+        "supervisor_port"               : 9999,
+        "supervisor_pass"               : "123456",
+        "supervisor_version_code"       : "1"
+}
