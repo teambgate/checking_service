@@ -31,6 +31,7 @@
 #include <supervisor/supervisor.h>
 
 #include <pthread.h>
+#include <signal.h>
 
 static JavaVM*  jvm;
 JavaVM*         __jvm;
@@ -151,6 +152,16 @@ get_line:;
 
 int main( int argc, char** argv )
 {
+        struct sigaction sa;
+memset(&sa, 0, sizeof(sa));
+
+sa.sa_handler = SIG_IGN;
+
+if (-1 == sigaction(SIGABRT, &sa, NULL))
+{
+  perror("sigaction() failed");
+}
+
         srand ( time(NULL) );
 
         //__setup_jni();

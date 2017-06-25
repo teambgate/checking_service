@@ -65,7 +65,7 @@ int common_username_valid(char *name, size_t len)
 }
 
 void common_gen_random(char *s, size_t len) {
-        for (int i = 0; i < len; ++i) {
+        for (int i = 0; i < len - 1; ++i) {
                 int randomChar = rand() % ( 26 + 26 + 10);
                 if (randomChar < 26)
                 s[i] = 'a' + randomChar;
@@ -74,7 +74,7 @@ void common_gen_random(char *s, size_t len) {
                 else
                 s[i] = '0' + randomChar - 26 - 26;
         }
-        s[len] = 0;
+        s[len - 1] = 0;
 }
 
 int common_is_ip(char *s)

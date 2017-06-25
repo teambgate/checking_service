@@ -161,7 +161,7 @@ static void __register_user_name(struct cs_server *p, int fd, u32 mask, struct s
         struct string *user_pass        = smart_object_get_string(obj, qskey(&__key_user_pass__), SMART_GET_REPLACE_IF_WRONG_TYPE);
 
         struct string *current_time     = current_time_to_string(TIME_FORMAT_YY_MM_DD_HH_MM_SS);
-
+//
         struct string *es_version_code = smart_object_get_string(p->config, qlkey("es_version_code"), SMART_GET_REPLACE_IF_WRONG_TYPE);
         struct string *es_pass = smart_object_get_string(p->config, qlkey("es_pass"), SMART_GET_REPLACE_IF_WRONG_TYPE);
 

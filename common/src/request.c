@@ -37,6 +37,7 @@
 #include <signal.h>
 #include <netinet/in.h>
 #include <fcntl.h>
+#include <netinet/tcp.h>
 #include <cherry/server/file_descriptor.h>
 
 #define DEFAULT_TIMEOUT 30
@@ -623,29 +624,25 @@ int cs_requester_reconnect(struct cs_requester *requester, char *host, size_t ho
                 return 0;
         }
         string_free(ports);
-        debug("finish get addr\n");
 
         for(p = servinfo; p != NULL; p = p->ai_next) {
-                debug("try listen 1\n");
                 if ((requester->listener = socket(p->ai_family, p->ai_socktype,
                                 p->ai_protocol)) == -1) {
                         perror("client: socket");
                         continue;
                 }
-                debug("try listen 2\n");
 
                 __set_blocking(requester->listener, 0);
                 file_descriptor_set_clean(requester->wset);
                 file_descriptor_set_clean(requester->eset);
                 file_descriptor_set_add(requester->wset, requester->listener);
                 file_descriptor_set_add(requester->eset, requester->listener);
-
+ 
                 struct timeval select_timeout;
                 select_timeout.tv_sec   = timeout;
                 select_timeout.tv_usec  = 0;
+            
                 int connect_result = connect(requester->listener, p->ai_addr, p->ai_addrlen);
-                debug("native ui : connect %d\n", connect_result);
-                debug("native ui : listener %d\n", requester->listener);
                 if (connect_result == -1) {
                         if(select(requester->listener + 1, NULL, requester->wset->set->ptr, requester->eset->set->ptr, &select_timeout) == -1) {
                                 goto connect_failed;
@@ -695,7 +692,7 @@ int cs_requester_reconnect(struct cs_requester *requester, char *host, size_t ho
                 }
 
         end_try_connect:;
-                debug("try listen 3\n");
+                debug("try listen 5\n");
 
                 break;
         }
@@ -725,7 +722,6 @@ int cs_requester_connect(struct cs_requester *requester, char *host, u16 port)
         pthread_t tid[2];
         pthread_create(&tid[0], NULL, (void*(*)(void*))cs_requester_write, (void*)requester);
         pthread_create(&tid[1], NULL, (void*(*)(void*))cs_requester_read, (void*)requester);
-
         return 1;
 }
 

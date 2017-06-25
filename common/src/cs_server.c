@@ -349,7 +349,7 @@ void cs_server_start(struct cs_server *ws, u16 port)
         for(p = ai; p != NULL; p = p->ai_next) {
                 int prev_listener = ws->listener;
                 ws->listener = socket(p->ai_family, p->ai_socktype, p->ai_protocol);
-                debug("lis %d\n", ws->listener);
+
                 if(ws->listener < 0) {
                         continue;
                 }
@@ -504,7 +504,7 @@ void cs_server_start(struct cs_server *ws, u16 port)
                                         // }
                                 }
                         } else {
-                                debug("receive connection data\n");
+                                debug("receive connection data from %d\n", *fd);
                                 /*
                                  * receive client request
                                  */
