@@ -31,6 +31,8 @@
 #include <termios.h>
 #include <ifaddrs.h>
 #include <unistd.h>
+#include <net/if_dl.h>
+#include <errno.h>
 
 #define MAXPW 1024
 
@@ -82,6 +84,7 @@ int common_is_ip(char *s)
         return result != 0;
 }
 
+#if OS == DROID || OS == LINUX
 struct string *common_get_mac_address()
 {
         struct string *result = string_alloc(0);
@@ -139,6 +142,63 @@ struct string *common_get_mac_address()
 finish:;
         return result;
 }
+#else
+struct string *common_get_mac_address()
+{
+        struct string *result = string_alloc(0);
+
+        struct ifaddrs *if_addrs = NULL;
+        struct ifaddrs *if_addr = NULL;
+        void *tmp = NULL;
+        char buf[INET6_ADDRSTRLEN];
+        if (0 == getifaddrs(&if_addrs)) {
+                for (if_addr = if_addrs; if_addr != NULL; if_addr = if_addr->ifa_next) {
+
+                        // Address
+                        if (if_addr->ifa_addr->sa_family == AF_INET) {
+                                tmp = &((struct sockaddr_in *)if_addr->ifa_addr)->sin_addr;
+                        } else {
+                                tmp = &((struct sockaddr_in6 *)if_addr->ifa_addr)->sin6_addr;
+                        }
+                        // Mask
+                        if (if_addr->ifa_netmask != NULL) {
+                                if (if_addr->ifa_netmask->sa_family == AF_INET) {
+                                        tmp = &((struct sockaddr_in *)if_addr->ifa_netmask)->sin_addr;
+                                } else {
+                                        tmp = &((struct sockaddr_in6 *)if_addr->ifa_netmask)->sin6_addr;
+                                }
+                        }
+
+                        // MAC address
+                        if (if_addr->ifa_addr != NULL && if_addr->ifa_addr->sa_family == AF_LINK) {
+                                struct sockaddr_dl* sdl = (struct sockaddr_dl *)if_addr->ifa_addr;
+                                unsigned char mac[6];
+                                if (6 == sdl->sdl_alen) {
+                                        memcpy(mac, LLADDR(sdl), sdl->sdl_alen);
+                                        unsigned char mac_address[20];
+                                        memset(mac_address, 0, 20);
+
+                                        int i;
+                                        int index = 0;
+                                        for (i = 0; i < 6; ++i) {
+                                                if(i > 0 && i < 6) {
+                                                        sprintf(mac_address + index, ":");
+                                                        index++;
+                                                }
+                                                sprintf(mac_address + index, "%.2X", (unsigned char)mac[i]);
+                                                index += 2;
+                                        }
+                                        string_cat(result, mac_address, strlen(mac_address));
+                                }
+                        }
+                }
+                freeifaddrs(if_addrs);
+                if_addrs = NULL;
+        }
+
+        return result;
+}
+#endif
 
 ssize_t common_getpasswd (char *pw, size_t sz, int mask, FILE *fp)
 {

@@ -450,6 +450,8 @@
 					../../../../native_ui/include,
 					../../../../cherry/include,
 					../../include,
+					../../../../cherry/smartfox/include,
+					../../../common/include,
 				);
 				INFOPLIST_FILE = checking/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 10.3;
@@ -459,12 +461,16 @@
 					"../../ios_build/kernel/Debug-iphoneos",
 					"../../ios_build/xml/Debug-iphoneos",
 					"../../ios_build/Debug-iphoneos",
+					"../../ios_build/server/Debug-iphoneos",
+					"../../ios_build/smartfox/Debug-iphoneos",
 				);
 				OTHER_LDFLAGS = (
 					"-lnative_ui",
 					"-lkernel",
 					"-lxml",
 					"-lchecking_client",
+					"-lserver",
+					"-lsmartfox",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.bgate.checking;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -480,6 +486,8 @@
 					../../../../native_ui/include,
 					../../../../cherry/include,
 					../../include,
+					../../../../cherry/smartfox/include,
+					../../../common/include,
 				);
 				INFOPLIST_FILE = checking/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 10.3;
@@ -489,12 +497,16 @@
 					"../../ios_build/kernel/Release-iphoneos",
 					"../../ios_build/xml/Release-iphoneos",
 					"../../ios_build/Release-iphoneos",
+					"../../ios_build/server/Release-iphoneos",
+					"../../ios_build/smartfox/Release-iphoneos",
 				);
 				OTHER_LDFLAGS = (
 					"-lnative_ui",
 					"-lkernel",
 					"-lxml",
 					"-lchecking_client",
+					"-lserver",
+					"-lsmartfox",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.bgate.checking;
 				PRODUCT_NAME = "$(TARGET_NAME)";

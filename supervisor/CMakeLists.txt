@@ -61,11 +61,11 @@ include_directories(include)
 
 if(MACOSX)
         file(GLOB_RECURSE SOURCES "src/*.c" "src/*.m" "../common/src/*.c" "../s2/src/*.c")
+        set(PROJECT_LINK_LIBS kernel xml server smartfox)
 else()
         file(GLOB_RECURSE SOURCES "src/*.c" "../common/src/*.c" "../s2/src/*.c")
+        set(PROJECT_LINK_LIBS kernel xml server smartfox jvm)
 endif()
-
-set(PROJECT_LINK_LIBS kernel xml server smartfox jvm)
 
 add_executable(supervisor ${SOURCES})
 add_dependencies(supervisor ${PROJECT_LINK_LIBS})

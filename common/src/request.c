@@ -677,6 +677,7 @@ int cs_requester_reconnect(struct cs_requester *requester, char *host, size_t ho
 
                         if(right) {
                                 __set_blocking(requester->listener, 1);
+                                block_sigpipe(requester->listener);
                                 struct timeval tv;
                                 tv.tv_sec = timeout;
                                 tv.tv_usec = 0;

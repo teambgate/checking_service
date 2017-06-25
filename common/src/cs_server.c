@@ -335,8 +335,9 @@ void cs_server_start(struct cs_server *ws, u16 port)
         hints.ai_family         = AF_UNSPEC;
         hints.ai_socktype       = SOCK_STREAM;
         hints.ai_protocol       = IPPROTO_TCP;
+#if OS != OSX && OS != IOS
         hints.ai_flags          = AI_PASSIVE;
-
+#endif
         struct string *ports    = string_alloc(0);
         string_cat_int(ports, port);
 
@@ -344,10 +345,11 @@ void cs_server_start(struct cs_server *ws, u16 port)
                 debug("cs_server error: %s\n", gai_strerror(rv));
                 goto finish;
         }
-        q = p;
+        q = p = NULL;
         for(p = ai; p != NULL; p = p->ai_next) {
                 int prev_listener = ws->listener;
                 ws->listener = socket(p->ai_family, p->ai_socktype, p->ai_protocol);
+                debug("lis %d\n", ws->listener);
                 if(ws->listener < 0) {
                         continue;
                 }
@@ -355,7 +357,7 @@ void cs_server_start(struct cs_server *ws, u16 port)
 
                 if(bind(ws->listener, p->ai_addr, p->ai_addrlen) < 0) {
                         socket_close(ws->listener);
-                        ws->listener = 0;
+                        ws->listener = -1;
                         continue;
                 } else {
                         if(prev_listener) {
@@ -363,7 +365,6 @@ void cs_server_start(struct cs_server *ws, u16 port)
                         }
                         q = p;
                         continue;
-                        // break;
                 }
                 break;
         }
@@ -385,7 +386,7 @@ void cs_server_start(struct cs_server *ws, u16 port)
 
         file_descriptor_set_add(ws->master, ws->listener);
         ws->fdmax               = ws->listener;
-
+        block_sigpipe(ws->listener);
 
         int nbytes              = 0;
         struct timeval tcurrent, tbegin;
@@ -463,6 +464,7 @@ void cs_server_start(struct cs_server *ws, u16 port)
                                         pthread_mutex_lock(&ws->client_data_mutex);
                                         file_descriptor_set_add(ws->master, newfd);
                                         ws->fdmax = MAX(ws->fdmax, newfd);
+                                        block_sigpipe(newfd);
                                         char *client_host = (char *)inet_ntop(remoteaddr.ss_family,
                                                 get_in_addr((struct sockaddr *)&remoteaddr),
                                                 remoteIP, INET6_ADDRSTRLEN);
@@ -544,14 +546,14 @@ void cs_server_start(struct cs_server *ws, u16 port)
         }
 finish:;
         debug("cs_server: shutdown\n");
-        if(ws->listener > 0) {
+        if(ws->listener >= 0) {
                 shutdown(ws->listener, SHUT_RDWR);
                 socket_close(ws->listener);
         }
         string_free(ports);
         sfree(recvbuf);
         array_free(actives);
-        ws->listener = 0;
+        ws->listener = -1;
         ws->fdmax = 0;
         file_descriptor_set_clean(ws->master);
 
@@ -564,7 +566,7 @@ struct cs_server *cs_server_alloc(u8 local_only)
         p->master               = file_descriptor_set_alloc();
         p->incomming            = file_descriptor_set_alloc();
         p->fdmax                = 0;
-        p->listener             = 0;
+        p->listener             = -1;
         p->root                 = string_alloc(0);
 
         INIT_LIST_HEAD(&p->handlers);
