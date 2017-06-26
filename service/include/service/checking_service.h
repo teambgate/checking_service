@@ -86,6 +86,7 @@ void checking_service_get_code_callback(struct checking_service *p, struct smart
  */
 void checking_service_process_service_register_username(struct cs_server *p, int fd, u32 mask, struct smart_object *obj);
 void checking_service_process_service_validate_username(struct cs_server *p, int fd, u32 mask, struct smart_object *obj);
+void checking_service_process_service_get_location_info(struct cs_server *p, int fd, u32 mask, struct smart_object *obj);
 
 void checking_service_process_location_register(struct cs_server *p, int fd, u32 mask, struct smart_object *obj);
 void checking_service_process_location_update_ip(struct cs_server *p, int fd, u32 mask, struct smart_object *obj);
@@ -93,12 +94,14 @@ void checking_service_process_location_update_latlng(struct cs_server *p, int fd
 
 void checking_service_process_user_reserve(struct cs_server *p, int fd, u32 mask, struct smart_object *obj);
 void checking_service_process_user_validate(struct cs_server *p, int fd, u32 mask, struct smart_object *obj);
+void checking_service_process_user_search(struct cs_server *p, int fd, u32 mask, struct smart_object *obj);
 
 void checking_service_process_check_in(struct cs_server *p, int fd, u32 mask, struct smart_object *obj);
 void checking_service_process_check_out(struct cs_server *p, int fd, u32 mask, struct smart_object *obj);
 void checking_service_process_check_search_by_date_by_user(struct cs_server *p, int fd, u32 mask, struct smart_object *obj);
 
 void checking_service_process_device_add(struct cs_server *p, int fd, u32 mask, struct smart_object *obj);
+void checking_service_process_device_search(struct cs_server *p, int fd, u32 mask, struct smart_object *obj);
 
 void checking_service_process_work_time_new(struct cs_server *p, int fd, u32 mask, struct smart_object *obj);
 void checking_service_process_work_time_new_by_user(struct cs_server *p, int fd, u32 mask, struct smart_object *obj);

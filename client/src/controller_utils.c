@@ -14,6 +14,7 @@
 #include <checking_client/controller_utils.h>
 #include <checking_client/root_view_controller/root_view_controller.h>
 #include <checking_client/welcome_controller/welcome_controller.h>
+#include <checking_client/register_controller/register_controller.h>
 #include <cherry/string.h>
 
 struct native_view_controller *checking_client_native_view_controller_alloc(char *name, size_t len)
@@ -22,6 +23,8 @@ struct native_view_controller *checking_client_native_view_controller_alloc(char
                 return welcome_controller_alloc();
         } else if(strcmp(name, "root_view_controller") == 0) {
                 return root_view_controller_alloc();
+        } else if(strcmp(name, "register_controller") == 0) {
+                return register_controller_alloc();
         }
         return NULL;
 }

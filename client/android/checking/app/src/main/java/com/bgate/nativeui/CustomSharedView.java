@@ -16,6 +16,8 @@ import com.example.apple.myapplication.R;
 
 public class CustomSharedView extends AbsoluteLayout{
 
+    public static long __current_touch_native_ptr__ = 0;
+
     public int  can_touch;
     public long native_ptr;
     public boolean clip;
@@ -103,18 +105,26 @@ public class CustomSharedView extends AbsoluteLayout{
             float d  = getContext().getResources().getDisplayMetrics().density;
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
-                    result = CustomFunction.touchBeganJNI(native_ptr, 0, event.getX() / d, event.getY() / d) == 1;
+                    if(__current_touch_native_ptr__ == 0) {
+                        __current_touch_native_ptr__ = native_ptr;
+                        result = CustomFunction.touchBeganJNI(__current_touch_native_ptr__, 0, event.getX() / d, event.getY() / d) == 1;
+                        if(!result) {
+                            __current_touch_native_ptr__ = 0;
+                        }
+                    }
                     break;
                 case MotionEvent.ACTION_MOVE:
-                    CustomFunction.touchMovedJNI(native_ptr, 0, event.getX() / d, event.getY() / d);
+                    CustomFunction.touchMovedJNI(__current_touch_native_ptr__, 0, event.getX() / d, event.getY() / d);
                     result = true;
                     break;
                 case MotionEvent.ACTION_UP:
-                    CustomFunction.touchEndedJNI(native_ptr, 0, event.getX() / d, event.getY() / d);
+                    CustomFunction.touchEndedJNI(__current_touch_native_ptr__, 0, event.getX() / d, event.getY() / d);
+                    __current_touch_native_ptr__ = 0;
                     result = true;
                     break;
                 case MotionEvent.ACTION_CANCEL:
-                    CustomFunction.touchCancelledJNI(native_ptr, 0, event.getX() / d, event.getY() / d);
+                    CustomFunction.touchCancelledJNI(__current_touch_native_ptr__, 0, event.getX() / d, event.getY() / d);
+                    __current_touch_native_ptr__ = 0;
                     result = true;
                     break;
                 default:

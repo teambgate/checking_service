@@ -36,8 +36,8 @@ void checking_client_requester_response_context_clear(struct checking_client_req
                 if( ! list_singular(&p->head)) {
                         list_del_init(&p->head);
                 }
-                p->ui_thread_lock       = NULL;
                 pthread_mutex_unlock(p->ui_thread_lock);
+                p->ui_thread_lock       = NULL;
         }
 }
 

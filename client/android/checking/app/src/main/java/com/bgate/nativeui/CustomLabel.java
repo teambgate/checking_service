@@ -133,16 +133,21 @@ public class CustomLabel extends CustomSharedView {
                 float d  = getContext().getResources().getDisplayMetrics().density;
                 switch (event.getAction()) {
                     case MotionEvent.ACTION_DOWN:
-                        CustomFunction.touchBeganJNI(native_ptr, 0, event.getX() / d, event.getY() / d);
+                        if(__current_touch_native_ptr__ == 0) {
+                            __current_touch_native_ptr__ = native_ptr;
+                            CustomFunction.touchBeganJNI( __current_touch_native_ptr__, 0, event.getX() / d, event.getY() / d);
+                        }
                         break;
                     case MotionEvent.ACTION_MOVE:
-                        CustomFunction.touchMovedJNI(native_ptr, 0, event.getX() / d, event.getY() / d);
+                        CustomFunction.touchMovedJNI( __current_touch_native_ptr__, 0, event.getX() / d, event.getY() / d);
                         break;
                     case MotionEvent.ACTION_UP:
-                        CustomFunction.touchEndedJNI(native_ptr, 0, event.getX() / d, event.getY() / d);
+                        CustomFunction.touchEndedJNI( __current_touch_native_ptr__, 0, event.getX() / d, event.getY() / d);
+                        __current_touch_native_ptr__ = 0;
                         break;
                     case MotionEvent.ACTION_CANCEL:
-                        CustomFunction.touchCancelledJNI(native_ptr, 0, event.getX() / d, event.getY() / d);
+                        CustomFunction.touchCancelledJNI( __current_touch_native_ptr__, 0, event.getX() / d, event.getY() / d);
+                        __current_touch_native_ptr__ = 0;
                         break;
                     default:
                         break;

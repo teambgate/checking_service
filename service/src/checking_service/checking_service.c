@@ -163,11 +163,20 @@ struct checking_service *checking_service_alloc(u8 local_only)
                 map_set(c->delegates, qskey(&__cmd_work_time_search_by_date_by_user__),
                         &(cs_server_delegate){checking_service_process_work_time_search_by_date_by_user});
         } else {
+                map_set(c->delegates, qskey(&__cmd_service_get_location_info__),
+                        &(cs_server_delegate){checking_service_process_service_get_location_info});
+
                 map_set(c->delegates, qskey(&__cmd_user_reserve__),
                         &(cs_server_delegate){checking_service_process_user_reserve});
 
+                map_set(c->delegates, qskey(&__cmd_user_search__),
+                        &(cs_server_delegate){checking_service_process_user_search});
+
                 map_set(c->delegates, qskey(&__cmd_device_add__),
                         &(cs_server_delegate){checking_service_process_device_add});
+
+                map_set(c->delegates, qskey(&__cmd_device_search__),
+                        &(cs_server_delegate){checking_service_process_device_search});
 
                 map_set(c->delegates, qskey(&__cmd_work_time_new_by_user__),
                         &(cs_server_delegate){checking_service_process_work_time_new_by_user});

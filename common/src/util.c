@@ -31,7 +31,9 @@
 #include <termios.h>
 #include <ifaddrs.h>
 #include <unistd.h>
+#if OS == OSX || OS == IOS
 #include <net/if_dl.h>
+#endif
 #include <errno.h>
 
 #define MAXPW 1024

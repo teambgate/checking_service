@@ -12,6 +12,7 @@
  * GNU General Public License for more details.
  */
 #include <checking_client/welcome_controller/welcome_controller.h>
+#include <checking_client/register_controller/register_controller.h>
 #include <native_ui/view_controller.h>
 #include <native_ui/action.h>
 #include <native_ui/touch_handle.h>
@@ -30,57 +31,24 @@
 #include <common/key.h>
 #include <common/command.h>
 
-#define REGISTER_TOUCH(parser, name, handle, data, fdel) \
-{       \
-        struct native_view_touch_handle *th = native_view_parser_get_touch_handle(parser, name);      \
-        if(th) {        \
-                native_view_touch_handle_set_touch_delegate(th, handle, data, fdel);    \
-        }       \
-}
+ADD_FUNCTION_LISTEN(struct welcome_controller_data);
 
-static void __welcome_controller_on_listen(struct native_view_controller *p, struct smart_object *obj)
-{
-        struct welcome_controller_data *data = (struct welcome_controller_data *)p->custom_data;
-        struct string *cmd = smart_object_get_string(obj, qskey(&__key_cmd__), SMART_GET_REPLACE_IF_WRONG_TYPE);
-        view_controller_command_delegate *delegate = map_get_pointer(data->cmd_delegate, qskey(cmd));
-
-        if(*delegate) {
-                (*delegate)(p, obj);
-        }
-}
-
-static struct welcome_controller_data *__welcome_controller_data_alloc(struct native_view_controller *controller)
-{
-        struct welcome_controller_data *p       = smalloc(sizeof(struct welcome_controller_data));
-        p->state                                = WELCOME_SHOW_SEARCH_IP;
-        p->response_context                     = checking_client_requester_response_context_alloc();
-        p->response_context->ctx                = controller;
-        p->response_context->delegate           = __welcome_controller_on_listen;
-        p->cmd_delegate                         = map_alloc(sizeof(view_controller_command_delegate));
-        p->searching_around                     = 0;
-
+ADD_CONTROLLER_DATA_ALLOC(struct welcome_controller_data, {
+        p->state                = WELCOME_SHOW_SEARCH_IP;
+        p->searching_around     = 0;
         map_set(p->cmd_delegate, qskey(&__cmd_location_search_nearby__),
                 &(view_controller_command_delegate){welcome_controller_on_listen_search_around});
+        map_set(p->cmd_delegate, qskey(&__cmd_device_search__),
+                &(view_controller_command_delegate){welcome_controller_on_listen_search_device});
+        map_set(p->cmd_delegate, qskey(&__cmd_location_search_nearby__),
+                &(view_controller_command_delegate){welcome_controller_on_listen_search_around});
+});
 
-        return p;
-}
+ADD_CONTROLLER_DATA_FREE(struct welcome_controller_data, {
 
-static void __welcome_controller_data_free(struct welcome_controller_data *p)
-{
-        checking_client_requester_response_context_free(p->response_context);
-        map_free(p->cmd_delegate);
-        sfree(p);
-}
+});
 
-struct native_view_controller *welcome_controller_alloc()
-{
-        struct native_view_controller *p        = native_view_controller_alloc();
-        p->on_linked                            = welcome_controller_on_linked;
-        p->on_removed                           = welcome_controller_on_removed;
-        p->custom_data                          = __welcome_controller_data_alloc(p);
-        p->custom_data_free                     = __welcome_controller_data_free;
-        return p;
-}
+ADD_CONTROLLER_ALLOC(welcome_controller);
 
 void welcome_controller_on_linked(struct native_view_controller *p)
 {
@@ -249,6 +217,47 @@ void welcome_controller_on_touch_search_around(struct native_view_controller *p,
 
 void welcome_controller_on_touch_search_ip(struct native_view_controller *p, struct native_view *sender, u8 type)
 {
+        struct welcome_controller_data *data = (struct welcome_controller_data *)p->custom_data;
+        switch(type) {
+                case NATIVE_UI_TOUCH_ENDED:
+                        goto find_ip;
+                default:
+                        goto end;
+        }
+find_ip:;
+        struct native_view *view                = native_view_controller_get_view(p);
+        struct native_view_parser *parser       = native_view_get_parser(view);
+        struct native_view *search_box_view     = native_view_parser_get_hash_view(parser, qlkey("search_box_view"));
+        struct native_view_parser *search_box_view_parser = native_view_get_parser(search_box_view);
+
+        struct native_view *box = native_view_parser_get_hash_view(search_box_view_parser, qlkey("box"));
+        struct string *text = native_view_get_text(box);
+        string_trim(text);
+        if(text->len) {
+                debug("native ui change to register\n");
+                struct native_view_parser *register_parser = native_view_parser_alloc();
+                native_view_parser_parse_file(register_parser, "res/layout/register/register.xml");
+
+                struct native_view *register_view = native_view_parser_get_view(register_parser);
+                struct native_view_controller *register_controller = register_parser->controller;
+                if(register_controller) {
+                        native_view_controller_add_child(p->parent, register_controller);
+                        native_view_add_child(view->parent, register_view);
+                }
+                native_view_controller_free(p);
+                native_view_request_layout(register_view);
+        }
+        string_free(text);
+end:;
+}
+
+void welcome_controller_on_listen_search_device(struct native_view_controller *p, struct smart_object *obj)
+{
+
+}
+
+void welcome_controller_on_listen_search_user(struct native_view_controller *p, struct smart_object *obj)
+{
 
 }
 
@@ -279,6 +288,9 @@ void welcome_controller_on_listen_search_around(struct native_view_controller *p
 
                 struct native_view *location_view = native_view_parser_get_view(location_parser);
                 native_view_add_child(list, location_view);
+
+                location_view->user_data        = smart_object_clone(location);
+                location_view->user_data_free   = smart_object_free;
 
                 struct native_view *location_text = native_view_parser_get_hash_view(location_parser, qlkey("name"));
 

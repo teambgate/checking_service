@@ -11,18 +11,6 @@
                                 <view width="match_parent" height="0.5" align="bottom|center" color="#E4F1FE" />
                         </view>
                 </template>
-            <!-- <view width="match_parent" height="50" type="relative" align="center">
-                <label align="left|center" margin_left="20" text_color="#000000" width="match_parent"
-                    height="10" font="Arial" font_size="14"
-                    text_align="left" multiline="false">B-GATE Bùi Thị Xuân</label>
-                <view width="match_parent" height="0.5" align="bottom|center" color="#E4F1FE"/>
-            </view>
-            <view width="match_parent" height="50" type="relative" align="center">
-                <label align="left|center" margin_left="20" text_color="#000000" width="match_parent"
-                    height="10" font="Arial" font_size="14"
-                    text_align="left" multiline="false">HopePay Hồ Chí Minh</label>
-                <view width="match_parent" height="0.5" align="bottom|center" color="#E4F1FE"/>
-            </view> -->
         </listview>
     </view>
     <view width="match_parent" height="fill_parent" type="relative" align="center">

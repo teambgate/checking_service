@@ -35,6 +35,9 @@ struct string *__local_directory__ = NULL;
 
 JNIEnv  *__jni_env;
 
+JavaVM*         __jvm;
+struct map *    __jni_env_map;
+
 jobject __activity;
 
 static struct native_view *root;
@@ -168,6 +171,9 @@ Java_com_example_apple_myapplication_MainActivity_onLoopJNI(
 
 jint JNI_OnLoad(JavaVM* vm, void* reserved)
 {
+    __jvm = vm;
+    __jni_env_map = map_alloc(sizeof(JNIEnv *));
+
     if (vm->GetEnv(reinterpret_cast<void**>(&__jni_env), JNI_VERSION_1_6) != JNI_OK) {
         return -1;
     }

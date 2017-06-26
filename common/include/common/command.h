@@ -29,6 +29,7 @@ extern struct string __cmd_get_service__;
 extern struct string __cmd_service_register__;
 extern struct string __cmd_service_get_by_username__;
 extern struct string __cmd_service_validate__;
+extern struct string __cmd_service_get_location_info__;
 
 extern struct string __cmd_location_register__;
 extern struct string __cmd_location_update_latlng__;
@@ -36,6 +37,7 @@ extern struct string __cmd_location_update_ip_port__;
 extern struct string __cmd_location_search_nearby__;
 
 extern struct string __cmd_user_reserve__;
+extern struct string __cmd_user_search__;
 extern struct string __cmd_user_validate__;
 
 extern struct string __cmd_check_in__;
@@ -43,6 +45,7 @@ extern struct string __cmd_check_out__;
 extern struct string __cmd_check_search_by_date_by_user__;
 
 extern struct string __cmd_device_add__;
+extern struct string __cmd_device_search__;
 
 extern struct string __cmd_work_time_new__;
 extern struct string __cmd_work_time_new_by_user__;

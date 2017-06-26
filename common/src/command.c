@@ -22,6 +22,7 @@ struct string __cmd_get_service__                       = SET_STRING("get_servic
 struct string __cmd_service_register__                  = SET_STRING("service_register")
 struct string __cmd_service_get_by_username__           = SET_STRING("service_get_by_username")
 struct string __cmd_service_validate__                  = SET_STRING("service_validate")
+struct string __cmd_service_get_location_info__         = SET_STRING("service_get_location_info")
 
 struct string __cmd_location_register__                 = SET_STRING("location_register")
 struct string __cmd_location_update_latlng__            = SET_STRING("location_update_latlng")
@@ -29,6 +30,7 @@ struct string __cmd_location_update_ip_port__           = SET_STRING("location_u
 struct string __cmd_location_search_nearby__            = SET_STRING("location_search_nearby")
 
 struct string __cmd_user_reserve__                      = SET_STRING("user_reserve")
+struct string __cmd_user_search__                       = SET_STRING("user_search")
 struct string __cmd_user_validate__                     = SET_STRING("user_validate")
 
 struct string __cmd_check_in__                          = SET_STRING("check_in")
@@ -36,6 +38,7 @@ struct string __cmd_check_out__                         = SET_STRING("check_out"
 struct string __cmd_check_search_by_date_by_user__      = SET_STRING("check_search_by_date_by_user")
 
 struct string __cmd_device_add__                        = SET_STRING("device_add")
+struct string __cmd_device_search__                     = SET_STRING("device_search")
 
 struct string __cmd_work_time_new__                     = SET_STRING("work_time_new")
 struct string __cmd_work_time_new_by_user__             = SET_STRING("work_time_new_by_user")

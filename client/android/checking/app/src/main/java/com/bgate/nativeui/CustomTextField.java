@@ -90,13 +90,38 @@ public class CustomTextField extends CustomSharedView {
             });
         }
 
+//        @Override
+//        public boolean onTouchEvent(MotionEvent event) {
+//            if(can_touch == 1) {
+//                return super.onTouchEvent(event);
+//            } else {
+//                return false;
+//            }
+//        }
         @Override
         public boolean onTouchEvent(MotionEvent event) {
+            boolean result = false;
             if(can_touch == 1) {
-                return super.onTouchEvent(event);
-            } else {
-                return false;
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        result = super.onTouchEvent(event);
+                        break;
+                    case MotionEvent.ACTION_MOVE:
+                        result = super.onTouchEvent(event);
+                        break;
+                    case MotionEvent.ACTION_UP:
+                        result = super.onTouchEvent(event);
+                        __current_touch_native_ptr__ = 0;
+                        break;
+                    case MotionEvent.ACTION_CANCEL:
+                        result = super.onTouchEvent(event);
+                        __current_touch_native_ptr__ = 0;
+                        break;
+                    default:
+                        break;
+                }
             }
+            return result;
         }
     }
 

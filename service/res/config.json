@@ -1,4 +1,6 @@
 {
+        "location_name"                 : "BGATE Bùi Thị Xuân",
+
         "service_port"                  : 8989,
         "service_root"                  : "./",
         "service_pass"                  : "123456",

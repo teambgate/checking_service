@@ -20,11 +20,7 @@ extern "C" {
 
 #include <checking_client/welcome_controller/types.h>
 
-struct native_view_controller *welcome_controller_alloc();
-
-void welcome_controller_on_linked(struct native_view_controller *p);
-
-void welcome_controller_on_removed(struct native_view_controller *p);
+DEFINE_CONTROLLER(welcome_controller);
 
 void welcome_controller_on_touch_set_ip(struct native_view_controller *p, struct native_view *sender, u8 type);
 
@@ -33,6 +29,10 @@ void welcome_controller_on_touch_search_around(struct native_view_controller *p,
 void welcome_controller_on_touch_search_ip(struct native_view_controller *p, struct native_view *sender, u8 type);
 
 void welcome_controller_on_listen_search_around(struct native_view_controller *p, struct smart_object *obj);
+
+void welcome_controller_on_listen_search_device(struct native_view_controller *p, struct smart_object *obj);
+
+void welcome_controller_on_listen_search_user(struct native_view_controller *p, struct smart_object *obj);
 
 #ifdef __cplusplus
 }
