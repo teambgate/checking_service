@@ -42,21 +42,20 @@
 #include <cherry/unistd.h>
 #include <smartfox/data.h>
 
+static void __client_buffer_free(struct cs_client_buffer *p)
+{
+        string_free(p->buff);
+        sfree(p);
+}
 /*
  * client buffer definition
  */
 static struct cs_client_buffer *__client_buffer_alloc()
 {
-        struct cs_client_buffer *p      = smalloc(sizeof(struct cs_client_buffer));
+        struct cs_client_buffer *p      = smalloc(sizeof(struct cs_client_buffer), __client_buffer_free);
         p->buff                         = string_alloc(0);
         p->requested_len                = 0;
         return p;
-}
-
-static void __client_buffer_free(struct cs_client_buffer *p)
-{
-        string_free(p->buff);
-        sfree(p);
 }
 
 /*
@@ -64,7 +63,7 @@ static void __client_buffer_free(struct cs_client_buffer *p)
  */
 struct cs_server_handler *cs_server_handler_alloc(cs_server_handler_delegate delegate, double time_rate)
 {
-        struct cs_server_handler *p    = smalloc(sizeof(struct cs_server_handler));
+        struct cs_server_handler *p    = smalloc(sizeof(struct cs_server_handler), cs_server_handler_free);
         INIT_LIST_HEAD(&p->head);
         p->delegate                     = delegate;
         p->time_rate                    = time_rate;
@@ -84,7 +83,7 @@ void cs_server_handler_free(struct cs_server_handler *p)
  */
 struct cs_server_callback_user_data *cs_server_callback_user_data_alloc(struct cs_server *p, int fd, u32 mask, struct smart_object *obj)
 {
-        struct cs_server_callback_user_data *cud = smalloc(sizeof(struct cs_server_callback_user_data));
+        struct cs_server_callback_user_data *cud = smalloc(sizeof(struct cs_server_callback_user_data), cs_server_callback_user_data_free);
         cud->p = p;
         cud->fd = fd;
         cud->mask = mask;
@@ -318,7 +317,7 @@ end:;
 void cs_server_start(struct cs_server *ws, u16 port)
 {
         #define MAX_RECV_BUF_LEN 99999
-        char *recvbuf           = smalloc(sizeof(char) * MAX_RECV_BUF_LEN);
+        char *recvbuf           = smalloc(sizeof(char) * MAX_RECV_BUF_LEN, sfree);
 
         struct array *actives   = array_alloc(sizeof(u32), ORDERED);
 
@@ -562,7 +561,7 @@ finish:;
 
 struct cs_server *cs_server_alloc(u8 local_only)
 {
-        struct cs_server *p     = smalloc(sizeof(struct cs_server));
+        struct cs_server *p     = smalloc(sizeof(struct cs_server), cs_server_free);
         p->master               = file_descriptor_set_alloc();
         p->incomming            = file_descriptor_set_alloc();
         p->fdmax                = 0;

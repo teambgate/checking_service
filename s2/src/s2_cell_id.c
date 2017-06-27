@@ -47,7 +47,7 @@ struct s2_cell_id *s2_cell_id_alloc(jobject obj)
 {
         JNIEnv *__jni_env = __jni_env_current_thread();
         __setup();
-        struct s2_cell_id *p    = smalloc(sizeof(struct s2_cell_id));
+        struct s2_cell_id *p    = smalloc(sizeof(struct s2_cell_id), s2_cell_id_free);
         p->obj                  = (*__jni_env)->NewGlobalRef(__jni_env, obj);
 
         p->id                   = (*__jni_env)->CallLongMethod(__jni_env,

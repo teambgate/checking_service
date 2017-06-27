@@ -49,18 +49,6 @@ static void __controller_on_listen(struct native_view_controller *p, struct smar
         }       \
 }
 
-#define ADD_CONTROLLER_DATA_ALLOC(data_type, custom)      \
-static data_type *__controller_data_alloc(struct native_view_controller *controller)       \
-{       \
-        data_type *p                            = smalloc(sizeof(data_type));      \
-        p->response_context                     = checking_client_requester_response_context_alloc();   \
-        p->response_context->ctx                = controller;   \
-        p->response_context->delegate           = __controller_on_listen;       \
-        p->cmd_delegate                         = map_alloc(sizeof(view_controller_command_delegate));  \
-        custom  \
-        return p;       \
-}
-
 #define ADD_CONTROLLER_DATA_FREE(data_type, custom)      \
 static void __controller_data_free(data_type *p)   \
 {       \
@@ -68,6 +56,18 @@ static void __controller_data_free(data_type *p)   \
         map_free(p->cmd_delegate);      \
         custom  \
         sfree(p);       \
+}
+
+#define ADD_CONTROLLER_DATA_ALLOC(data_type, custom)      \
+static data_type *__controller_data_alloc(struct native_view_controller *controller)       \
+{       \
+        data_type *p                            = smalloc(sizeof(data_type), __controller_data_free);      \
+        p->response_context                     = checking_client_requester_response_context_alloc();   \
+        p->response_context->ctx                = controller;   \
+        p->response_context->delegate           = __controller_on_listen;       \
+        p->cmd_delegate                         = map_alloc(sizeof(view_controller_command_delegate));  \
+        custom  \
+        return p;       \
 }
 
 #define ADD_CONTROLLER_ALLOC(name)      \

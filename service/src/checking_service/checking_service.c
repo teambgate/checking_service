@@ -96,7 +96,7 @@ static void __load_supervisor(struct checking_service *p)
 
 struct checking_service *checking_service_alloc(u8 local_only)
 {
-        struct checking_service *p      = smalloc(sizeof(struct checking_service));
+        struct checking_service *p      = smalloc(sizeof(struct checking_service), checking_service_free);
         INIT_LIST_HEAD(&p->server);
 
         struct cs_server *c             = cs_server_alloc(local_only);

@@ -96,7 +96,7 @@ struct s2_helper *s2_helper_alloc(int min_level, int max_level, int max_cells)
         JNIEnv *__jni_env = __jni_env_current_thread();
         __setup();
 
-        struct s2_helper *p     = smalloc(sizeof(struct s2_helper));
+        struct s2_helper *p     = smalloc(sizeof(struct s2_helper), s2_helper_free);
         jobject obj             = (*__jni_env)->CallStaticObjectMethod(__jni_env, __class,
                                         __static_method_create, min_level, max_level, max_cells);
 

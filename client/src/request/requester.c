@@ -56,7 +56,7 @@ struct checking_client_requester *checking_client_requester_get_instance()
 
 struct checking_client_requester *checking_client_requester_alloc(struct smart_object *config)
 {
-        struct checking_client_requester *p     = smalloc(sizeof(struct checking_client_requester));
+        struct checking_client_requester *p     = smalloc(sizeof(struct checking_client_requester), checking_client_requester_free);
         INIT_LIST_HEAD(&p->response_contexts);
         INIT_LIST_HEAD(&p->datas);
         INIT_LIST_HEAD(&p->task);

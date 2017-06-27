@@ -71,7 +71,7 @@ static void __load_es_server(struct supervisor *p)
 
 struct supervisor *supervisor_alloc()
 {
-        struct supervisor *p     = smalloc(sizeof(struct supervisor));
+        struct supervisor *p     = smalloc(sizeof(struct supervisor), supervisor_free);
         INIT_LIST_HEAD(&p->server);
 
         struct cs_server *c     = cs_server_alloc(0);

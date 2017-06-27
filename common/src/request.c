@@ -117,21 +117,21 @@ struct string *cs_request_string_from_file(char *file, int file_type)
         return file_read_string(file, file_type);
 }
 
-static struct cs_response *__cs_response_alloc(cs_request_callback callback, void *ctx)
-{
-        struct cs_response *p   = smalloc(sizeof(struct cs_response));
-        p->callback             = callback;
-        p->ctx                  = ctx;
-        p->data                 = NULL;
-        return p;
-}
-
 static void __cs_response_free(struct cs_response *p)
 {
         if(p->data) {
                 smart_object_free(p->data);
         }
         sfree(p);
+}
+
+static struct cs_response *__cs_response_alloc(cs_request_callback callback, void *ctx)
+{
+        struct cs_response *p   = smalloc(sizeof(struct cs_response), __cs_response_free);
+        p->callback             = callback;
+        p->ctx                  = ctx;
+        p->data                 = NULL;
+        return p;
 }
 
 /*
@@ -141,7 +141,7 @@ struct cs_request *cs_request_alloc(struct cs_requester *p, struct smart_object 
 {
         pthread_mutex_lock(&p->run_mutex);
 
-        struct cs_request *r    = smalloc(sizeof(struct cs_request));
+        struct cs_request *r    = smalloc(sizeof(struct cs_request), cs_request_free);
         r->data                 = data;
         r->host                 = string_alloc(0);
         r->port                 = 0;
@@ -173,7 +173,7 @@ struct cs_request *cs_request_alloc_with_host(struct cs_requester *p, struct sma
 {
         pthread_mutex_lock(&p->run_mutex);
 
-        struct cs_request *r    = smalloc(sizeof(struct cs_request));
+        struct cs_request *r    = smalloc(sizeof(struct cs_request), cs_request_free);
         r->data                 = data;
         r->host                 = string_alloc_chars(host, host_len);
         r->port                 = port;
@@ -205,7 +205,7 @@ struct cs_request *cs_request_alloc_with_param(struct cs_requester *p, struct sm
 {
         pthread_mutex_lock(&p->run_mutex);
 
-        struct cs_request *r    = smalloc(sizeof(struct cs_request));
+        struct cs_request *r    = smalloc(sizeof(struct cs_request), cs_request_free);
         r->data                 = data;
 
         r->host                 = param.host ?
@@ -402,7 +402,7 @@ static void *cs_requester_read(struct cs_requester *p)
         double elapsedTime;
         int *read_valid         = p->read_valid;
 
-        char *recvbuf           = smalloc(sizeof(char) * MAX_RECV_BUF_LEN);
+        char *recvbuf           = smalloc(sizeof(char) * MAX_RECV_BUF_LEN, sfree);
         int nbytes              = 0;
 
         pthread_mutex_lock(&p->read_mutex);
@@ -537,7 +537,7 @@ finish:
 
 struct cs_requester *cs_requester_alloc()
 {
-        struct cs_requester *p  = smalloc(sizeof(struct cs_requester));
+        struct cs_requester *p  = smalloc(sizeof(struct cs_requester), cs_requester_free);
         p->total                = 0;
         p->life_time            = 60;
         p->listener             = -1;

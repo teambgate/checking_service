@@ -17,7 +17,7 @@
 struct s2_point *s2_point_alloc(jobject obj)
 {
         JNIEnv *__jni_env = __jni_env_current_thread();
-        struct s2_point *p      = smalloc(sizeof(struct s2_point));
+        struct s2_point *p      = smalloc(sizeof(struct s2_point), s2_point_free);
         p->obj                  = (*__jni_env)->NewGlobalRef(__jni_env, obj);
         return p;
 }

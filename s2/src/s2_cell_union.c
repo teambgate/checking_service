@@ -49,7 +49,7 @@ struct s2_cell_union *s2_cell_union_alloc(jobject obj)
         JNIEnv *__jni_env = __jni_env_current_thread();
         __setup();
 
-        struct s2_cell_union *p = smalloc(sizeof(struct s2_cell_union));
+        struct s2_cell_union *p = smalloc(sizeof(struct s2_cell_union), s2_cell_union_free);
         p->obj                  = (*__jni_env)->NewGlobalRef(__jni_env, obj);
 
         return p;

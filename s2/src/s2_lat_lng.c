@@ -52,7 +52,7 @@ struct s2_lat_lng *s2_lat_lng_alloc(double lat, double lng)
 {
         JNIEnv *__jni_env = __jni_env_current_thread();
         __setup();
-        struct s2_lat_lng *p    = smalloc(sizeof(struct s2_lat_lng));
+        struct s2_lat_lng *p    = smalloc(sizeof(struct s2_lat_lng), s2_lat_lng_free);
 
         jobject obj             = (*__jni_env)->CallStaticObjectMethod(__jni_env,
                 __class, __static_method_from_degrees, lat, lng);

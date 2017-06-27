@@ -18,7 +18,8 @@
 
 struct checking_client_requester_response_data *checking_client_requester_response_data_alloc()
 {
-        struct checking_client_requester_response_data *p = smalloc(sizeof(struct checking_client_requester_response_data));
+        struct checking_client_requester_response_data *p = smalloc(
+                sizeof(struct checking_client_requester_response_data), checking_client_requester_response_data_free);
         INIT_LIST_HEAD(&p->head);
         p->data = NULL;
         return p;

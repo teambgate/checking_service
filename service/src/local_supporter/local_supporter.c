@@ -32,7 +32,7 @@
 
 struct local_supporter *local_supporter_alloc()
 {
-        struct local_supporter *p       = smalloc(sizeof(struct local_supporter));
+        struct local_supporter *p       = smalloc(sizeof(struct local_supporter), local_supporter_free);
         INIT_LIST_HEAD(&p->server);
 
         struct cs_server *c             = cs_server_alloc(CS_SERVER_PUBLIC);

@@ -17,7 +17,8 @@
 
 struct checking_client_requester_response_context *checking_client_requester_response_context_alloc()
 {
-        struct checking_client_requester_response_context *p = smalloc(sizeof(struct checking_client_requester_response_context));
+        struct checking_client_requester_response_context *p = smalloc(
+                sizeof(struct checking_client_requester_response_context), checking_client_requester_response_context_free);
         checking_client_requester_response_context_init(p);
         return p;
 }
