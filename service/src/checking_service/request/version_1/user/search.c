@@ -43,6 +43,8 @@
 #include <common/cs_server.h>
 #include <common/util.h>
 
+#include <cherry/crypt/md5.h>
+
 /*
  * response invalid data
  */
