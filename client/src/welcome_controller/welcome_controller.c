@@ -13,10 +13,12 @@
  */
 #include <checking_client/welcome_controller/welcome_controller.h>
 #include <checking_client/register_controller/register_controller.h>
+#include <checking_client/controller_utils.h>
 #include <native_ui/view_controller.h>
 #include <native_ui/action.h>
 #include <native_ui/touch_handle.h>
 #include <native_ui/parser.h>
+#include <native_ui/preferences.h>
 #include <smartfox/data.h>
 #include <cherry/stdio.h>
 #include <native_ui/view.h>
@@ -27,6 +29,7 @@
 #include <cherry/string.h>
 #include <checking_client/request/request.h>
 #include <checking_client/request/functions/search_around.h>
+#include <checking_client/request/functions/service_get_location_info.h>
 #include <common/request.h>
 #include <common/key.h>
 #include <common/command.h>
@@ -38,10 +41,8 @@ ADD_CONTROLLER_DATA_ALLOC(struct welcome_controller_data, {
         p->searching_around     = 0;
         map_set(p->cmd_delegate, qskey(&__cmd_location_search_nearby__),
                 &(view_controller_command_delegate){welcome_controller_on_listen_search_around});
-        map_set(p->cmd_delegate, qskey(&__cmd_device_search__),
-                &(view_controller_command_delegate){welcome_controller_on_listen_search_device});
-        map_set(p->cmd_delegate, qskey(&__cmd_location_search_nearby__),
-                &(view_controller_command_delegate){welcome_controller_on_listen_search_around});
+        map_set(p->cmd_delegate, qskey(&__cmd_service_get_location_info__),
+                &(view_controller_command_delegate){welcome_controller_on_listen_service_get_location_info});
 });
 
 ADD_CONTROLLER_DATA_FREE(struct welcome_controller_data, {
@@ -60,6 +61,7 @@ void welcome_controller_on_linked(struct native_view_controller *p)
         REGISTER_TOUCH(parser, qlkey("set_ip"), welcome_controller_on_touch_set_ip, p, NULL)
         REGISTER_TOUCH(parser, qlkey("search_ip"), welcome_controller_on_touch_search_ip, p, NULL)
         REGISTER_TOUCH(parser, qlkey("search_around"), welcome_controller_on_touch_search_around, p, NULL)
+        REGISTER_TOUCH(parser, qlkey("searched_item"), welcome_controller_on_touch_searched_item, p, NULL)
 
         checking_client_requester_add_context(checking_client_requester_get_instance(), data->response_context);
 }
@@ -168,6 +170,9 @@ static void __set_state(struct native_view_controller *p, u8 state)
         data->state = state;
 }
 
+/*
+ * touch delegates
+ */
 void welcome_controller_on_touch_set_ip(struct native_view_controller *p, struct native_view *sender, u8 type)
 {
         struct welcome_controller_data *data = (struct welcome_controller_data *)p->custom_data;
@@ -203,8 +208,8 @@ void welcome_controller_on_touch_search_around(struct native_view_controller *p,
                                 data->searching_around = 1;
                                 checking_client_requester_search_around(checking_client_requester_get_instance(),
                                         (struct checking_client_request_search_around_param){
-                                                .lat = 23.0,
-                                                .lon = 99.122
+                                                .lat = 21.0141,
+                                                .lon = 105.8499
                                         }
                                 );
                         }
@@ -213,6 +218,30 @@ void welcome_controller_on_touch_search_around(struct native_view_controller *p,
                         __set_state(p, data->state);
                         break;
         }
+}
+
+static void __get_location_info(struct native_view_controller *p, char *host, size_t host_len, int port)
+{
+        struct native_view *view                = native_view_controller_get_view(p);
+        struct native_view_parser *parser       = native_view_get_parser(view);
+        struct native_view *search_box_view     = native_view_parser_get_hash_view(parser, qlkey("search_box_view"));
+        struct native_view_parser *search_box_view_parser = native_view_get_parser(search_box_view);
+
+        struct native_ui_preferences *pref = native_ui_get_preferences(qlkey("pref/data.json"));
+
+        smart_object_set_string(pref->data, qskey(&__key_ip__), host, host_len);
+        smart_object_set_int(pref->data, qskey(&__key_port__), port);
+        native_ui_preferences_save(pref);
+
+        struct native_view *prevent_touch = native_view_parser_get_hash_view(parser, qlkey("prevent_touch"));
+        native_view_set_user_interaction_enabled(prevent_touch, 1);
+
+        checking_client_requester_service_get_location_info(checking_client_requester_get_instance(),
+                (struct checking_client_request_service_get_location_info_param){
+                        .host = host,
+                        .port = port
+                }
+        );
 }
 
 void welcome_controller_on_touch_search_ip(struct native_view_controller *p, struct native_view *sender, u8 type)
@@ -225,40 +254,70 @@ void welcome_controller_on_touch_search_ip(struct native_view_controller *p, str
                         goto end;
         }
 find_ip:;
-        struct native_view *view                = native_view_controller_get_view(p);
-        struct native_view_parser *parser       = native_view_get_parser(view);
-        struct native_view *search_box_view     = native_view_parser_get_hash_view(parser, qlkey("search_box_view"));
+        controller_get_view(view, p);
+        view_get_parser(parser, view);
+        parser_hash_view(search_box_view, parser, qlkey("search_box_view"));
         struct native_view_parser *search_box_view_parser = native_view_get_parser(search_box_view);
 
         struct native_view *box = native_view_parser_get_hash_view(search_box_view_parser, qlkey("box"));
-        struct string *text = native_view_get_text(box);
-        string_trim(text);
-        if(text->len) {
-                debug("native ui change to register\n");
-                struct native_view_parser *register_parser = native_view_parser_alloc();
-                native_view_parser_parse_file(register_parser, "res/layout/register/register.xml");
-
-                struct native_view *register_view = native_view_parser_get_view(register_parser);
-                struct native_view_controller *register_controller = register_parser->controller;
-                if(register_controller) {
-                        native_view_controller_add_child(p->parent, register_controller);
-                        native_view_add_child(view->parent, register_view);
-                }
-                native_view_controller_free(p);
-                native_view_request_layout(register_view);
+        struct native_view *box_2 = native_view_parser_get_hash_view(search_box_view_parser, qlkey("box_2"));
+        struct string *host = native_view_get_text(box);
+        struct string *port = native_view_get_text(box_2);
+        string_trim(host);
+        string_trim(port);
+        int port_num = atoi(port->ptr);
+        if(host->len && port_num > 0) {
+                native_view_set_visible(native_view_parser_get_hash_view(search_box_view_parser, qlkey("notification")), 0);
+                __get_location_info(p, host->ptr, host->len, port_num);
         }
-        string_free(text);
+        string_free(host);
+        string_free(port);
 end:;
 }
 
-void welcome_controller_on_listen_search_device(struct native_view_controller *p, struct smart_object *obj)
+void welcome_controller_on_touch_searched_item(struct native_view_controller *p, struct native_view *sender, u8 type)
 {
-
+        switch (type) {
+                case NATIVE_UI_TOUCH_ENDED:
+                        goto to_register;
+                default:
+                        return;
+        }
+to_register:;
+        object_cast(data, sender->user_data);
+        object_get_string(host, data, qskey(&__key_ip__));
+        object_get_int(port, data, qskey(&__key_port__));
+        __get_location_info(p, host->ptr, host->len, port);
 }
 
-void welcome_controller_on_listen_search_user(struct native_view_controller *p, struct smart_object *obj)
+/*
+ * listen delegates
+ */
+void welcome_controller_on_listen_service_get_location_info(struct native_view_controller *p, struct smart_object *obj)
 {
+        controller_get_view(view, p);
+        view_get_parser(parser, view);
+        parser_hash_view(search_box_view, parser, qlkey("search_box_view"));
+        view_get_parser(search_box_view_parser, search_box_view);
+        parser_hash_view(prevent_touch, parser, qlkey("prevent_touch"));
+        object_get_bool(result, obj, qskey(&__key_result__));
+        native_view_set_user_interaction_enabled(prevent_touch, 0);
 
+        if(result) {
+                controller_parse(register_controller,
+                        .file = "res/layout/register/register.xml",
+                        .controller_parent = p->parent,
+                        .controller_dismiss = p,
+                        .view_parent = view->parent
+                );
+                object_get_object(data, obj, qskey(&__key_data__));
+                object_get_string(location_name, data, qskey(&__key_location_name__));
+                register_controller_set_location_name(register_controller, qskey(location_name));
+        } else {
+                native_view_set_visible(
+                        parser_hash_view(search_box_view_parser, qlkey("notification")),
+                        1);
+        }
 }
 
 void welcome_controller_on_listen_search_around(struct native_view_controller *p, struct smart_object *obj)

@@ -7,7 +7,7 @@
     <view width="300" height="50" type="relative" align="top|center" margin_top="40" border="#d1d1d1" color="#ffffffe1" round="4">
         <label align="center" text_color="#000000" width="match_parent"
             height="10" font="Arial" font_size="22"
-            text_align="center" multiline="false">B-GATE</label>
+            text_align="center" multiline="false" hash="location_name">B-GATE</label>
     </view>
     <view type="vertical" width="300" height="wrap_content" align="center">
             <textfield width="match_parent" height="40" align="center" touch="true" border="#d1d1d1" placeholder="Nhập user_name" color="#ffffffe1" round="4"/>

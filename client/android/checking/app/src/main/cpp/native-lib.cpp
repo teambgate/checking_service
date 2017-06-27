@@ -137,7 +137,7 @@ Java_com_example_apple_myapplication_MainActivity_initNativeJNI(
     native_view_set_user_interaction_enabled(root, 1);
 
     struct native_view_parser *parser = native_view_parser_alloc();
-    native_view_parser_parse_file(parser, "res/layout/root.xml");
+    native_view_parser_parse_file(parser, "res/layout/root.xml", NULL);
 
     struct native_view *view = (struct native_view *)
             ((char *)parser->view.next - offsetof(struct native_view, parser));

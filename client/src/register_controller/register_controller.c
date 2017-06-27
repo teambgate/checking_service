@@ -76,3 +76,13 @@ void register_controller_on_listen_register(struct native_view_controller *p, st
 {
 
 }
+
+void register_controller_set_location_name(struct native_view_controller *p, char *name, size_t len)
+{
+        struct native_view *view = native_view_controller_get_view(p);
+        struct native_view_parser *parser = native_view_get_parser(view);
+
+        struct native_view *label = native_view_parser_get_hash_view(parser, qlkey("location_name"));
+
+        native_view_set_text(label, name, len);
+}

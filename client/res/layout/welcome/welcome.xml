@@ -1,12 +1,13 @@
 <touch key="set_ip"/>
 <touch key="search_around"/>
 <touch key="search_ip"/>
+<touch key="searched_item"/>
 <controller name="welcome_controller"/>
 <view width="match_parent" height="match_parent" type="relative" align="center">
     <image src="res/images/paris_france_eiffel_tower_9662_750x1334.jpg" width="750" height="1334" width="match_parent" height="wrap_content" align="center"/>
     <view width="match_parent" height="match_parent" color="#ffffff" alpha="0.75" align="center"/>
     <link src="res/layout/welcome/search_box.xml" align="center" width="300" bind_touch="search=search_ip" hash="search_box_view"/>
-    <link src="res/layout/welcome/search_around.xml" align="center" width="300" visible="false" hash="search_around_view"/>
+    <link src="res/layout/welcome/search_around.xml" align="center" width="300" visible="false" hash="search_around_view" bind_touch="touch_item=searched_item"/>
     <view width="300" height="50" align="bottom|center" type="size_horizontal" margin_bottom="10">
         <view width="fill_parent" height="50" clip="true" round="4" margin_right="10"
             type="relative" color="#F64747" border="#F64747" touch="true" touch_delegate="set_ip" hash="set_ip_button">

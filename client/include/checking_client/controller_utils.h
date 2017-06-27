@@ -22,6 +22,15 @@ extern "C" {
 
 struct native_view_controller *checking_client_native_view_controller_alloc(char *name, size_t len);
 
+struct view_controller_parse_param {
+        struct native_view_controller   *controller_parent;
+        struct native_view_controller   *controller_dismiss;
+        struct native_view              *view_parent;
+        char                            *file;
+};
+
+struct native_view_controller *checking_client_view_controller_parse(struct view_controller_parse_param param);
+
 #ifdef __cplusplus
 }
 #endif

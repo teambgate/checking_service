@@ -73,7 +73,7 @@ static int __validate_input(struct cs_server *p, int fd, u32 mask, struct smart_
         return 1;
 }
 
-void checking_service_process_service_register_username_v1(struct cs_server *p, int fd, u32 mask, struct smart_object *obj)
+void checking_service_process_service_get_location_info_v1(struct cs_server *p, int fd, u32 mask, struct smart_object *obj)
 {
         if( ! __validate_input(p, fd, mask, obj)) {
                 return;

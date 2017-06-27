@@ -40,7 +40,7 @@
 #include <netinet/tcp.h>
 #include <cherry/server/file_descriptor.h>
 
-#define DEFAULT_TIMEOUT 30
+#define DEFAULT_TIMEOUT 10
 
 static struct smart_object *__build_request_data(struct smart_object *obj,
         char *version, size_t version_len,
@@ -637,11 +637,11 @@ int cs_requester_reconnect(struct cs_requester *requester, char *host, size_t ho
                 file_descriptor_set_clean(requester->eset);
                 file_descriptor_set_add(requester->wset, requester->listener);
                 file_descriptor_set_add(requester->eset, requester->listener);
- 
+
                 struct timeval select_timeout;
                 select_timeout.tv_sec   = timeout;
                 select_timeout.tv_usec  = 0;
-            
+
                 int connect_result = connect(requester->listener, p->ai_addr, p->ai_addrlen);
                 if (connect_result == -1) {
                         if(select(requester->listener + 1, NULL, requester->wset->set->ptr, requester->eset->set->ptr, &select_timeout) == -1) {

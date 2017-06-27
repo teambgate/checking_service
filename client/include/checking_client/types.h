@@ -81,6 +81,27 @@ struct native_view_controller *name##_alloc()       \
         return p;       \
 }
 
+/*
+ *
+ *
+ * quick functions
+ *
+ *
+ */
+#define CVP(val, ...) \
+        struct native_view_controller *val = checking_client_view_controller_parse(\
+                (struct view_controller_parse_param) {\
+                        __VA_ARGS__\
+                }\
+        )
+
+#define controller_parse(val, ...) \
+        struct native_view_controller *val = checking_client_view_controller_parse(\
+                (struct view_controller_parse_param) {\
+                        __VA_ARGS__\
+                }\
+        )
+
 #ifdef __cplusplus
 }
 #endif

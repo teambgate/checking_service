@@ -28,6 +28,8 @@ void register_controller_on_touch_register(struct native_view_controller *p, str
 
 void register_controller_on_listen_register(struct native_view_controller *p, struct smart_object *obj);
 
+void register_controller_set_location_name(struct native_view_controller *p, char *name, size_t len);
+
 #ifdef __cplusplus
 }
 #endif

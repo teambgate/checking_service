@@ -1,10 +1,19 @@
 <touch key="search"/>
-<controller name="search_box_controller"/>
-<view width="205" height="40" type="size_horizontal">
-        <textfield width="match_parent" padding_left="45" height="40" hash="box" touch="true" border="#d1d1d1" placeholder="Nhập địa chỉ" color="#ffffffe1" round="4"/>
-        <view width="fill_parent" height="40" margin_left="5" clip="true" round="4" type="relative"
-            color="#2980b9" border="#2980b9" touch="true" touch_delegate="search">
-                <label align="center" text_color="#ffffff" width="match_parent" height="10" font="Arial"
-                    font_size="16" text_align="center" multiline="false">→</label>
+<controller name="welcome_search_box_controller"/>
+<view width="300" height="wrap_content" type="vertical">
+        <view width="300" height="40" type="size_horizontal" align="center">
+                <textfield width="150" height="40" hash="box" touch="true" border="#d1d1d1" placeholder="ip" color="#ffffffe1" round="4"/>
+                <textfield width="100" height="40" margin_left="5" hash="box_2" touch="true" border="#d1d1d1" placeholder="port" color="#ffffffe1" round="4"/>
+                <view width="fill_parent" height="40" margin_left="5" clip="true" round="4" type="relative"
+                    color="#2980b9" border="#2980b9" touch="true" touch_delegate="search">
+                        <label align="center" text_color="#ffffff" width="match_parent" height="10" font="Arial"
+                            font_size="16" text_align="center" multiline="false">→</label>
+                </view>
+        </view>
+        <view align="center" width="match_parent" height="wrap_content"
+            type="vertical" border="#F64747" margin_top="10" color="#ffffffe1" round="4" hash="notification" visible="false">
+            <label align="center" text_color="#F64747" width="match_parent"
+                height="10" font="Arial" font_size="14"  padding_left="20"
+                text_align="center" multiline="true" margin_top="5" margin_bottom="5" hash="notification_text">Lỗi truy cập!</label>
         </view>
 </view>

@@ -11,8 +11,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  */
-#ifndef __CHECKING_SERVICE_CHECKING_CLIENT_REQUEST_FUNCTIONS_SERVICE_GET_LOCATION_NAME_H__
-#define __CHECKING_SERVICE_CHECKING_CLIENT_REQUEST_FUNCTIONS_SERVICE_GET_LOCATION_NAME_H__
+#ifndef __CHECKING_SERVICE_CHECKING_CLIENT_REQUEST_FUNCTIONS_SERVICE_GET_LOCATION_INFO_H__
+#define __CHECKING_SERVICE_CHECKING_CLIENT_REQUEST_FUNCTIONS_SERVICE_GET_LOCATION_INFO_H__
 
 #ifdef __cplusplus
 extern "C" {
@@ -20,13 +20,13 @@ extern "C" {
 
 #include <checking_client/request/types.h>
 
-struct checking_client_request_service_get_location_name {
-        double lat;
-        double lon;
+struct checking_client_request_service_get_location_info_param {
+        char *host;
+        int port;
 };
 
-void checking_client_requester_service_get_location_name(struct checking_client_requester *p,
-        struct checking_client_request_search_around_param param);
+void checking_client_requester_service_get_location_info(struct checking_client_requester *p,
+        struct checking_client_request_service_get_location_info_param param);
 
 #ifdef __cplusplus
 }
