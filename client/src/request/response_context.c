@@ -15,35 +15,35 @@
 #include <cherry/list.h>
 #include <cherry/memory.h>
 
-struct checking_client_requester_response_context *checking_client_requester_response_context_alloc()
+struct cl_listener *cl_listener_alloc()
 {
-        struct checking_client_requester_response_context *p = smalloc(
-                sizeof(struct checking_client_requester_response_context), checking_client_requester_response_context_free);
-        checking_client_requester_response_context_init(p);
+        struct cl_listener *p = smalloc(
+                sizeof(struct cl_listener), cl_listener_free);
+        cl_listener_init(p);
         return p;
 }
 
-void checking_client_requester_response_context_init(struct checking_client_requester_response_context *p)
+void cl_listener_init(struct cl_listener *p)
 {
         INIT_LIST_HEAD(&p->head);
         p->delegate             = NULL;
-        p->ui_thread_lock       = NULL;
+        p->lock       = NULL;
 }
 
-void checking_client_requester_response_context_clear(struct checking_client_requester_response_context *p)
+void cl_listener_clear(struct cl_listener *p)
 {
-        if(p->ui_thread_lock) {
-                pthread_mutex_lock(p->ui_thread_lock);
+        if(p->lock) {
+                pthread_mutex_lock(p->lock);
                 if( ! list_singular(&p->head)) {
                         list_del_init(&p->head);
                 }
-                pthread_mutex_unlock(p->ui_thread_lock);
-                p->ui_thread_lock       = NULL;
+                pthread_mutex_unlock(p->lock);
+                p->lock       = NULL;
         }
 }
 
-void checking_client_requester_response_context_free(struct checking_client_requester_response_context *p)
+void cl_listener_free(struct cl_listener *p)
 {
-        checking_client_requester_response_context_clear(p);
+        cl_listener_clear(p);
         sfree(p);
 }

@@ -16,16 +16,16 @@
 #include <smartfox/data.h>
 #include <cherry/memory.h>
 
-struct checking_client_requester_response_data *checking_client_requester_response_data_alloc()
+struct cl_response *cl_response_alloc()
 {
-        struct checking_client_requester_response_data *p = smalloc(
-                sizeof(struct checking_client_requester_response_data), checking_client_requester_response_data_free);
+        struct cl_response *p = smalloc(
+                sizeof(struct cl_response), cl_response_free);
         INIT_LIST_HEAD(&p->head);
         p->data = NULL;
         return p;
 }
 
-void checking_client_requester_response_data_free(struct checking_client_requester_response_data *p)
+void cl_response_free(struct cl_response *p)
 {
         list_del_init(&p->head);
         if(p->data) smart_object_free(p->data);

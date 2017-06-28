@@ -56,6 +56,7 @@ static void __response_invalid_data(struct cs_server *p, int fd, u32 mask, struc
 
         struct string *d        = smart_object_to_json(res);
         cs_server_send_to_client(p, fd, mask, d->ptr, d->len, 0);
+
         string_free(d);
         smart_object_free(res);
 }
@@ -78,6 +79,8 @@ void checking_service_process_service_get_location_info_v1(struct cs_server *p, 
         if( ! __validate_input(p, fd, mask, obj)) {
                 return;
         }
+
+        __search(p, fd, mask, obj);
 
         struct smart_object *res = smart_object_alloc();
         smart_object_set_long(res, qskey(&__key_request_id__), smart_object_get_long(obj, qskey(&__key_request_id__), 0));

@@ -32,57 +32,66 @@
 
 ADD_FUNCTION_LISTEN(struct register_controller_data);
 
-ADD_CONTROLLER_DATA_ALLOC(struct register_controller_data, {
-        map_set(p->cmd_delegate, qskey(&__cmd_user_reserve__),
-                &(view_controller_command_delegate){register_controller_on_listen_register});
-});
-
 ADD_CONTROLLER_DATA_FREE(struct register_controller_data, {
 
 });
 
+ADD_CONTROLLER_DATA_ALLOC(struct register_controller_data, {
+        map_set(p->cmd_delegate, qskey(&__cmd_user_reserve__),
+                &(cl_ctrl_listen_delegate){register_controller_on_listen_register});
+});
+
 ADD_CONTROLLER_ALLOC(register_controller);
 
-void register_controller_on_linked(struct native_view_controller *p)
+void register_controller_on_linked(struct nexec *p)
 {
         struct register_controller_data *data = (struct register_controller_data *)p->custom_data;
 
-        struct native_view *view = native_view_controller_get_view(p);
-        struct native_view_parser *parser = native_view_get_parser(view);
+        struct nview *view = nexec_get_view(p);
+        struct nparser *parser = nview_get_parser(view);
 
         REGISTER_TOUCH(parser, qlkey("back"), register_controller_on_touch_back, p, NULL)
         REGISTER_TOUCH(parser, qlkey("register"), register_controller_on_touch_register, p, NULL)
 
-        checking_client_requester_add_context(checking_client_requester_get_instance(), data->response_context);
+        cl_talker_add_context(cl_talker_get_instance(), data->response_context);
 }
 
-void register_controller_on_removed(struct native_view_controller *p)
+void register_controller_on_removed(struct nexec *p)
 {
         struct register_controller_data *data = (struct register_controller_data *)p->custom_data;
-        checking_client_requester_response_context_clear(data->response_context);
+        cl_listener_clear(data->response_context);
 }
 
-void register_controller_on_touch_back(struct native_view_controller *p, struct native_view *sender, u8 type)
+void register_controller_on_touch_back(struct nexec *p, struct nview *sender, u8 type)
 {
 
 }
 
-void register_controller_on_touch_register(struct native_view_controller *p, struct native_view *sender, u8 type)
+void register_controller_on_touch_register(struct nexec *p, struct nview *sender, u8 type)
+{
+        switch (type) {
+                case NATIVE_UI_TOUCH_ENDED:
+                        goto check;
+                default:
+                        goto finish;
+        }
+check:;
+
+
+finish:;
+}
+
+void register_controller_on_listen_register(struct nexec *p, struct smart_object *obj)
 {
 
 }
 
-void register_controller_on_listen_register(struct native_view_controller *p, struct smart_object *obj)
+void register_controller_set_location_name(struct nexec *p, char *name, size_t len)
 {
+        struct nview *view = nexec_get_view(p);
+        struct nparser *parser = nview_get_parser(view);
 
-}
+        struct nview *label = nparser_get_hash_view(parser, qlkey("location_name"));
 
-void register_controller_set_location_name(struct native_view_controller *p, char *name, size_t len)
-{
-        struct native_view *view = native_view_controller_get_view(p);
-        struct native_view_parser *parser = native_view_get_parser(view);
-
-        struct native_view *label = native_view_parser_get_hash_view(parser, qlkey("location_name"));
-
-        native_view_set_text(label, name, len);
+        nview_set_text(label, name, len);
 }

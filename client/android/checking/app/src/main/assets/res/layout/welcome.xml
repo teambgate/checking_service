@@ -1,5 +1,5 @@
 <touch key="open"/>
-<controller name="welcome_controller"/>
+<controller name="clwc_exec"/>
 <view width="match_parent" height="match_parent" type="relative" align="center">
 
 </view>

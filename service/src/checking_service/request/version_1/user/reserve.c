@@ -48,15 +48,13 @@
 /*
  * response invalid data
  */
-static void __response_invalid_data(struct cs_server *p, int fd, u32 mask, struct smart_object *obj, char *msg, size_t msg_len)
+static void __response_invalid_data(struct cs_server *p, int fd, u32 mask, struct smart_object *obj, char *msg, size_t msg_len, long code)
 {
         struct smart_object *res = smart_object_alloc();
         smart_object_set_long(res, qskey(&__key_request_id__), smart_object_get_long(obj, qskey(&__key_request_id__), 0));
         smart_object_set_bool(res, qskey(&__key_result__), 0);
         smart_object_set_string(res, qskey(&__key_message__), msg, msg_len);
-        smart_object_set_long(res, qskey(&__key_error__), ERROR_DATA_INVALID);
-        struct string *cmd = smart_object_get_string(obj, qskey(&__key_cmd__), SMART_GET_REPLACE_IF_WRONG_TYPE);
-        smart_object_set_string(res, qskey(&__key_cmd__), qskey(cmd));
+        smart_object_set_long(res, qskey(&__key_error__), code);
 
         struct string *d        = smart_object_to_json(res);
         cs_server_send_to_client(p, fd, mask, d->ptr, d->len, 0);
@@ -88,40 +86,40 @@ static int __validate_input(struct cs_server *p, int fd, u32 mask, struct smart_
         struct string *pass = smart_object_get_string(obj, qskey(&__key_pass__), SMART_GET_REPLACE_IF_WRONG_TYPE);
 
         if(strcmp(service_pass->ptr, pass->ptr) != 0) {
-                __response_invalid_data(p, fd, mask, obj, qlkey("User unauthorized!"));
+                __response_invalid_data(p, fd, mask, obj, qlkey("User unauthorized!"), ERROR_DATA_INVALID);
                 return 0;
         }
 
         struct string *name = smart_object_get_string(obj, qskey(&__key_name__), SMART_GET_REPLACE_IF_WRONG_TYPE);
         string_trim(name);
         if(name->len == 0) {
-                __response_invalid_data(p, fd, mask, obj, qlkey("Please provide name!"));
+                __response_invalid_data(p, fd, mask, obj, qlkey("Please provide name!"), ERROR_DATA_INVALID);
                 return 0;
         }
 
         struct string *user_name = smart_object_get_string(obj, qskey(&__key_user_name__), SMART_GET_REPLACE_IF_WRONG_TYPE);
         string_trim(user_name);
         if(user_name->len == 0) {
-                __response_invalid_data(p, fd, mask, obj, qlkey("Please provide user name!"));
+                __response_invalid_data(p, fd, mask, obj, qlkey("Please provide user name!"), ERROR_DATA_INVALID);
                 return 0;
         }
         if(user_name->len < 6) {
-                __response_invalid_data(p, fd, mask, obj, qlkey("username needs have at least 6 characters!"));
+                __response_invalid_data(p, fd, mask, obj, qlkey("username needs have at least 6 characters!"), ERROR_DATA_INVALID);
                 return 0;
         }
         if(!common_username_valid(user_name->ptr, user_name->len)) {
-                __response_invalid_data(p, fd, mask, obj, qlkey("username contains invalid character!"));
+                __response_invalid_data(p, fd, mask, obj, qlkey("username contains invalid character!"), ERROR_DATA_INVALID);
                 return 0;
         }
 
         struct string *user_pass = smart_object_get_string(obj, qskey(&__key_user_pass__), SMART_GET_REPLACE_IF_WRONG_TYPE);
         string_trim(user_pass);
         if(user_pass->len == 0) {
-                __response_invalid_data(p, fd, mask, obj, qlkey("Please provide password!"));
+                __response_invalid_data(p, fd, mask, obj, qlkey("Please provide password!"), ERROR_DATA_INVALID);
                 return 0;
         }
         if(user_pass->len < 8) {
-                __response_invalid_data(p, fd, mask, obj, qlkey("Password need have at least 8 characters!"));
+                __response_invalid_data(p, fd, mask, obj, qlkey("Password need have at least 8 characters!"), ERROR_DATA_INVALID);
                 return 0;
         }
 
@@ -139,10 +137,10 @@ static void __reserve_callback(struct cs_server_callback_user_data *cud, struct 
                 int status = smart_object_get_int(data, qlkey("status"), SMART_GET_REPLACE_IF_WRONG_TYPE);
                 if(status == 409) {
                         __response_invalid_data(cud->p, cud->fd, cud->mask,
-                                cud->obj, qlkey("user name is not avaliable!"));
+                                cud->obj, qlkey("user name is not avaliable!"), ERROR_DATA_EXIST);
                 } else {
                         __response_invalid_data(cud->p, cud->fd, cud->mask,
-                                cud->obj, qlkey("server error!"));
+                                cud->obj, qlkey("server error!"), ERROR_SERVER_INVALID);
                 }
         }
         cs_server_callback_user_data_free(cud);

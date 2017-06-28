@@ -11,8 +11,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  */
-#ifndef __CHECKING_SERVICE_CHECKING_CLIENT_WELCOME_CONTROLLER_WELCOME_CONTROLLER_H__
-#define __CHECKING_SERVICE_CHECKING_CLIENT_WELCOME_CONTROLLER_WELCOME_CONTROLLER_H__
+#ifndef __CHECKING_SERVICE_CHECKING_CLIENT_clwc_exec_clwc_exec_H__
+#define __CHECKING_SERVICE_CHECKING_CLIENT_clwc_exec_clwc_exec_H__
 
 #ifdef __cplusplus
 extern "C" {
@@ -20,19 +20,19 @@ extern "C" {
 
 #include <checking_client/welcome_controller/types.h>
 
-DEFINE_CONTROLLER(welcome_controller);
+DEFINE_CONTROLLER(clwc_exec);
 
-void welcome_controller_on_touch_set_ip(struct native_view_controller *p, struct native_view *sender, u8 type);
+void clwc_exec_touch_set_ip(struct nexec *p, struct nview *sender, u8 type);
 
-void welcome_controller_on_touch_search_around(struct native_view_controller *p, struct native_view *sender, u8 type);
+void clwc_exec_touch_scan(struct nexec *p, struct nview *sender, u8 type);
 
-void welcome_controller_on_touch_search_ip(struct native_view_controller *p, struct native_view *sender, u8 type);
+void clwc_exec_touch_search_ip(struct nexec *p, struct nview *sender, u8 type);
 
-void welcome_controller_on_touch_searched_item(struct native_view_controller *p, struct native_view *sender, u8 type);
+void clwc_exec_touch_item(struct nexec *p, struct nview *sender, u8 type);
 
-void welcome_controller_on_listen_search_around(struct native_view_controller *p, struct smart_object *obj);
+void clwc_exec_listen_scan(struct nexec *p, struct smart_object *obj);
 
-void welcome_controller_on_listen_service_get_location_info(struct native_view_controller *p, struct smart_object *obj);
+void clwc_exec_listen_loc_info(struct nexec *p, struct smart_object *obj);
 
 #ifdef __cplusplus
 }

@@ -11,25 +11,7 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  */
-#ifndef __CHECKING_SERVICE_CHECKING_CLIENT_REQUEST_FUNCTIONS_SEARCH_AROUND_H__
-#define __CHECKING_SERVICE_CHECKING_CLIENT_REQUEST_FUNCTIONS_SEARCH_AROUND_H__
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include <checking_client/request/types.h>
 
-struct checking_client_request_search_around_param {
-        double lat;
-        double lon;
-};
-
-void checking_client_requester_search_around(struct checking_client_requester *p,
-        struct checking_client_request_search_around_param param);
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif
+struct cl_dst __dst_srv;
+struct cl_dst __dst_sup;

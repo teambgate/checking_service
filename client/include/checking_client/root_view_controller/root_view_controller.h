@@ -20,7 +20,7 @@ extern "C" {
 
 #include <checking_client/root_view_controller/types.h>
 
-struct native_view_controller *root_view_controller_alloc();
+struct nexec *root_view_controller_alloc();
 
 #ifdef __cplusplus
 }

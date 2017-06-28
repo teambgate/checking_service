@@ -11,7 +11,7 @@
 #include <native_ui/align.h>
 #include <zip.h>
 #include <native_ui/parser.h>
-#include <native_ui/native_ui_manager.h>
+#include <native_ui/manager.h>
 #include <native_ui/action.h>
 #import <native_ui/view.h>
 #import <native_ui/view_controller.h>
@@ -40,19 +40,19 @@ struct map *    __jni_env_map;
 
 jobject __activity;
 
-static struct native_view *root;
+static struct nview *root;
 }
 
 extern "C" {
-    static void __test_animation(struct native_view *view)
+    static void __test_animation(struct nview *view)
     {
         union vec3 r;
         r.x = 0;
         r.y = 0;
         r.z = 360;
-        native_view_run_action(view, native_ui_action_sequence(
-//                native_view_rotate_by(view, r, 5.0f, NATIVE_UI_EASE_QUARTIC_IN_OUT, 0),
-                native_view_move_by(view, (union vec2){300, 0}, 5.0f, NATIVE_UI_EASE_QUADRATIC_IN_OUT, 0),
+        nview_run_action(view, naction_sequence(
+//                nview_rotate_by(view, r, 5.0f, NATIVE_UI_EASE_QUARTIC_IN_OUT, 0),
+                nview_move_by(view, (union vec2){300, 0}, 5.0f, NATIVE_UI_EASE_QUADRATIC_IN_OUT, 0),
                 NULL
         ), NULL);
     }
@@ -126,23 +126,23 @@ Java_com_example_apple_myapplication_MainActivity_initNativeJNI(
 /*
      * register view controller allocator
      */
-    native_view_controller_set_from_name_delegate(checking_client_native_view_controller_alloc);
+    nexec_set_fnf(checking_client_nexec_alloc);
 
     /*
      * create root
      */
-    root = native_view_alloc();
-    native_view_set_layout_type(root, NATIVE_UI_LAYOUT_RELATIVE);
+    root = nview_alloc();
+    nview_set_layout_type(root, NATIVE_UI_LAYOUT_RELATIVE);
 
-    native_view_set_user_interaction_enabled(root, 1);
+    nview_set_user_interaction_enabled(root, 1);
 
-    struct native_view_parser *parser = native_view_parser_alloc();
-    native_view_parser_parse_file(parser, "res/layout/root.xml", NULL);
+    struct nparser *parser = nparser_alloc();
+    nparser_parse_file(parser, "res/layout/root.xml", NULL);
 
-    struct native_view *view = (struct native_view *)
-            ((char *)parser->view.next - offsetof(struct native_view, parser));
+    struct nview *view = (struct nview *)
+            ((char *)parser->view.next - offsetof(struct nview, parser));
 
-    native_view_add_child(root, view);
+    nview_add_child(root, view);
 
    // test_search();
 
@@ -155,9 +155,9 @@ Java_com_example_apple_myapplication_MainActivity_onResizeJNI(
         JNIEnv *env,
         jobject /* this */,
         int width, int height) {
-    native_view_set_size(root, (union vec2){(float)width, (float)height});
-    native_view_set_position(root, (union vec2){root->size.width / 2, root->size.height/2});
-    native_view_update_layout(root);
+    nview_set_size(root, (union vec2){(float)width, (float)height});
+    nview_set_position(root, (union vec2){root->size.width / 2, root->size.height/2});
+    nview_update_layout(root);
 }
 
 extern "C"
@@ -165,7 +165,7 @@ JNIEXPORT void JNICALL
 Java_com_example_apple_myapplication_MainActivity_onLoopJNI(
         JNIEnv *env,
         jobject /* this */) {
-    native_ui_manager_update(native_ui_manager_shared(), 1.0f / 60);
+    nmanager_update(nmanager_shared(), 1.0f / 60);
 }
 
 

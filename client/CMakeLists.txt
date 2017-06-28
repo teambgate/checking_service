@@ -25,6 +25,8 @@ elseif (CMAKE_SYSTEM_NAME MATCHES "CYGWIN")
         set(LINUX TRUE)
 endif()
 
+add_definitions(-Wno-incompatible-pointer-types)
+
 if (${USER_BUILD_IOS} MATCHES "true")
         set(CMAKE_OSX_SYSROOT "iphoneos")
         set(CMAKE_XCODE_EFFECTIVE_PLATFORMS "-iphoneos")

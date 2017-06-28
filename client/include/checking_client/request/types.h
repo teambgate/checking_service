@@ -20,28 +20,52 @@ extern "C" {
 
 #include <checking_client/types.h>
 
-typedef void(*checking_client_requester_response_context_delegate)(void *, struct smart_object *);
+typedef void(*cl_listener_delegate)(void *, struct smart_object *);
 
-struct checking_client_requester_response_context {
-        pthread_mutex_t                                         *ui_thread_lock;
-        struct list_head                                        head;
-        void                                                    *ctx;
-        checking_client_requester_response_context_delegate     delegate;
+struct cl_listener {
+        pthread_mutex_t         *lock;
+        struct list_head        head;
+        void                    *ctx;
+        cl_listener_delegate    delegate;
 };
 
-struct checking_client_requester_response_data {
+struct cl_response {
         struct list_head        head;
         struct smart_object     *data;
 };
 
-struct checking_client_requester {
+/*
+ * destination parameters
+ */
+struct cl_dst {
+        /*
+         * service destination
+         */
+        char    *ip;
+        int     port;
+        /*
+         * service version code
+         */
+        char    *ver;
+        int     ver_len;
+        /*
+         * service password
+         */
+        char    *pss;
+        int     pss_len;
+};
+
+extern struct cl_dst __dst_srv;
+extern struct cl_dst __dst_sup;
+
+struct cl_talker {
         struct cs_requester     *requester;
         struct smart_object     *config;
 
         struct list_head        task;
-        struct list_head        response_contexts;
+        struct list_head        listeners;
         struct list_head        datas;
-        pthread_mutex_t  ui_thread_lock;
+        pthread_mutex_t         lock;
 };
 
 #ifdef __cplusplus

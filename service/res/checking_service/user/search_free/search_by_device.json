@@ -1,0 +1,40 @@
+{
+        "request" : "get",
+        "path"  : "/checking_service/user/_search",
+        "data"  : {
+                "version": true,
+                "query" : {
+                        "bool": {
+                                "must" : [
+                                        {
+                                                "term" : {
+                                                        "_routing"   : "company"
+                                                }
+                                        },
+                                        {
+                                                "has_child" : {
+                                                        "type" : "device",
+                                                        "query" : {
+                                                                "bool" : {
+                                                                        "must" : [
+                                                                                {
+                                                                                        "term" : {
+                                                                                                "_id" : "{DEVICE_ID}"
+                                                                                        }
+                                                                                },
+                                                                                {
+                                                                                        "term" : {
+                                                                                                "_routing"   : "company"
+                                                                                        }
+                                                                                }
+                                                                        ]
+                                                                }
+                                                        }
+                                                }
+                                        }
+                                ]
+                        }
+
+                }
+        }
+}

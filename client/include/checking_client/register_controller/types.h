@@ -21,7 +21,7 @@ extern "C" {
 #include <checking_client/types.h>
 
 struct register_controller_data {
-        struct checking_client_requester_response_context       *response_context;
+        struct cl_listener       *response_context;
 
         struct map                                              *cmd_delegate;
 };

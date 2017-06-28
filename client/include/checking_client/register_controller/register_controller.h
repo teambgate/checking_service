@@ -22,13 +22,13 @@ extern "C" {
 
 DEFINE_CONTROLLER(register_controller);
 
-void register_controller_on_touch_back(struct native_view_controller *p, struct native_view *sender, u8 type);
+void register_controller_on_touch_back(struct nexec *p, struct nview *sender, u8 type);
 
-void register_controller_on_touch_register(struct native_view_controller *p, struct native_view *sender, u8 type);
+void register_controller_on_touch_register(struct nexec *p, struct nview *sender, u8 type);
 
-void register_controller_on_listen_register(struct native_view_controller *p, struct smart_object *obj);
+void register_controller_on_listen_register(struct nexec *p, struct smart_object *obj);
 
-void register_controller_set_location_name(struct native_view_controller *p, char *name, size_t len);
+void register_controller_set_location_name(struct nexec *p, char *name, size_t len);
 
 #ifdef __cplusplus
 }

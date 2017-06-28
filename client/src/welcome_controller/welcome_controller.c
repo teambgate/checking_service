@@ -28,86 +28,86 @@
 #include <cherry/memory.h>
 #include <cherry/string.h>
 #include <checking_client/request/request.h>
-#include <checking_client/request/functions/search_around.h>
-#include <checking_client/request/functions/service_get_location_info.h>
 #include <common/request.h>
 #include <common/key.h>
 #include <common/command.h>
 
-ADD_FUNCTION_LISTEN(struct welcome_controller_data);
+ADD_FUNCTION_LISTEN(struct clwc_exec_data);
 
-ADD_CONTROLLER_DATA_ALLOC(struct welcome_controller_data, {
+ADD_CONTROLLER_DATA_FREE(struct clwc_exec_data, {
+
+});
+
+
+ADD_CONTROLLER_DATA_ALLOC(struct clwc_exec_data, {
         p->state                = WELCOME_SHOW_SEARCH_IP;
         p->searching_around     = 0;
         map_set(p->cmd_delegate, qskey(&__cmd_location_search_nearby__),
-                &(view_controller_command_delegate){welcome_controller_on_listen_search_around});
+                &(cl_ctrl_listen_delegate){clwc_exec_listen_scan});
         map_set(p->cmd_delegate, qskey(&__cmd_service_get_location_info__),
-                &(view_controller_command_delegate){welcome_controller_on_listen_service_get_location_info});
+                &(cl_ctrl_listen_delegate){clwc_exec_listen_loc_info});
 });
 
-ADD_CONTROLLER_DATA_FREE(struct welcome_controller_data, {
 
-});
+ADD_CONTROLLER_ALLOC(clwc_exec);
 
-ADD_CONTROLLER_ALLOC(welcome_controller);
-
-void welcome_controller_on_linked(struct native_view_controller *p)
+void clwc_exec_on_linked(struct nexec *p)
 {
-        struct welcome_controller_data *data = (struct welcome_controller_data *)p->custom_data;
+        struct clwc_exec_data *data = (struct clwc_exec_data *)p->custom_data;
 
-        struct native_view *view = native_view_controller_get_view(p);
-        struct native_view_parser *parser = native_view_get_parser(view);
+        struct nview *view = nexec_get_view(p);
+        struct nparser *parser = nview_get_parser(view);
 
-        REGISTER_TOUCH(parser, qlkey("set_ip"), welcome_controller_on_touch_set_ip, p, NULL)
-        REGISTER_TOUCH(parser, qlkey("search_ip"), welcome_controller_on_touch_search_ip, p, NULL)
-        REGISTER_TOUCH(parser, qlkey("search_around"), welcome_controller_on_touch_search_around, p, NULL)
-        REGISTER_TOUCH(parser, qlkey("searched_item"), welcome_controller_on_touch_searched_item, p, NULL)
+        REGISTER_TOUCH(parser, qlkey("set_ip"), clwc_exec_touch_set_ip, p, NULL)
+        REGISTER_TOUCH(parser, qlkey("search_ip"), clwc_exec_touch_search_ip, p, NULL)
+        REGISTER_TOUCH(parser, qlkey("search_around"), clwc_exec_touch_scan, p, NULL)
+        REGISTER_TOUCH(parser, qlkey("searched_item"), clwc_exec_touch_item, p, NULL)
 
-        checking_client_requester_add_context(checking_client_requester_get_instance(), data->response_context);
+        cl_talker_add_context(cl_talker_get_instance(), data->response_context);
 }
 
-void welcome_controller_on_removed(struct native_view_controller *p)
+void clwc_exec_on_removed(struct nexec *p)
 {
-        struct welcome_controller_data *data = (struct welcome_controller_data *)p->custom_data;
-        checking_client_requester_response_context_clear(data->response_context);
+        struct clwc_exec_data *data = (struct clwc_exec_data *)p->custom_data;
+        cl_listener_clear(data->response_context);
 }
 
-static void __set_state(struct native_view_controller *p, u8 state)
+static void __set_state(struct nexec *p, u8 state)
 {
-        struct native_view *view = native_view_controller_get_view(p);
-        struct native_view_parser *parser = native_view_get_parser(view);
+        struct nview *view = nexec_get_view(p);
+        struct nparser *parser = nview_get_parser(view);
 
-        struct native_view *set_ip_button = native_view_parser_get_hash_view(parser, qlkey("set_ip_button"));
-        struct native_view *search_around_button = native_view_parser_get_hash_view(parser, qlkey("search_around_button"));
-        struct native_view *search_box_view = native_view_parser_get_hash_view(parser, qlkey("search_box_view"));
-        struct native_view *search_around_view = native_view_parser_get_hash_view(parser, qlkey("search_around_view"));
+        struct nview *set_ip_button = nparser_get_hash_view(parser, qlkey("set_ip_button"));
+        struct nview *search_around_button = nparser_get_hash_view(parser, qlkey("search_around_button"));
+        struct nview *search_box_view = nparser_get_hash_view(parser, qlkey("search_box_view"));
+        struct nview *search_around_view = nparser_get_hash_view(parser, qlkey("search_around_view"));
 
-        struct welcome_controller_data *data = (struct welcome_controller_data *)p->custom_data;
+        struct clwc_exec_data *data = (struct clwc_exec_data *)p->custom_data;
         switch (state) {
                 case WELCOME_SHOW_SEARCH_IP:
-                        native_view_clear_all_actions(set_ip_button);
-                        native_view_clear_all_actions(search_around_button);
-                        native_view_run_action(set_ip_button,
-                                native_view_alpha_to(set_ip_button,
+                        nview_clear_all_actions(set_ip_button);
+                        nview_clear_all_actions(search_around_button);
+                        nview_run_action(set_ip_button,
+                                nview_alpha_to(set_ip_button,
                                         1.0f,
                                         0.25, NATIVE_UI_EASE_QUADRATIC_IN_OUT, 0),
                                 NULL);
-                        native_view_run_action(search_around_button,
-                                native_view_alpha_to(search_around_button,
+                        nview_run_action(search_around_button,
+                                nview_alpha_to(search_around_button,
                                         0.35f,
                                         0.25, NATIVE_UI_EASE_QUADRATIC_IN_OUT, 0),
                                 NULL);
                         break;
                 case WELCOME_SHOW_SEARCH_AROUND:
-                        native_view_clear_all_actions(set_ip_button);
-                        native_view_clear_all_actions(search_around_button);
-                        native_view_run_action(set_ip_button,
-                                native_view_alpha_to(set_ip_button,
+                        nview_clear_all_actions(set_ip_button);
+                        nview_clear_all_actions(search_around_button);
+                        nview_run_action(set_ip_button,
+                                nview_alpha_to(set_ip_button,
                                         0.35f,
                                         0.25, NATIVE_UI_EASE_QUADRATIC_IN_OUT, 0),
                                 NULL);
-                        native_view_run_action(search_around_button,
-                                native_view_alpha_to(search_around_button,
+                        nview_run_action(search_around_button,
+                                nview_alpha_to(search_around_button,
                                         1.0f,
                                         0.25, NATIVE_UI_EASE_QUADRATIC_IN_OUT, 0),
                                 NULL);
@@ -119,43 +119,43 @@ static void __set_state(struct native_view_controller *p, u8 state)
         if(data->state != state) {
                 switch (state) {
                         case WELCOME_SHOW_SEARCH_IP:
-                                native_view_clear_all_actions(search_box_view);
-                                native_view_clear_all_actions(search_around_view);
-                                native_view_run_action(search_box_view,
-                                        native_ui_action_sequence(
-                                                native_view_show(search_box_view),
-                                                native_view_alpha_to(search_box_view,
+                                nview_clear_all_actions(search_box_view);
+                                nview_clear_all_actions(search_around_view);
+                                nview_run_action(search_box_view,
+                                        naction_sequence(
+                                                nview_show(search_box_view),
+                                                nview_alpha_to(search_box_view,
                                                         1.0f, 0.25f, NATIVE_UI_EASE_QUADRATIC_IN_OUT, 0),
                                                 NULL
                                         ),
                                         NULL
                                 );
-                                native_view_run_action(search_around_view,
-                                        native_ui_action_sequence(
-                                                native_view_alpha_to(search_around_view,
+                                nview_run_action(search_around_view,
+                                        naction_sequence(
+                                                nview_alpha_to(search_around_view,
                                                         0.0f, 0.25f, NATIVE_UI_EASE_QUADRATIC_IN_OUT, 0),
-                                                native_view_hide(search_around_view),
+                                                nview_hide(search_around_view),
                                                 NULL
                                         ),
                                         NULL
                                 );
                                 break;
                         case WELCOME_SHOW_SEARCH_AROUND:
-                                native_view_clear_all_actions(search_box_view);
-                                native_view_clear_all_actions(search_around_view);
-                                native_view_run_action(search_box_view,
-                                        native_ui_action_sequence(
-                                                native_view_alpha_to(search_box_view,
+                                nview_clear_all_actions(search_box_view);
+                                nview_clear_all_actions(search_around_view);
+                                nview_run_action(search_box_view,
+                                        naction_sequence(
+                                                nview_alpha_to(search_box_view,
                                                         0.0f, 0.25f, NATIVE_UI_EASE_QUADRATIC_IN_OUT, 0),
-                                                native_view_hide(search_box_view),
+                                                nview_hide(search_box_view),
                                                 NULL
                                         ),
                                         NULL
                                 );
-                                native_view_run_action(search_around_view,
-                                        native_ui_action_sequence(
-                                                native_view_show(search_around_view),
-                                                native_view_alpha_to(search_around_view,
+                                nview_run_action(search_around_view,
+                                        naction_sequence(
+                                                nview_show(search_around_view),
+                                                nview_alpha_to(search_around_view,
                                                         1.0f, 0.25f, NATIVE_UI_EASE_QUADRATIC_IN_OUT, 0),
                                                 NULL
                                         ),
@@ -173,14 +173,14 @@ static void __set_state(struct native_view_controller *p, u8 state)
 /*
  * touch delegates
  */
-void welcome_controller_on_touch_set_ip(struct native_view_controller *p, struct native_view *sender, u8 type)
+void clwc_exec_touch_set_ip(struct nexec *p, struct nview *sender, u8 type)
 {
-        struct welcome_controller_data *data = (struct welcome_controller_data *)p->custom_data;
+        struct clwc_exec_data *data = (struct clwc_exec_data *)p->custom_data;
         switch(type) {
                 case NATIVE_UI_TOUCH_BEGAN:
-                        native_view_clear_all_actions(sender);
-                        native_view_run_action(sender,
-                               native_view_alpha_to(sender, 0.5f, 0.25, NATIVE_UI_EASE_QUADRATIC_IN_OUT, 0),
+                        nview_clear_all_actions(sender);
+                        nview_run_action(sender,
+                               nview_alpha_to(sender, 0.5f, 0.25, NATIVE_UI_EASE_QUADRATIC_IN_OUT, 0),
                                NULL);
                         break;
                 case NATIVE_UI_TOUCH_ENDED:
@@ -192,26 +192,26 @@ void welcome_controller_on_touch_set_ip(struct native_view_controller *p, struct
         }
 }
 
-void welcome_controller_on_touch_search_around(struct native_view_controller *p, struct native_view *sender, u8 type)
+void clwc_exec_touch_scan(struct nexec *p, struct nview *sender, u8 type)
 {
-        struct welcome_controller_data *data = (struct welcome_controller_data *)p->custom_data;
+        struct clwc_exec_data *data = (struct clwc_exec_data *)p->custom_data;
         switch(type) {
                 case NATIVE_UI_TOUCH_BEGAN:
-                        native_view_clear_all_actions(sender);
-                        native_view_run_action(sender,
-                               native_view_alpha_to(sender, 0.5f, 0.25, NATIVE_UI_EASE_QUADRATIC_IN_OUT, 0),
+                        nview_clear_all_actions(sender);
+                        nview_run_action(sender,
+                               nview_alpha_to(sender, 0.5f, 0.25, NATIVE_UI_EASE_QUADRATIC_IN_OUT, 0),
                                NULL);
                         break;
                 case NATIVE_UI_TOUCH_ENDED:
                         __set_state(p, WELCOME_SHOW_SEARCH_AROUND);
                         if( ! data->searching_around) {
                                 data->searching_around = 1;
-                                checking_client_requester_search_around(checking_client_requester_get_instance(),
-                                        (struct checking_client_request_search_around_param){
-                                                .lat = 21.0141,
-                                                .lon = 105.8499
-                                        }
-                                );
+                                // cl_talker_search_around(cl_talker_get_instance(),
+                                //         (struct checking_client_request_search_around_param){
+                                //                 .lat = 21.0141,
+                                //                 .lon = 105.8499
+                                //         }
+                                // );
                         }
                         break;
                 case NATIVE_UI_TOUCH_CANCELLED:
@@ -220,33 +220,33 @@ void welcome_controller_on_touch_search_around(struct native_view_controller *p,
         }
 }
 
-static void __get_location_info(struct native_view_controller *p, char *host, size_t host_len, int port)
+static void __get_location_info(struct nexec *p, char *host, size_t host_len, int port)
 {
-        struct native_view *view                = native_view_controller_get_view(p);
-        struct native_view_parser *parser       = native_view_get_parser(view);
-        struct native_view *search_box_view     = native_view_parser_get_hash_view(parser, qlkey("search_box_view"));
-        struct native_view_parser *search_box_view_parser = native_view_get_parser(search_box_view);
-
-        struct native_ui_preferences *pref = native_ui_get_preferences(qlkey("pref/data.json"));
-
-        smart_object_set_string(pref->data, qskey(&__key_ip__), host, host_len);
-        smart_object_set_int(pref->data, qskey(&__key_port__), port);
-        native_ui_preferences_save(pref);
-
-        struct native_view *prevent_touch = native_view_parser_get_hash_view(parser, qlkey("prevent_touch"));
-        native_view_set_user_interaction_enabled(prevent_touch, 1);
-
-        checking_client_requester_service_get_location_info(checking_client_requester_get_instance(),
-                (struct checking_client_request_service_get_location_info_param){
-                        .host = host,
-                        .port = port
-                }
-        );
+        // struct nview *view                = nexec_get_view(p);
+        // struct nparser *parser       = nview_get_parser(view);
+        // struct nview *search_box_view     = nparser_get_hash_view(parser, qlkey("search_box_view"));
+        // struct nparser *search_box_view_parser = nview_get_parser(search_box_view);
+        //
+        // struct npref *pref = npref_get(qlkey("pref/data.json"));
+        //
+        // smart_object_set_string(pref->data, qskey(&__key_ip__), host, host_len);
+        // smart_object_set_int(pref->data, qskey(&__key_port__), port);
+        // npref_save(pref);
+        //
+        // struct nview *prevent_touch = nparser_get_hash_view(parser, qlkey("prevent_touch"));
+        // nview_set_user_interaction_enabled(prevent_touch, 1);
+        //
+        // cl_talker_service_get_location_info(cl_talker_get_instance(),
+        //         (struct checking_client_request_service_get_location_info_param){
+        //                 .host = host,
+        //                 .port = port
+        //         }
+        // );
 }
 
-void welcome_controller_on_touch_search_ip(struct native_view_controller *p, struct native_view *sender, u8 type)
+void clwc_exec_touch_search_ip(struct nexec *p, struct nview *sender, u8 type)
 {
-        struct welcome_controller_data *data = (struct welcome_controller_data *)p->custom_data;
+        struct clwc_exec_data *data = (struct clwc_exec_data *)p->custom_data;
         switch(type) {
                 case NATIVE_UI_TOUCH_ENDED:
                         goto find_ip;
@@ -257,17 +257,17 @@ find_ip:;
         controller_get_view(view, p);
         view_get_parser(parser, view);
         parser_hash_view(search_box_view, parser, qlkey("search_box_view"));
-        struct native_view_parser *search_box_view_parser = native_view_get_parser(search_box_view);
+        struct nparser *search_box_view_parser = nview_get_parser(search_box_view);
 
-        struct native_view *box = native_view_parser_get_hash_view(search_box_view_parser, qlkey("box"));
-        struct native_view *box_2 = native_view_parser_get_hash_view(search_box_view_parser, qlkey("box_2"));
-        struct string *host = native_view_get_text(box);
-        struct string *port = native_view_get_text(box_2);
+        struct nview *box = nparser_get_hash_view(search_box_view_parser, qlkey("box"));
+        struct nview *box_2 = nparser_get_hash_view(search_box_view_parser, qlkey("box_2"));
+        struct string *host = nview_get_text(box);
+        struct string *port = nview_get_text(box_2);
         string_trim(host);
         string_trim(port);
         int port_num = atoi(port->ptr);
         if(host->len && port_num > 0) {
-                native_view_set_visible(native_view_parser_get_hash_view(search_box_view_parser, qlkey("notification")), 0);
+                nview_set_visible(nparser_get_hash_view(search_box_view_parser, qlkey("notification")), 0);
                 __get_location_info(p, host->ptr, host->len, port_num);
         }
         string_free(host);
@@ -275,7 +275,7 @@ find_ip:;
 end:;
 }
 
-void welcome_controller_on_touch_searched_item(struct native_view_controller *p, struct native_view *sender, u8 type)
+void clwc_exec_touch_item(struct nexec *p, struct nview *sender, u8 type)
 {
         switch (type) {
                 case NATIVE_UI_TOUCH_ENDED:
@@ -293,7 +293,7 @@ to_register:;
 /*
  * listen delegates
  */
-void welcome_controller_on_listen_service_get_location_info(struct native_view_controller *p, struct smart_object *obj)
+void clwc_exec_listen_loc_info(struct nexec *p, struct smart_object *obj)
 {
         controller_get_view(view, p);
         view_get_parser(parser, view);
@@ -301,7 +301,7 @@ void welcome_controller_on_listen_service_get_location_info(struct native_view_c
         view_get_parser(search_box_view_parser, search_box_view);
         parser_hash_view(prevent_touch, parser, qlkey("prevent_touch"));
         object_get_bool(result, obj, qskey(&__key_result__));
-        native_view_set_user_interaction_enabled(prevent_touch, 0);
+        nview_set_user_interaction_enabled(prevent_touch, 0);
 
         if(result) {
                 controller_parse(register_controller,
@@ -314,27 +314,27 @@ void welcome_controller_on_listen_service_get_location_info(struct native_view_c
                 object_get_string(location_name, data, qskey(&__key_location_name__));
                 register_controller_set_location_name(register_controller, qskey(location_name));
         } else {
-                native_view_set_visible(
+                nview_set_visible(
                         parser_hash_view(search_box_view_parser, qlkey("notification")),
                         1);
         }
 }
 
-void welcome_controller_on_listen_search_around(struct native_view_controller *p, struct smart_object *obj)
+void clwc_exec_listen_scan(struct nexec *p, struct smart_object *obj)
 {
-        struct welcome_controller_data *data    = (struct welcome_controller_data *)p->custom_data;
+        struct clwc_exec_data *data    = (struct clwc_exec_data *)p->custom_data;
         data->searching_around                  = 0;
 
-        struct native_view *view                = native_view_controller_get_view(p);
-        struct native_view_parser *parser       = native_view_get_parser(view);
+        struct nview *view                = nexec_get_view(p);
+        struct nparser *parser       = nview_get_parser(view);
 
-        struct native_view *search_around_view  = native_view_parser_get_hash_view(parser, qlkey("search_around_view"));
+        struct nview *search_around_view  = nparser_get_hash_view(parser, qlkey("search_around_view"));
 
-        struct native_view_parser *search_around_parser       = native_view_get_parser(search_around_view);
+        struct nparser *search_around_parser       = nview_get_parser(search_around_view);
 
-        struct native_view *list                = native_view_parser_get_hash_view(search_around_parser ,qlkey("list"));
+        struct nview *list                = nparser_get_hash_view(search_around_parser ,qlkey("list"));
 
-        native_view_remove_all_children(list);
+        nview_remove_all_children(list);
 
         struct smart_object *objdata            = smart_object_get_object(obj, qskey(&__key_data__), SMART_GET_REPLACE_IF_WRONG_TYPE);
         struct smart_array *locations           = smart_object_get_array(objdata, qskey(&__key_locations__), SMART_GET_REPLACE_IF_WRONG_TYPE);
@@ -342,21 +342,21 @@ void welcome_controller_on_listen_search_around(struct native_view_controller *p
         for_i(i, locations->data->len) {
                 struct smart_object *location   = smart_array_get_object(locations, i, SMART_GET_REPLACE_IF_WRONG_TYPE);
 
-                struct native_view_parser *location_parser = native_view_parser_alloc();
-                native_view_parser_parse_template(location_parser, search_around_parser, qlkey("item"));
+                struct nparser *location_parser = nparser_alloc();
+                nparser_parse_template(location_parser, search_around_parser, qlkey("item"));
 
-                struct native_view *location_view = native_view_parser_get_view(location_parser);
-                native_view_add_child(list, location_view);
+                struct nview *location_view = nparser_get_view(location_parser);
+                nview_add_child(list, location_view);
 
                 location_view->user_data        = smart_object_clone(location);
                 location_view->user_data_free   = smart_object_free;
 
-                struct native_view *location_text = native_view_parser_get_hash_view(location_parser, qlkey("name"));
+                struct nview *location_text = nparser_get_hash_view(location_parser, qlkey("name"));
 
                 struct string *location_name    = smart_object_get_string(location, qskey(&__key_location_name__), SMART_GET_REPLACE_IF_WRONG_TYPE);
 
-                native_view_set_text(location_text, qskey(location_name));
+                nview_set_text(location_text, qskey(location_name));
 
-                native_view_request_layout(location_view);
+                nview_request_layout(location_view);
         }
 }

@@ -21,19 +21,19 @@
 #include <smartfox/data.h>
 #include <cherry/array.h>
 #include <cherry/map.h>
-#include <native_ui/native_ui_manager.h>
+#include <native_ui/manager.h>
 
-static void __checking_client_requester_update(struct checking_client_requester *p, float delta)
+static void __cl_talker_update(struct cl_talker *p, float delta)
 {
-        checking_client_requester_process_datas(p);
+        cl_talker_process_datas(p);
 }
 
-static struct checking_client_requester *__instance = NULL;
+static struct cl_talker *__instance = NULL;
 
 static void __clear()
 {
         if(__instance) {
-                checking_client_requester_free(__instance);
+                cl_talker_free(__instance);
                 __instance = NULL;
         }
 }
@@ -44,23 +44,23 @@ static void __setup()
                 cache_add(__clear);
 
                 struct smart_object *config = smart_object_from_json_file("res/config.json", FILE_INNER);
-                __instance = checking_client_requester_alloc(config);
+                __instance = cl_talker_alloc(config);
         }
 }
 
-struct checking_client_requester *checking_client_requester_get_instance()
+struct cl_talker *cl_talker_get_instance()
 {
         __setup();
         return __instance;
 }
 
-struct checking_client_requester *checking_client_requester_alloc(struct smart_object *config)
+struct cl_talker *cl_talker_alloc(struct smart_object *config)
 {
-        struct checking_client_requester *p     = smalloc(sizeof(struct checking_client_requester), checking_client_requester_free);
-        INIT_LIST_HEAD(&p->response_contexts);
+        struct cl_talker *p     = smalloc(sizeof(struct cl_talker), cl_talker_free);
+        INIT_LIST_HEAD(&p->listeners);
         INIT_LIST_HEAD(&p->datas);
         INIT_LIST_HEAD(&p->task);
-        pthread_mutex_init(&p->ui_thread_lock, NULL);
+        pthread_mutex_init(&p->lock, NULL);
         p->config                               = config;
         p->requester                            = cs_requester_alloc();
 
@@ -68,81 +68,95 @@ struct checking_client_requester *checking_client_requester_alloc(struct smart_o
                 smart_object_get_string(config, qskey(&__key_ip__), SMART_GET_REPLACE_IF_WRONG_TYPE)->ptr,
                 smart_object_get_int(config, qskey(&__key_port__), SMART_GET_REPLACE_IF_WRONG_TYPE));
 
-        struct native_ui_update_task *task = native_ui_update_task_alloc();
+        struct ntask *task = ntask_alloc();
         list_add_tail(&task->user_head, &p->task);
         task->count     = -1;
         task->data      = p;
-        task->delegate  = __checking_client_requester_update;
+        task->delegate  = __cl_talker_update;
 
         return p;
 }
 
-void checking_client_requester_free(struct checking_client_requester *p)
+void cl_talker_free(struct cl_talker *p)
 {
         struct list_head *context_head;
-        list_for_each_secure_mutex_lock(context_head, &p->response_contexts, &p->ui_thread_lock, {
-                struct checking_client_requester_response_context *context = (struct checking_client_requester_response_context *)
-                        ((char *)context_head - offsetof(struct checking_client_requester_response_context, head));
+        list_for_each_secure_mutex_lock(context_head, &p->listeners, &p->lock, {
+                struct cl_listener *context = (struct cl_listener *)
+                        ((char *)context_head - offsetof(struct cl_listener, head));
 
-                checking_client_requester_response_context_clear(context);
+                cl_listener_clear(context);
         });
 
         if(!list_singular(&p->task)) {
-                struct native_ui_update_task *task = (struct native_ui_update_task *)
-                        ((char *)p->task.next - offsetof(struct native_ui_update_task, user_head));
-                native_ui_update_task_free(task);
+                struct ntask *task = (struct ntask *)
+                        ((char *)p->task.next - offsetof(struct ntask, user_head));
+                ntask_free(task);
         }
 
         cs_requester_free(p->requester);
         smart_object_free(p->config);
-        pthread_mutex_destroy(&p->ui_thread_lock);
+        pthread_mutex_destroy(&p->lock);
         sfree(p);
 }
 
-void checking_client_requester_add_context(struct checking_client_requester *p,
-        struct checking_client_requester_response_context *context)
+void cl_talker_add_context(struct cl_talker *p,
+        struct cl_listener *context)
 {
-        checking_client_requester_response_context_clear(context);
-        pthread_mutex_lock(&p->ui_thread_lock);
-        list_add_tail(&context->head, &p->response_contexts);
-        context->ui_thread_lock = &p->ui_thread_lock;
-        pthread_mutex_unlock(&p->ui_thread_lock);
+        cl_listener_clear(context);
+        pthread_mutex_lock(&p->lock);
+        list_add_tail(&context->head, &p->listeners);
+        context->lock = &p->lock;
+        pthread_mutex_unlock(&p->lock);
 }
 
 /*
  * all response datas will be processed in ui thread
  */
-void checking_client_requester_callback(struct checking_client_requester *p, struct smart_object *obj)
+void cl_talker_callback(struct cl_talker *p, struct smart_object *obj)
 {
-        pthread_mutex_lock(&p->ui_thread_lock);
-        struct checking_client_requester_response_data *d = checking_client_requester_response_data_alloc();
+        pthread_mutex_lock(&p->lock);
+        struct cl_response *d = cl_response_alloc();
         d->data = smart_object_clone(obj);
         list_add_tail(&d->head, &p->datas);
-        pthread_mutex_unlock(&p->ui_thread_lock);
+        pthread_mutex_unlock(&p->lock);
 }
 
-void checking_client_requester_process_datas(struct checking_client_requester *p)
+void cl_talker_process_datas(struct cl_talker *p)
 {
         struct list_head *context_head, *data_head;
-        list_for_each_secure_mutex_lock(data_head, &p->datas, &p->ui_thread_lock, {
+        list_for_each_secure_mutex_lock(data_head, &p->datas, &p->lock, {
 
-                pthread_mutex_lock(&p->ui_thread_lock);
+                pthread_mutex_lock(&p->lock);
                 list_del_init(data_head);
-                pthread_mutex_unlock(&p->ui_thread_lock);
+                pthread_mutex_unlock(&p->lock);
 
-                struct checking_client_requester_response_data *data = (struct checking_client_requester_response_data *)
-                        ((char *)data_head - offsetof(struct checking_client_requester_response_data, head));
+                struct cl_response *data = (struct cl_response *)
+                        ((char *)data_head - offsetof(struct cl_response, head));
 
-                list_for_each_secure_mutex_lock(context_head, &p->response_contexts, &p->ui_thread_lock, {
+                list_for_each_secure_mutex_lock(context_head, &p->listeners, &p->lock, {
 
-                        struct checking_client_requester_response_context *context = (struct checking_client_requester_response_context *)
-                                ((char *)context_head - offsetof(struct checking_client_requester_response_context, head));
+                        struct cl_listener *context = (struct cl_listener *)
+                                ((char *)context_head - offsetof(struct cl_listener, head));
 
                         if(context->delegate) {
                                 context->delegate(context->ctx, data->data);
                         }
                 });
 
-                checking_client_requester_response_data_free(data);
+                cl_response_free(data);
         });
+}
+
+void cl_talker_send(struct cl_talker *p, struct smart_object *data, struct cl_dst dst)
+{
+        smart_object_set_string(data, qskey(&__key_version__), dst.ver, dst.ver_len);
+        smart_object_set_string(data, qskey(&__key_pass__), dst.pss, dst.pss_len);
+
+        cs_request_alloc_with_param(p->requester, data,
+                (cs_request_callback)cl_talker_callback, p,
+                (struct cs_request_param){
+                        .host = dst.ip,
+                        .port = dst.port
+                }
+        );
 }

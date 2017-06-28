@@ -10,7 +10,7 @@
 #import <native_ui/view.h>
 #import <native_ui/view_controller.h>
 #import <native_ui/align.h>
-#import <native_ui/native_ui_manager.h>
+#import <native_ui/manager.h>
 #import <native_ui/parser.h>
 #import <native_ui/action.h>
 #import <native_ui/touch_handle.h>
@@ -26,7 +26,7 @@
 
 #define DEGREES_TO_RADIANS(angle) ((angle) / 180.0 * M_PI)
 
-struct native_view *__root;
+struct nview *__root;
 
 @interface ViewController ()
 
@@ -37,7 +37,7 @@ struct native_view *__root;
 @implementation ViewController {
 
     UIView *parent;
-    struct native_view *nv;
+    struct nview *nv;
     CADisplayLink *link;
 }
 
@@ -46,7 +46,7 @@ struct native_view *__root;
     /*
      * register view controller allocator
      */
-    native_view_controller_set_from_name_delegate(checking_client_native_view_controller_alloc);
+    nexec_set_fnf(checking_client_nexec_alloc);
     
     parent = [[TestView alloc] init];
     [self.view addSubview:parent];
@@ -57,39 +57,39 @@ struct native_view *__root;
     CGRect newFrame = [[UIScreen mainScreen] bounds];
     parent.frame      = newFrame;
     
-    nv = native_view_alloc();
+    nv = nview_alloc();
     UIView *v         = (__bridge id)(nv->ptr);
     [parent addSubview:v];
-    native_view_set_size(nv, (union vec2){newFrame.size.width, newFrame.size.height});
-    native_view_set_position(nv, (union vec2){newFrame.size.width/2, newFrame.size.height/2});
+    nview_set_size(nv, (union vec2){newFrame.size.width, newFrame.size.height});
+    nview_set_position(nv, (union vec2){newFrame.size.width/2, newFrame.size.height/2});
     __root  = nv;
-    native_view_set_layout_type(nv, NATIVE_UI_LAYOUT_RELATIVE);
+    nview_set_layout_type(nv, NATIVE_UI_LAYOUT_RELATIVE);
     
-    native_view_set_user_interaction_enabled(nv, 1);
+    nview_set_user_interaction_enabled(nv, 1);
     {
-        struct native_view_parser *parser = native_view_parser_alloc();
-        native_view_parser_parse_file(parser, "res/layout/root.xml");
+        struct nparser *parser = nparser_alloc();
+        nparser_parse_file(parser, "res/layout/root.xml");
         
-        struct native_view *view = (struct native_view *)
-        ((char *)parser->view.next - offsetof(struct native_view, parser));
+        struct nview *view = (struct nview *)
+        ((char *)parser->view.next - offsetof(struct nview, parser));
         
-        native_view_add_child(nv, view);
+        nview_add_child(nv, view);
         
-        native_view_update_layout(nv);
+        nview_update_layout(nv);
     }
     link = [CADisplayLink displayLinkWithTarget:self selector:@selector(handleDisplayLink:)];
     link.preferredFramesPerSecond = 60;
     link.paused = NO;
     [link addToRunLoop:[NSRunLoop mainRunLoop] forMode:NSDefaultRunLoopMode];
     
-    //    native_view_free(nv);
+    //    nview_free(nv);
     //    cache_free();
     //    dim_memory();	
 }
 
 - (void)handleDisplayLink:(CADisplayLink *)displayLink
 {
-    native_ui_manager_update(native_ui_manager_shared(), 1.0f / 60);
+    nmanager_update(nmanager_shared(), 1.0f / 60);
 }
 
 - (void)didReceiveMemoryWarning {

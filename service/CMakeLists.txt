@@ -37,6 +37,8 @@ else()
         add_definitions(-DAPP_LOG=0)
 endif()
 
+add_definitions(-Wno-incompatible-pointer-types)
+
 add_definitions(-D__int64=long\ long)
 
 add_subdirectory(../../cherry/kernel ../${OUT}/kernel)

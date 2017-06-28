@@ -23,6 +23,7 @@ extern "C" {
 enum {
         ERROR_VERSION_INVALID,
         ERROR_DATA_INVALID,
+        ERROR_DATA_EXIST,
         ERROR_SERVER_INVALID,
         ERROR_TIMEOUT
 };

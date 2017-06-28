@@ -15,19 +15,19 @@
 #include <native_ui/view_controller.h>
 #include <cherry/stdio.h>
 
-static void __root_view_controller_on_linked(struct native_view_controller *p)
+static void __root_view_controller_on_linked(struct nexec *p)
 {
         
 }
 
-static void __root_view_controller_on_removed(struct native_view_controller *p)
+static void __root_view_controller_on_removed(struct nexec *p)
 {
 
 }
 
-struct native_view_controller *root_view_controller_alloc()
+struct nexec *root_view_controller_alloc()
 {
-        struct native_view_controller *p        = native_view_controller_alloc();
+        struct nexec *p        = nexec_alloc();
         p->on_linked                            = __root_view_controller_on_linked;
         p->on_removed                           = __root_view_controller_on_removed;
 

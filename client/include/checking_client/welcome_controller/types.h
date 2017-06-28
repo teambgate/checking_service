@@ -11,8 +11,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  */
-#ifndef __CHECKING_SERVICE_CHECKING_CLIENT_WELCOME_CONTROLLER_TYPES_H__
-#define __CHECKING_SERVICE_CHECKING_CLIENT_WELCOME_CONTROLLER_TYPES_H__
+#ifndef __CHECKING_SERVICE_CHECKING_CLIENT_clwc_exec_TYPES_H__
+#define __CHECKING_SERVICE_CHECKING_CLIENT_clwc_exec_TYPES_H__
 
 #ifdef __cplusplus
 extern "C" {
@@ -27,10 +27,10 @@ enum {
         WELCOME_SEARCHING_AROUND
 };
 
-struct welcome_controller_data {
+struct clwc_exec_data {
         u8                                                      state;
 
-        struct checking_client_requester_response_context       *response_context;
+        struct cl_listener                                      *response_context;
 
         struct map                                              *cmd_delegate;
 

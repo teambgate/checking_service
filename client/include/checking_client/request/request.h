@@ -23,37 +23,38 @@ extern "C" {
 /*
  * context
  */
-struct checking_client_requester_response_context *checking_client_requester_response_context_alloc();
+struct cl_listener *cl_listener_alloc();
 
-void checking_client_requester_response_context_init(struct checking_client_requester_response_context *p);
+void cl_listener_init(struct cl_listener *p);
 
-void checking_client_requester_response_context_clear(struct checking_client_requester_response_context *p);
+void cl_listener_clear(struct cl_listener *p);
 
-void checking_client_requester_response_context_free(struct checking_client_requester_response_context *p);
+void cl_listener_free(struct cl_listener *p);
 
 /*
  * data
  */
-struct checking_client_requester_response_data *checking_client_requester_response_data_alloc();
+struct cl_response *cl_response_alloc();
 
-void checking_client_requester_response_data_free(struct checking_client_requester_response_data *p);
+void cl_response_free(struct cl_response *p);
 
 /*
  * requester
  */
-struct checking_client_requester *checking_client_requester_get_instance();
+struct cl_talker *cl_talker_get_instance();
 
-struct checking_client_requester *checking_client_requester_alloc(struct smart_object *config);
+struct cl_talker *cl_talker_alloc(struct smart_object *config);
 
-void checking_client_requester_free(struct checking_client_requester *p);
+void cl_talker_free(struct cl_talker *p);
 
-void checking_client_requester_add_context(struct checking_client_requester *p,
-        struct checking_client_requester_response_context *context);
+void cl_talker_add_context(struct cl_talker *p,
+        struct cl_listener *context);
 
-void checking_client_requester_process_datas(struct checking_client_requester *p);
+void cl_talker_process_datas(struct cl_talker *p);
 
-void checking_client_requester_callback(struct checking_client_requester *p, struct smart_object *obj);
+void cl_talker_callback(struct cl_talker *p, struct smart_object *obj);
 
+void cl_talker_send(struct cl_talker *p, struct smart_object *obj, struct cl_dst dst);
 
 #ifdef __cplusplus
 }
