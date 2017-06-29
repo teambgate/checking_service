@@ -43,18 +43,18 @@ static void __setup()
         if(__instance == NULL) {
                 cache_add(__clear);
 
-                struct smart_object *config = smart_object_from_json_file("res/config.json", FILE_INNER);
+                struct sobj *config = sobj_from_json_file("res/config.json", FILE_INNER);
                 __instance = cl_talker_alloc(config);
         }
 }
 
-struct cl_talker *cl_talker_get_instance()
+struct cl_talker *cl_talker_shared()
 {
         __setup();
         return __instance;
 }
 
-struct cl_talker *cl_talker_alloc(struct smart_object *config)
+struct cl_talker *cl_talker_alloc(struct sobj *config)
 {
         struct cl_talker *p     = smalloc(sizeof(struct cl_talker), cl_talker_free);
         INIT_LIST_HEAD(&p->listeners);
@@ -65,8 +65,8 @@ struct cl_talker *cl_talker_alloc(struct smart_object *config)
         p->requester                            = cs_requester_alloc();
 
         cs_requester_connect(p->requester,
-                smart_object_get_string(config, qskey(&__key_ip__), SMART_GET_REPLACE_IF_WRONG_TYPE)->ptr,
-                smart_object_get_int(config, qskey(&__key_port__), SMART_GET_REPLACE_IF_WRONG_TYPE));
+                sobj_get_str(config, qskey(&__key_ip__), RPL_TYPE)->ptr,
+                sobj_get_int(config, qskey(&__key_port__), RPL_TYPE));
 
         struct ntask *task = ntask_alloc();
         list_add_tail(&task->user_head, &p->task);
@@ -94,7 +94,7 @@ void cl_talker_free(struct cl_talker *p)
         }
 
         cs_requester_free(p->requester);
-        smart_object_free(p->config);
+        sobj_free(p->config);
         pthread_mutex_destroy(&p->lock);
         sfree(p);
 }
@@ -112,11 +112,11 @@ void cl_talker_add_context(struct cl_talker *p,
 /*
  * all response datas will be processed in ui thread
  */
-void cl_talker_callback(struct cl_talker *p, struct smart_object *obj)
+void cl_talker_callback(struct cl_talker *p, struct sobj *obj)
 {
         pthread_mutex_lock(&p->lock);
         struct cl_response *d = cl_response_alloc();
-        d->data = smart_object_clone(obj);
+        d->data = sobj_clone(obj);
         list_add_tail(&d->head, &p->datas);
         pthread_mutex_unlock(&p->lock);
 }
@@ -147,10 +147,10 @@ void cl_talker_process_datas(struct cl_talker *p)
         });
 }
 
-void cl_talker_send(struct cl_talker *p, struct smart_object *data, struct cl_dst dst)
+void cl_talker_send(struct cl_talker *p, struct sobj *data, struct cl_dst dst)
 {
-        smart_object_set_string(data, qskey(&__key_version__), dst.ver, dst.ver_len);
-        smart_object_set_string(data, qskey(&__key_pass__), dst.pss, dst.pss_len);
+        sobj_set_str(data, qskey(&__key_version__), dst.ver, dst.ver_len);
+        sobj_set_str(data, qskey(&__key_pass__), dst.pss, dst.pss_len);
 
         cs_request_alloc_with_param(p->requester, data,
                 (cs_request_callback)cl_talker_callback, p,

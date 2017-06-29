@@ -16,6 +16,6 @@
 
 #include <service/types.h>
 
-void local_supporter_process_get_code_v1(struct cs_server *p, int fd, u32 mask, struct smart_object *obj);
+void local_supporter_process_get_code_v1(struct cs_server *p, int fd, u32 mask, struct sobj *obj);
 
 #endif

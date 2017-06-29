@@ -20,16 +20,16 @@ extern "C" {
 
 #include <checking_client/types.h>
 
-struct nexec *checking_client_nexec_alloc(char *name, size_t len);
+struct nexec *cl_nexec_alloc(char *name, size_t len);
 
-struct view_controller_parse_param {
-        struct nexec   *controller_parent;
-        struct nexec   *controller_dismiss;
-        struct nview              *view_parent;
-        char                            *file;
+struct nexec_ppr {
+        struct nexec   *exec_p;
+        struct nexec   *exec_d;
+        struct nview   *view_p;
+        char           *file;
 };
 
-struct nexec *checking_client_view_controller_parse(struct view_controller_parse_param param);
+struct nexec *nexec_parse(struct nexec_ppr param);
 
 #ifdef __cplusplus
 }

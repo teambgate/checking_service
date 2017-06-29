@@ -23,9 +23,9 @@
  #include <cherry/stdio.h>
  #include <common/cs_server.h>
 
- static void __delete_user_name_callback(struct cs_server *p, struct smart_object *result)
+ static void __delete_user_name_callback(struct cs_server *p, struct sobj *result)
  {
-         struct string *res = smart_object_to_json(result);
+         struct string *res = sobj_to_json(result);
          debug("delete user name : %s\n", res->ptr);
          string_free(res);
  }
@@ -35,16 +35,16 @@
          struct supervisor *supervisor = (struct supervisor *)
                  ((char *)p->user_head.next - offsetof(struct supervisor , server));
 
-         double offset = smart_object_get_double(p->config, qlkey("service_created_timeout"), SMART_GET_REPLACE_IF_WRONG_TYPE);
+         double offset = sobj_get_f64(p->config, qlkey("service_created_timeout"), RPL_TYPE);
          struct string *last_time = offset_date_time_to_string(-offset);
 
-         struct string *es_version_code = smart_object_get_string(p->config, qlkey("es_version_code"), SMART_GET_REPLACE_IF_WRONG_TYPE);
-         struct string *es_pass = smart_object_get_string(p->config, qlkey("es_pass"), SMART_GET_REPLACE_IF_WRONG_TYPE);
+         struct string *es_version_code = sobj_get_str(p->config, qlkey("es_version_code"), RPL_TYPE);
+         struct string *es_pass = sobj_get_str(p->config, qlkey("es_pass"), RPL_TYPE);
 
          struct string *content = cs_request_string_from_file("res/supervisor/service/delete/delete_by_date.json", FILE_INNER);
          string_replace(content, "{LAST_TIME}", last_time->ptr);
 
-         struct smart_object *request_data = cs_request_data_from_string(
+         struct sobj *request_data = cs_request_data_from_string(
                  qskey(content),
                  qskey(es_version_code), qskey(es_pass));
         string_free(content);

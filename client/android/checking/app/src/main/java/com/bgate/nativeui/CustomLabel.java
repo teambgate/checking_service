@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.support.v4.view.ViewCompat;
 import android.text.Layout;
 import android.text.StaticLayout;
 import android.text.TextPaint;
@@ -125,6 +126,7 @@ public class CustomLabel extends CustomSharedView {
             last_width = 0;
             last_height = 0;
             justified = false;
+            //ViewCompat.setLayerType(this, ViewCompat.LAYER_TYPE_HARDWARE, null);
         }
 
         @Override
@@ -133,21 +135,16 @@ public class CustomLabel extends CustomSharedView {
                 float d  = getContext().getResources().getDisplayMetrics().density;
                 switch (event.getAction()) {
                     case MotionEvent.ACTION_DOWN:
-                        if(__current_touch_native_ptr__ == 0) {
-                            __current_touch_native_ptr__ = native_ptr;
-                            CustomFunction.touchBeganJNI( __current_touch_native_ptr__, 0, event.getX() / d, event.getY() / d);
-                        }
+                        CustomFunction.touchBeganJNI(native_ptr, 0, event.getX() / d, event.getY() / d);
                         break;
                     case MotionEvent.ACTION_MOVE:
-                        CustomFunction.touchMovedJNI( __current_touch_native_ptr__, 0, event.getX() / d, event.getY() / d);
+                        CustomFunction.touchMovedJNI(native_ptr, 0, event.getX() / d, event.getY() / d);
                         break;
                     case MotionEvent.ACTION_UP:
-                        CustomFunction.touchEndedJNI( __current_touch_native_ptr__, 0, event.getX() / d, event.getY() / d);
-                        __current_touch_native_ptr__ = 0;
+                        CustomFunction.touchEndedJNI(native_ptr, 0, event.getX() / d, event.getY() / d);
                         break;
                     case MotionEvent.ACTION_CANCEL:
-                        CustomFunction.touchCancelledJNI( __current_touch_native_ptr__, 0, event.getX() / d, event.getY() / d);
-                        __current_touch_native_ptr__ = 0;
+                        CustomFunction.touchCancelledJNI(native_ptr, 0, event.getX() / d, event.getY() / d);
                         break;
                     default:
                         break;

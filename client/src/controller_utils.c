@@ -12,27 +12,25 @@
  * GNU General Public License for more details.
  */
 #include <checking_client/controller_utils.h>
-#include <checking_client/root_view_controller/root_view_controller.h>
-#include <checking_client/welcome_controller/welcome_controller.h>
-#include <checking_client/register_controller/register_controller.h>
+#include <checking_client/exec.h>
 #include <cherry/string.h>
 #include <native_ui/parser.h>
 #include <native_ui/view.h>
 #include <native_ui/view_controller.h>
 
-struct nexec *checking_client_nexec_alloc(char *name, size_t len)
+struct nexec *cl_nexec_alloc(char *name, size_t len)
 {
-        if(strcmp(name, "welcome_controller") == 0) {
+        if(strcmp(name, "welcome_controller") == 0) {                
                 return clwc_exec_alloc();
         } else if(strcmp(name, "root_view_controller") == 0) {
-                return root_view_controller_alloc();
+                return clrt_exec_alloc();
         } else if(strcmp(name, "register_controller") == 0) {
-                return register_controller_alloc();
+                return clreg_exec_alloc();
         }
         return NULL;
 }
 
-struct nexec *checking_client_view_controller_parse(struct view_controller_parse_param param)
+struct nexec *nexec_parse(struct nexec_ppr param)
 {
         if(param.file) {
                 struct nparser *parser = nparser_alloc();
@@ -40,14 +38,14 @@ struct nexec *checking_client_view_controller_parse(struct view_controller_parse
 
                 struct nview *view = nparser_get_view(parser);
                 struct nexec *controller = parser->controller;
-                if(controller && param.controller_parent) {
-                        nexec_link(param.controller_parent, controller);
+                if(controller && param.exec_p) {
+                        nexec_link(param.exec_p, controller);
                 }
-                if(view && param.view_parent) {
-                        nview_add_child(param.view_parent, view);
+                if(view && param.view_p) {
+                        nview_add_child(param.view_p, view);
                 }
-                if(param.controller_dismiss)
-                        nexec_free(param.controller_dismiss);
+                if(param.exec_d)
+                        nexec_free(param.exec_d);
 
                 nview_request_layout(view);
 

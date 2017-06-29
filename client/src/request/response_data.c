@@ -28,6 +28,6 @@ struct cl_response *cl_response_alloc()
 void cl_response_free(struct cl_response *p)
 {
         list_del_init(&p->head);
-        if(p->data) smart_object_free(p->data);
+        if(p->data) sobj_free(p->data);
         sfree(p);
 }

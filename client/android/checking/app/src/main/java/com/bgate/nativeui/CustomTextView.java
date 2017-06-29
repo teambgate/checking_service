@@ -1,6 +1,7 @@
 package com.bgate.nativeui;
 
 import android.content.Context;
+import android.support.v4.view.ViewCompat;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.inputmethod.EditorInfo;
@@ -44,6 +45,7 @@ public class CustomTextView extends CustomSharedView {
         public InnerEditText(Context context) {
 
             super(context);
+            ViewCompat.setLayerType(this, ViewCompat.LAYER_TYPE_HARDWARE, null);
             setImeOptions(EditorInfo.IME_ACTION_DONE);
             setOnEditorActionListener(new OnEditorActionListener() {
                 @Override

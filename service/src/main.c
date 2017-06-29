@@ -42,7 +42,7 @@ static JavaVM*  jvm;
 JavaVM*         __jvm;
 struct map *    __jni_env_map;
 
-struct smart_object     *__shared_ram_config__;
+struct sobj     *__shared_ram_config__;
 pthread_mutex_t         __shared_ram_config_mutex__;
 
 /*
@@ -84,12 +84,12 @@ static void __setup_jni()
         __jni_env_map = map_alloc(sizeof(JNIEnv *));
 }
 
-static struct smart_object *__parse_input(char *line, int len)
+static struct sobj *__parse_input(char *line, int len)
 {
         int counter             = 0;
         int start               = 0;
         int end                 = 0;
-        struct smart_object *p    = smart_object_alloc();
+        struct sobj *p    = sobj_alloc();
         struct string *key      = string_alloc(0);
         struct string *val      = string_alloc(0);
 
@@ -111,7 +111,7 @@ read_cmd:;
                 increase_count()
                 goto read_cmd;
         }
-        smart_object_set_string(p, qlkey("cmd"), line + start, end - start + 1);
+        sobj_set_str(p, qlkey("cmd"), line + start, end - start + 1);
 
 find_argument:;
         if(line[counter] != '-') {
@@ -149,7 +149,7 @@ read_value:;
         string_cat(val, line + start, end - start + 1);
         string_trim(key);
         string_trim(val);
-        smart_object_set_string(p, key->ptr, key->len, val->ptr, val->len);
+        sobj_set_str(p, key->ptr, key->len, val->ptr, val->len);
 
         goto find_argument;
 
@@ -173,9 +173,9 @@ get_line:;
                 app_log( PRINT_GRN);
                 if(fgets(line, BUFFER_LEN, stdin) != NULL) {
                         app_log( PRINT_RESET);
-                        struct smart_object *com = __parse_input(line, BUFFER_LEN);
+                        struct sobj *com = __parse_input(line, BUFFER_LEN);
 
-                        struct string *cmd = smart_object_get_string(com, qlkey("cmd"), SMART_GET_REPLACE_IF_WRONG_TYPE);
+                        struct string *cmd = sobj_get_str(com, qlkey("cmd"), RPL_TYPE);
 
                         if(strcmp(cmd->ptr, "service_register") == 0) {
                                 checking_service_register_username(local_service, com);
@@ -258,7 +258,7 @@ get_line:;
                                 app_log("\n");
                         }
 
-                        smart_object_free(com);
+                        sobj_free(com);
                 }
         } else {
                 pthread_cond_wait(&local_service->command_cond, &local_service->command_mutex);
@@ -288,7 +288,7 @@ int main( int argc, char** argv )
 
         __setup_jni();
 
-        __shared_ram_config__ = smart_object_alloc();
+        __shared_ram_config__ = sobj_alloc();
         pthread_mutex_init(&__shared_ram_config_mutex__, NULL);
 
         local_service   = checking_service_alloc(CS_SERVER_LOCAL);
@@ -296,7 +296,7 @@ int main( int argc, char** argv )
         local_supporter = local_supporter_alloc();
 
         local_requester = cs_requester_alloc();
-        u16 port        = smart_object_get_short(local_service->config, qlkey("service_local_port"), SMART_GET_REPLACE_IF_WRONG_TYPE);
+        u16 port        = sobj_get_i16(local_service->config, qlkey("service_local_port"), RPL_TYPE);
         cs_requester_connect(local_requester, "127.0.0.1", port);
 
         pthread_t tid[4];
@@ -333,7 +333,7 @@ finish:;
         /*
          * deallocate shared ram config
          */
-        smart_object_free(__shared_ram_config__);
+        sobj_free(__shared_ram_config__);
         pthread_mutex_destroy(&__shared_ram_config_mutex__);
 
         /*

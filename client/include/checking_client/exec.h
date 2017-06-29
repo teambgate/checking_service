@@ -11,8 +11,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  */
-#ifndef __CHECKING_SERVICE_CHECKING_CLIENT_REGISTER_CONTROLLER_TYPES_H__
-#define __CHECKING_SERVICE_CHECKING_CLIENT_REGISTER_CONTROLLER_TYPES_H__
+#ifndef __CHECKING_SERVICE_CHECKING_CLIENT_EXEC_H__
+#define __CHECKING_SERVICE_CHECKING_CLIENT_EXEC_H__
 
 #ifdef __cplusplus
 extern "C" {
@@ -20,11 +20,12 @@ extern "C" {
 
 #include <checking_client/types.h>
 
-struct register_controller_data {
-        struct cl_listener       *response_context;
+struct nexec *clrt_exec_alloc();
 
-        struct map                                              *cmd_delegate;
-};
+struct nexec *clwc_exec_alloc();
+
+struct nexec *clreg_exec_alloc();
+void clreg_exec_sname(struct nexec *p, char *name, i32 len);
 
 #ifdef __cplusplus
 }

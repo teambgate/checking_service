@@ -30,9 +30,9 @@ static void __register_handler(struct cs_server *p, cs_server_handler_delegate d
         list_add_tail(&handler->head, &p->handlers);
 }
 
-static void __load_base_map_callback(void *p, struct smart_object *data)
+static void __load_base_map_callback(void *p, struct sobj *data)
 {
-        struct string *j = smart_object_to_json(data);
+        struct string *j = sobj_to_json(data);
         debug("load base map : %s\n",j->ptr);
         string_free(j);
 }
@@ -42,10 +42,10 @@ static void __load_base_map(struct supervisor *p, char *file)
         struct cs_server *c     = (struct cs_server *)
                 ((char *)p->server.next - offsetof(struct cs_server, user_head));
 
-        struct string *es_version_code = smart_object_get_string(c->config, qlkey("es_version_code"), SMART_GET_REPLACE_IF_WRONG_TYPE);
-        struct string *es_pass = smart_object_get_string(c->config, qlkey("es_pass"), SMART_GET_REPLACE_IF_WRONG_TYPE);
+        struct string *es_version_code = sobj_get_str(c->config, qlkey("es_version_code"), RPL_TYPE);
+        struct string *es_pass = sobj_get_str(c->config, qlkey("es_pass"), RPL_TYPE);
 
-        struct smart_object *request = cs_request_data_from_file(file, FILE_INNER, qskey(es_version_code), qskey(es_pass));
+        struct sobj *request = cs_request_data_from_file(file, FILE_INNER, qskey(es_version_code), qskey(es_pass));
         cs_request_alloc(p->es_server_requester, request, __load_base_map_callback, p);
 }
 
@@ -57,8 +57,8 @@ static void __load_es_server(struct supervisor *p)
 
                 p->es_server_requester  = cs_requester_alloc();
 
-                struct string *host     = smart_object_get_string(c->config, qlkey("es_host"), SMART_GET_REPLACE_IF_WRONG_TYPE);
-                u16 port = smart_object_get_short(c->config, qlkey("es_port"), SMART_GET_REPLACE_IF_WRONG_TYPE);
+                struct string *host     = sobj_get_str(c->config, qlkey("es_host"), RPL_TYPE);
+                u16 port = sobj_get_i16(c->config, qlkey("es_port"), RPL_TYPE);
 
                 cs_requester_connect(p->es_server_requester, host->ptr, port);
 
@@ -77,7 +77,7 @@ struct supervisor *supervisor_alloc()
         struct cs_server *c     = cs_server_alloc(0);
         list_add_tail(&c->user_head, &p->server);
 
-        c->config               = smart_object_from_json_file("res/config.json", FILE_INNER);
+        c->config               = sobj_from_json_file("res/config.json", FILE_INNER);
 
         map_set(c->delegates, qskey(&__cmd_get_service__), &(cs_server_delegate){supervisor_process_get_service});
         map_set(c->delegates, qskey(&__cmd_service_register__), &(cs_server_delegate){supervisor_process_service_register});
@@ -91,7 +91,7 @@ struct supervisor *supervisor_alloc()
 
         __register_handler(c,
                 supervisor_process_clear_invalidated_service,
-                smart_object_get_double(c->config, qlkey("service_created_timeout"), SMART_GET_REPLACE_IF_WRONG_TYPE));
+                sobj_get_f64(c->config, qlkey("service_created_timeout"), RPL_TYPE));
 
         __load_es_server(p);
 
@@ -103,7 +103,7 @@ void supervisor_start(struct supervisor *p)
         if(!list_singular(&p->server)) {
                 struct cs_server *c     = (struct cs_server *)
                         ((char *)p->server.next - offsetof(struct cs_server, user_head));
-                u16 port                = smart_object_get_short(c->config, qlkey("service_port"), SMART_GET_REPLACE_IF_WRONG_TYPE);
+                u16 port                = sobj_get_i16(c->config, qlkey("service_port"), RPL_TYPE);
 
                 cs_server_start(c, port);
         }

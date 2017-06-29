@@ -41,9 +41,9 @@ void cl_response_free(struct cl_response *p);
 /*
  * requester
  */
-struct cl_talker *cl_talker_get_instance();
+struct cl_talker *cl_talker_shared();
 
-struct cl_talker *cl_talker_alloc(struct smart_object *config);
+struct cl_talker *cl_talker_alloc(struct sobj *config);
 
 void cl_talker_free(struct cl_talker *p);
 
@@ -52,9 +52,9 @@ void cl_talker_add_context(struct cl_talker *p,
 
 void cl_talker_process_datas(struct cl_talker *p);
 
-void cl_talker_callback(struct cl_talker *p, struct smart_object *obj);
+void cl_talker_callback(struct cl_talker *p, struct sobj *obj);
 
-void cl_talker_send(struct cl_talker *p, struct smart_object *obj, struct cl_dst dst);
+void cl_talker_send(struct cl_talker *p, struct sobj *obj, struct cl_dst dst);
 
 #ifdef __cplusplus
 }

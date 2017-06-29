@@ -59,12 +59,12 @@ static void __setup_jni()
         __jni_env_map = map_alloc(sizeof(JNIEnv *));
 }
 
-static struct smart_object *__parse_input(char *line, int len)
+static struct sobj *__parse_input(char *line, int len)
 {
         int counter             = 0;
         int start               = 0;
         int end                 = 0;
-        struct smart_object *p    = smart_object_alloc();
+        struct sobj *p    = sobj_alloc();
         struct string *key      = string_alloc(0);
         struct string *val      = string_alloc(0);
 
@@ -86,7 +86,7 @@ read_cmd:;
                 increase_count()
                 goto read_cmd;
         }
-        smart_object_set_string(p, qlkey("cmd"), line + start, end - start + 1);
+        sobj_set_str(p, qlkey("cmd"), line + start, end - start + 1);
 
 find_argument:;
         if(line[counter] != '-') {
@@ -122,7 +122,7 @@ read_value:;
         }
         val->len = 0;
         string_cat(val, line + start, end - start + 1);
-        smart_object_set_string(p, key->ptr, key->len, val->ptr, val->len);
+        sobj_set_str(p, key->ptr, key->len, val->ptr, val->len);
 
         goto read_argument;
 
@@ -140,11 +140,11 @@ get_line:;
         int counter = 0;
 
         if(fgets(line, BUFFER_LEN, stdin) != NULL) {
-                struct smart_object *com = __parse_input(line, BUFFER_LEN);
+                struct sobj *com = __parse_input(line, BUFFER_LEN);
 
-                struct string *cmd = smart_object_get_string(com, qlkey("cmd"), SMART_GET_REPLACE_IF_WRONG_TYPE);
+                struct string *cmd = sobj_get_str(com, qlkey("cmd"), RPL_TYPE);
 
-                smart_object_free(com);
+                sobj_free(com);
         }
 
         goto get_line;

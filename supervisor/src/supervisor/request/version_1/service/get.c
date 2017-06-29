@@ -40,7 +40,7 @@
 #include <common/key.h>
 #include <common/error.h>
 
-void supervisor_process_get_service_v1(struct cs_server *p, int fd, u32 mask, struct smart_object *obj)
+void supervisor_process_get_service_v1(struct cs_server *p, int fd, u32 mask, struct sobj *obj)
 {
 
 }

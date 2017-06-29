@@ -46,26 +46,26 @@
 /*
  * response invalid data
  */
-static void __response_invalid_data(struct cs_server *p, int fd, u32 mask, struct smart_object *obj, char *msg, size_t msg_len)
+static void __response_invalid_data(struct cs_server *p, int fd, u32 mask, struct sobj *obj, char *msg, size_t msg_len)
 {
-        struct smart_object *res = smart_object_alloc();
-        smart_object_set_long(res, qskey(&__key_request_id__), smart_object_get_long(obj, qskey(&__key_request_id__), 0));
-        smart_object_set_bool(res, qskey(&__key_result__), 0);
-        smart_object_set_string(res, qskey(&__key_message__), msg, msg_len);
-        smart_object_set_long(res, qskey(&__key_error__), ERROR_DATA_INVALID);
-        struct string *cmd = smart_object_get_string(obj, qskey(&__key_cmd__), SMART_GET_REPLACE_IF_WRONG_TYPE);
-        smart_object_set_string(res, qskey(&__key_cmd__), qskey(cmd));
+        struct sobj *res = sobj_alloc();
+        sobj_set_i64(res, qskey(&__key_request_id__), sobj_get_i64(obj, qskey(&__key_request_id__), 0));
+        sobj_set_u8(res, qskey(&__key_result__), 0);
+        sobj_set_str(res, qskey(&__key_message__), msg, msg_len);
+        sobj_set_i64(res, qskey(&__key_error__), ERROR_DATA_INVALID);
+        struct string *cmd = sobj_get_str(obj, qskey(&__key_cmd__), RPL_TYPE);
+        sobj_set_str(res, qskey(&__key_cmd__), qskey(cmd));
 
-        struct string *d        = smart_object_to_json(res);
+        struct string *d        = sobj_to_json(res);
         cs_server_send_to_client(p, fd, mask, d->ptr, d->len, 0);
         string_free(d);
-        smart_object_free(res);
+        sobj_free(res);
 }
 
-static int __validate_input(struct cs_server *p, int fd, u32 mask, struct smart_object *obj)
+static int __validate_input(struct cs_server *p, int fd, u32 mask, struct sobj *obj)
 {
-        struct string *service_pass = smart_object_get_string(p->config, qlkey("service_pass"), SMART_GET_REPLACE_IF_WRONG_TYPE);
-        struct string *pass = smart_object_get_string(obj, qskey(&__key_pass__), SMART_GET_REPLACE_IF_WRONG_TYPE);
+        struct string *service_pass = sobj_get_str(p->config, qlkey("service_pass"), RPL_TYPE);
+        struct string *pass = sobj_get_str(obj, qskey(&__key_pass__), RPL_TYPE);
 
         if(strcmp(service_pass->ptr, pass->ptr) != 0) {
                 __response_invalid_data(p, fd, mask, obj, qlkey("User unauthorized!"));
@@ -75,54 +75,54 @@ static int __validate_input(struct cs_server *p, int fd, u32 mask, struct smart_
         return 1;
 }
 
-static void __register_user_name_callback(struct cs_server_callback_user_data *cud, struct smart_object *recv)
+static void __register_user_name_callback(struct cs_server_callback_user_data *cud, struct sobj *recv)
 {
-        struct smart_object *res = smart_object_alloc();
+        struct sobj *res = sobj_alloc();
 
-        smart_object_set_long(res, qskey(&__key_request_id__), smart_object_get_long(cud->obj, qskey(&__key_request_id__), 0));
-        smart_object_set_bool(res, qskey(&__key_result__),
-                smart_object_get_bool(recv, qskey(&__key_result__), SMART_GET_REPLACE_IF_WRONG_TYPE));
-        struct string *cmd = smart_object_get_string(cud->obj, qskey(&__key_cmd__), SMART_GET_REPLACE_IF_WRONG_TYPE);
-        smart_object_set_string(res, qskey(&__key_cmd__), qskey(cmd));
+        sobj_set_i64(res, qskey(&__key_request_id__), sobj_get_i64(cud->obj, qskey(&__key_request_id__), 0));
+        sobj_set_u8(res, qskey(&__key_result__),
+                sobj_get_u8(recv, qskey(&__key_result__), RPL_TYPE));
+        struct string *cmd = sobj_get_str(cud->obj, qskey(&__key_cmd__), RPL_TYPE);
+        sobj_set_str(res, qskey(&__key_cmd__), qskey(cmd));
 
-        struct string* message = smart_object_get_string(recv, qskey(&__key_message__), SMART_GET_REPLACE_IF_WRONG_TYPE);
-        smart_object_set_string(res, qskey(&__key_message__), qskey(message));
+        struct string* message = sobj_get_str(recv, qskey(&__key_message__), RPL_TYPE);
+        sobj_set_str(res, qskey(&__key_message__), qskey(message));
 
-        struct string *d        = smart_object_to_json(res);
+        struct string *d        = sobj_to_json(res);
         cs_server_send_to_client(cud->p, cud->fd, cud->mask, d->ptr, d->len, 0);
         string_free(d);
-        smart_object_free(res);
+        sobj_free(res);
 
         cs_server_callback_user_data_free(cud);
 }
 
-static void __register_user_name(struct cs_server *p, int fd, u32 mask, struct smart_object *obj)
+static void __register_user_name(struct cs_server *p, int fd, u32 mask, struct sobj *obj)
 {
         struct checking_service *cs = (struct checking_service *)
                 ((char *)p->user_head.next - offsetof(struct checking_service, server));
 
-        struct string *supervisor_version_code = smart_object_get_string(p->config, qlkey("supervisor_version_code"), SMART_GET_REPLACE_IF_WRONG_TYPE);
-        struct string *supervisor_pass = smart_object_get_string(p->config, qlkey("supervisor_pass"), SMART_GET_REPLACE_IF_WRONG_TYPE);
+        struct string *supervisor_version_code = sobj_get_str(p->config, qlkey("supervisor_version_code"), RPL_TYPE);
+        struct string *supervisor_pass = sobj_get_str(p->config, qlkey("supervisor_pass"), RPL_TYPE);
 
-        struct smart_object *data = smart_object_alloc();
-        smart_object_set_string(data, qskey(&__key_version__), qskey(supervisor_version_code));
-        smart_object_set_string(data, qskey(&__key_cmd__), qskey(&__cmd_service_register__));
-        smart_object_set_string(data, qskey(&__key_pass__),qskey(supervisor_pass));
+        struct sobj *data = sobj_alloc();
+        sobj_set_str(data, qskey(&__key_version__), qskey(supervisor_version_code));
+        sobj_set_str(data, qskey(&__key_cmd__), qskey(&__cmd_service_register__));
+        sobj_set_str(data, qskey(&__key_pass__),qskey(supervisor_pass));
 
-        struct string *name = smart_object_get_string(obj, qskey(&__key_name__), SMART_GET_REPLACE_IF_WRONG_TYPE);
-        struct string *user_name = smart_object_get_string(obj, qskey(&__key_user_name__), SMART_GET_REPLACE_IF_WRONG_TYPE);
-        struct string *user_pass = smart_object_get_string(obj, qskey(&__key_user_pass__), SMART_GET_REPLACE_IF_WRONG_TYPE);
+        struct string *name = sobj_get_str(obj, qskey(&__key_name__), RPL_TYPE);
+        struct string *user_name = sobj_get_str(obj, qskey(&__key_user_name__), RPL_TYPE);
+        struct string *user_pass = sobj_get_str(obj, qskey(&__key_user_pass__), RPL_TYPE);
 
-        smart_object_set_string(data, qskey(&__key_name__), qskey(name));
-        smart_object_set_string(data, qskey(&__key_user_name__), qskey(user_name));
-        smart_object_set_string(data, qskey(&__key_user_pass__), qskey(user_pass));
+        sobj_set_str(data, qskey(&__key_name__), qskey(name));
+        sobj_set_str(data, qskey(&__key_user_name__), qskey(user_name));
+        sobj_set_str(data, qskey(&__key_user_pass__), qskey(user_pass));
 
         struct cs_server_callback_user_data *cud = cs_server_callback_user_data_alloc(p, fd, mask, obj);
 
         cs_request_alloc(cs->supervisor_requester, data, (cs_request_callback)__register_user_name_callback, cud);
 }
 
-void checking_service_process_service_register_username_v1(struct cs_server *p, int fd, u32 mask, struct smart_object *obj)
+void checking_service_process_service_register_username_v1(struct cs_server *p, int fd, u32 mask, struct sobj *obj)
 {
         if( ! __validate_input(p, fd, mask, obj)) {
                 return;

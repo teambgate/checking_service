@@ -10,6 +10,7 @@ import android.graphics.PorterDuff;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.ShapeDrawable;
 import android.provider.Settings;
+import android.support.v4.view.ViewCompat;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsoluteLayout;
@@ -96,6 +97,28 @@ public class CustomFunction {
         return new int[]{x, y};
     }
 
+    public static void requestView(CustomSharedView view)
+    {
+        try {
+            CustomSharedView p = (CustomSharedView) view.getParent();
+            if(p != null) {
+                if(p.dirty) {
+                    view.dirty = true;
+                } else {
+                    view.requestLayout();
+                    view.dirty = true;
+                }
+            } else {
+                if(!view.dirty) {
+                    view.requestLayout();
+                    view.dirty = true;
+                }
+            }
+        } catch (Exception e) {
+
+        }
+    }
+
     public static void setPosition(CustomSharedView view, float x, float y)
     {
 //        float d                             = view.getContext().getResources().getDisplayMetrics().density;
@@ -112,7 +135,7 @@ public class CustomFunction {
         params.x = (int) (view.pos_x - params.width * view.anchor_x);
         params.y = (int) (view.pos_y - params.height * view.anchor_y);
 
-        view.requestLayout();
+        requestView(view);
     }
 
     public static void setSize(CustomSharedView view, float width, float height)
@@ -126,16 +149,16 @@ public class CustomFunction {
         params.x                            = (int)(view.pos_x - params.width * view.anchor_x);
         params.y                            = (int)(view.pos_y - params.height * view.anchor_y);
         view.onChangeSize(params.width, params.height);
-        view.requestLayout();
+        requestView(view);
     }
 
-    public static void setRotation(AbsoluteLayout view, float rotateX, float rotateY, float rotateZ)
+    public static void setRotation(CustomSharedView view, float rotateX, float rotateY, float rotateZ)
     {
         view.setRotation(rotateZ);
         view.setRotationX(rotateX);
         view.setRotationY(rotateY);
 
-        view.requestLayout();
+        requestView(view);
     }
 
     public static void setAnchor(CustomSharedView view, float x, float y)
@@ -148,15 +171,15 @@ public class CustomFunction {
         params.x                            = (int)(view.pos_x - params.width * view.anchor_x);
         params.y                            = (int)(view.pos_y - params.height * view.anchor_y);
 
-        view.requestLayout();
+        requestView(view);
     }
 
-    public static void setScale(AbsoluteLayout view, float sx, float sy)
+    public static void setScale(CustomSharedView view, float sx, float sy)
     {
         view.setScaleX(sx);
         view.setScaleY(sy);
 
-        view.requestLayout();
+        requestView(view);
     }
 
     public static void setColor(CustomSharedView view, float r, float g, float b, float a,
@@ -190,23 +213,31 @@ public class CustomFunction {
             view.setBackgroundColor(Color.TRANSPARENT);
             view.setBackgroundDrawable(null);
         }
+        view.dirty = true;
     }
 
-    public static void setColorNull(AbsoluteLayout view)
+    public static void setColorNull(CustomSharedView view)
     {
         view.setBackgroundDrawable(null);
         view.setBackgroundColor(Color.TRANSPARENT);
+        view.dirty = true;
     }
 
-    public static void setAlpha(AbsoluteLayout view, float a)
+    public static void setAlpha(CustomSharedView view, float a)
     {
-
+        if(a < 1) {
+            ViewCompat.setLayerType(view, ViewCompat.LAYER_TYPE_HARDWARE, null);
+        } else {
+            ViewCompat.setLayerType(view, ViewCompat.LAYER_TYPE_NONE, null);
+        }
         view.setAlpha(a);
+        view.dirty = true;
     }
 
-    public static void setVisible(AbsoluteLayout view, int visible)
+    public static void setVisible(CustomSharedView view, int visible)
     {
         view.setVisibility(visible == 1 ? View.VISIBLE : View.INVISIBLE);
+        view.dirty = true;
     }
 
     public static void removeFromParent(AbsoluteLayout view)
@@ -244,6 +275,7 @@ public class CustomFunction {
         view.r2         = r2 * d;
         view.r3         = r3 * d;
         view.r4         = r4 * d;
+        view.dirty = true;
     }
 
     public static native int touchBeganJNI(long ptr, int index, float x, float y);

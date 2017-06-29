@@ -38,7 +38,7 @@ struct local_supporter *local_supporter_alloc()
         struct cs_server *c             = cs_server_alloc(CS_SERVER_PUBLIC);
         list_add_tail(&c->user_head, &p->server);
 
-        c->config                       = smart_object_from_json_file("res/config.json", FILE_INNER);
+        c->config                       = sobj_from_json_file("res/config.json", FILE_INNER);
 
         map_set(c->delegates, qskey(&__cmd_local_supporter_get_code__),
                 &(cs_server_delegate){local_supporter_process_get_code});
@@ -69,12 +69,12 @@ void local_supporter_start(struct local_supporter *p)
                 int port                = rand_ri(10001, 60000);
                 struct string *local_ip = common_get_local_ip_adress();
 
-                smart_object_set_int(__shared_ram_config__, qskey(&__key_local_port__), port);
-                smart_object_set_string(__shared_ram_config__, qskey(&__key_local_ip__), qskey(local_ip));
+                sobj_set_i32(__shared_ram_config__, qskey(&__key_local_port__), port);
+                sobj_set_str(__shared_ram_config__, qskey(&__key_local_ip__), qskey(local_ip));
 
                 char buf[9];
                 common_gen_random(buf, sizeof(buf) / sizeof(buf[0]));
-                smart_object_set_string(__shared_ram_config__, qskey(&__key_local_code__), qlkey(buf));
+                sobj_set_str(__shared_ram_config__, qskey(&__key_local_code__), qlkey(buf));
 
                 string_free(local_ip);
                 pthread_mutex_unlock(&__shared_ram_config_mutex__);

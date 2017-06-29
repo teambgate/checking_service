@@ -20,11 +20,11 @@ extern "C" {
 
 #include <common/types.h>
 
-struct smart_object *cs_request_data_from_file(char *file, int file_type,
+struct sobj *cs_request_data_from_file(char *file, int file_type,
         char *version, size_t version_len,
         char *pass, size_t pass_len);
 
-struct smart_object *cs_request_data_from_string(char *content, size_t len,
+struct sobj *cs_request_data_from_string(char *content, size_t len,
         char *version, size_t version_len,
         char *pass, size_t pass_len);
 
@@ -39,12 +39,12 @@ struct cs_request_param {
         int     timeout;
 };
 
-struct cs_request *cs_request_alloc(struct cs_requester *p, struct smart_object *data, cs_request_callback callback, void *ctx);
+struct cs_request *cs_request_alloc(struct cs_requester *p, struct sobj *data, cs_request_callback callback, void *ctx);
 
-struct cs_request *cs_request_alloc_with_host(struct cs_requester *p, struct smart_object *data,
+struct cs_request *cs_request_alloc_with_host(struct cs_requester *p, struct sobj *data,
         cs_request_callback callback, void *ctx, char *host, size_t host_len, u16 port);
 
-struct cs_request *cs_request_alloc_with_param(struct cs_requester *p, struct smart_object *data,
+struct cs_request *cs_request_alloc_with_param(struct cs_requester *p, struct sobj *data,
         cs_request_callback callback, void *ctx, struct cs_request_param param);
 
 void cs_request_free(struct cs_request *p);

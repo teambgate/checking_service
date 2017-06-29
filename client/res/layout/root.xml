@@ -3,47 +3,41 @@
 <view width="match_parent" height="match_parent" type="relative" align="center" hash="first_image" scale="1">
         <link src="res/layout/welcome/welcome.xml" />
         <!-- <link src="res/layout/welcome/welcome.xml"/>
-        <!--&lt;!&ndash; <link src="res/layout/room.xml"/> &ndash;&gt;-->
-        <!--&lt;!&ndash; <view width="375" height="667" color="#ff0000" align="center" anchor_x="1.0" anchor_y="0.5" margin_right="354.1667" rotation_y="-85"/> &ndash;&gt;-->
-        <!--&lt;!&ndash; <view width="375" height="667" color="#0000ff" align="center" anchor_x="0" anchor_y="0.5" rotation_y="5" margin_left="20.8333"> &ndash;&gt;-->
-        <!--&lt;!&ndash; <view width="match_parent" height="match_parent" type="size_vertical" align="center" anchor_x="0" anchor_y="0.5" rotation_y="5" margin_left="20.8333" clip="true"> &ndash;&gt;-->
-        <!--<view width="match_parent" height="match_parent" type="size_vertical" align="center" clip="true">-->
-                <!--<view width="match_parent" height="20" color="#2980b9"/>-->
-                <!--<listview width="match_parent" height="fill_parent" type="horizontal" touch="true" clip="true" hash="list_item">-->
-                        <!--<link src="res/layout/bar.xml" width="250" height="match_parent"-->
-                                <!--padding_top="40" align="center" clip="true"-->
-                                <!--bind_touch="choose_item=open"-->
-                                <!--intercept_horizontal="list_item"/>-->
-                        <!--<view width="200" height="1" margin_left="20" align="center" type="relative">-->
-                        <!--<textfield width="200" height="34" align="center" touch="true" hash="user_textfield"/>-->
-                                <!--<template name="info">-->
-                                        <!--<image src="res/Fotolia_89777343_Subscription_Monthly_M.jpg" margin_left="20"-->
-                                                <!--width="500" height="350" align="center"/>-->
-                                <!--</template>-->
-                        <!--</view>-->
-                        <!--<listview width="match_parent" height="match_parent" align="center" padding_top="100" type="vertical" touch="true" clip="true" intercept_horizontal="list_item">-->
-                                <!--<label align="center" text_color="#000000" width="match_parent" height="500" font="Arial" font_size="25" text_align="justified" multiline="true">Test</label>-->
-                        <!--</listview>-->
-                        <!--<image touch="true" touch_delegate="open" intercept_horizontal="list_item" src="res/Fotolia_89777343_Subscription_Monthly_M.jpg" margin_left="20" width="500" height="350" align="center" color="#ff0000" alpha="0.5"/>-->
-                        <!--<image touch="true" touch_delegate="open" intercept_horizontal="list_item" src="res/Fotolia_89777343_Subscription_Monthly_M.jpg" margin_left="20" width="500" height="350" align="center"/>-->
-                        <!--<image src="res/Fotolia_89777343_Subscription_Monthly_M.jpg" margin_left="20" width="500" height="350" align="center"/>-->
-                        <!--<image src="res/Fotolia_89777343_Subscription_Monthly_M.jpg" margin_left="20" width="500" height="350" align="center"/>-->
-                        <!--<image src="res/Fotolia_89777343_Subscription_Monthly_M.jpg" margin_left="20" width="500" height="350" align="center"/>-->
-                        <!--<image src="res/Fotolia_89777343_Subscription_Monthly_M.jpg" margin_left="20" width="500" height="350" align="center"/>-->
-                        <!--<image src="res/Fotolia_89777343_Subscription_Monthly_M.jpg" margin_left="20" width="500" height="350" align="center"/>-->
-                        <!--<image src="res/Fotolia_89777343_Subscription_Monthly_M.jpg" margin_left="20" width="500" height="350" align="center"/>-->
-                        <!--<image src="res/Fotolia_89777343_Subscription_Monthly_M.jpg" margin_left="20" width="500" height="350" align="center"/>-->
-                        <!--<image src="res/Fotolia_89777343_Subscription_Monthly_M.jpg" margin_left="20" width="500" height="350" align="center"/>-->
-                        <!--<image src="res/Fotolia_89777343_Subscription_Monthly_M.jpg" margin_left="20" width="500" height="350" align="center"/>-->
-                        <!--<image src="res/Fotolia_89777343_Subscription_Monthly_M.jpg" margin_left="20" width="500" height="350" align="center"/>-->
-                        <!--<image src="res/Fotolia_89777343_Subscription_Monthly_M.jpg" margin_left="20" width="500" height="350" align="center"/>-->
-                        <!--<image src="res/Fotolia_89777343_Subscription_Monthly_M.jpg" margin_left="20" width="500" height="350" align="center"/>-->
-                        <!--<image src="res/Fotolia_89777343_Subscription_Monthly_M.jpg" margin_left="20" width="500" height="350" align="center"/>-->
-                        <!--<image src="res/Fotolia_89777343_Subscription_Monthly_M.jpg" margin_left="20" width="500" height="350" align="center"/>-->
-                        <!--<image src="res/Fotolia_89777343_Subscription_Monthly_M.jpg" margin_left="20" width="500" height="350" align="center"/>-->
-                        <!--<image src="res/Fotolia_89777343_Subscription_Monthly_M.jpg" margin_left="20" width="500" height="350" align="center"/>-->
-                        <!--<image src="res/Fotolia_89777343_Subscription_Monthly_M.jpg" margin_left="20" width="500" height="350" align="center" margin_right="20" />-->
-                <!--</listview>-->
-                <!--<view width="match_parent" height="60" color="#2980b9"/>-->
-        <!--</view>-->
+        <!-- &lt;!&ndash; <link src="res/layout/room.xml"/> &ndash;&gt; -->
+        <!-- &lt;!&ndash; <view width="375" height="667" color="#ff0000" align="center" anchor_x="1.0" anchor_y="0.5" margin_right="354.1667" rotation_y="-85"/> &ndash;&gt; -->
+        <!-- &lt;!&ndash; <view width="375" height="667" color="#0000ff" align="center" anchor_x="0" anchor_y="0.5" rotation_y="5" margin_left="20.8333"> &ndash;&gt; -->
+        <!-- &lt;!&ndash; <view width="match_parent" height="match_parent" type="size_vertical" align="center" anchor_x="0" anchor_y="0.5" rotation_y="5" margin_left="20.8333" clip="true"> &ndash;&gt; -->
+        <!-- <view width="match_parent" height="match_parent" type="size_vertical" align="center" clip="true">
+                <view width="match_parent" height="20" color="#2980b9"></view>
+                <listview width="match_parent" height="fill_parent" type="horizontal" touch="true" clip="true" hash="list_item">
+                        <link src="res/layout/bar.xml" width="250" height="match_parent"
+                                padding_top="40" align="center" clip="true"
+                                bind_touch="choose_item=open"
+                                intercept_horizontal="list_item"/>
+                        <textfield width="200" height="34" align="center" touch="true" hash="user_textfield"/>
+                        <listview width="match_parent" height="match_parent" align="center" padding_top="100" type="vertical" touch="true" clip="true" intercept_horizontal="list_item">
+                                <label align="center" text_color="#000000" width="match_parent" height="500" font="Arial" font_size="25" text_align="justified" multiline="true">Test</label>
+                        </listview>
+                                <image touch="true" touch_delegate="open" intercept_horizontal="list_item" src="res/Fotolia_89777343_Subscription_Monthly_M.jpg" margin_left="20" width="500" height="350" align="center" color="#ff0000" alpha="0.5"/>
+                                <image touch="true" touch_delegate="open" intercept_horizontal="list_item" src="res/Fotolia_89777343_Subscription_Monthly_M.jpg" margin_left="20" width="500" height="350" align="center"/>
+                                <image src="res/Fotolia_89777343_Subscription_Monthly_M.jpg" margin_left="20" width="500" height="350" align="center"/>
+                                <image src="res/Fotolia_89777343_Subscription_Monthly_M.jpg" margin_left="20" width="500" height="350" align="center"/>
+                                <image src="res/Fotolia_89777343_Subscription_Monthly_M.jpg" margin_left="20" width="500" height="350" align="center"/>
+                                <image src="res/Fotolia_89777343_Subscription_Monthly_M.jpg" margin_left="20" width="500" height="350" align="center"/>
+                                <image src="res/Fotolia_89777343_Subscription_Monthly_M.jpg" margin_left="20" width="500" height="350" align="center"/>
+                                <image src="res/Fotolia_89777343_Subscription_Monthly_M.jpg" margin_left="20" width="500" height="350" align="center"/>
+                                <image src="res/Fotolia_89777343_Subscription_Monthly_M.jpg" margin_left="20" width="500" height="350" align="center"/>
+                                <image src="res/Fotolia_89777343_Subscription_Monthly_M.jpg" margin_left="20" width="500" height="350" align="center"/>
+                                <image src="res/Fotolia_89777343_Subscription_Monthly_M.jpg" margin_left="20" width="500" height="350" align="center"/>
+                                <image src="res/Fotolia_89777343_Subscription_Monthly_M.jpg" margin_left="20" width="500" height="350" align="center"/>
+                                <image src="res/Fotolia_89777343_Subscription_Monthly_M.jpg" margin_left="20" width="500" height="350" align="center"/>
+                                <image src="res/Fotolia_89777343_Subscription_Monthly_M.jpg" margin_left="20" width="500" height="350" align="center"/>
+                                <image src="res/Fotolia_89777343_Subscription_Monthly_M.jpg" margin_left="20" width="500" height="350" align="center"/>
+                                <image src="res/Fotolia_89777343_Subscription_Monthly_M.jpg" margin_left="20" width="500" height="350" align="center"/>
+                                <image src="res/Fotolia_89777343_Subscription_Monthly_M.jpg" margin_left="20" width="500" height="350" align="center"/>
+                                <image src="res/Fotolia_89777343_Subscription_Monthly_M.jpg" margin_left="20" width="500" height="350" align="center"/>
+                                <image src="res/Fotolia_89777343_Subscription_Monthly_M.jpg" margin_left="20" width="500" height="350" align="center" margin_right="20" />
+                </listview>
+                <view width="match_parent" height="60" color="#2980b9"></view>
+        </view> -->
 </view>

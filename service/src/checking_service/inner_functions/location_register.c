@@ -35,12 +35,12 @@
 
 #define BUFFER_LEN 1024
 
-void checking_service_register_location(struct checking_service *p, struct smart_object *in)
+void checking_service_register_location(struct checking_service *p, struct sobj *in)
 {
         char line[BUFFER_LEN];
 
         #define ADD_INFO(val, log, key) \
-        struct string *val = smart_object_get_string(in, qlkey(key), SMART_GET_REPLACE_IF_WRONG_TYPE); \
+        struct string *val = sobj_get_str(in, qlkey(key), RPL_TYPE); \
         if(val->len == 0) {       \
                 memset(line, 0, BUFFER_LEN);    \
                 app_log(log);   \
@@ -51,7 +51,7 @@ void checking_service_register_location(struct checking_service *p, struct smart
         }
 
         #define ADD_PASS(val, log, key) \
-        struct string *val = smart_object_get_string(in, qlkey(key), SMART_GET_REPLACE_IF_WRONG_TYPE); \
+        struct string *val = sobj_get_str(in, qlkey(key), RPL_TYPE); \
         if(val->len == 0) {       \
                 memset(line, 0, BUFFER_LEN);    \
                 app_log(log);   \
@@ -76,33 +76,33 @@ void checking_service_register_location(struct checking_service *p, struct smart
          */
         p->command_flag = 0;
 
-        struct string *version_code = smart_object_get_string(p->config, qlkey("service_version_code"), SMART_GET_REPLACE_IF_WRONG_TYPE);
-        struct string *pass = smart_object_get_string(p->config, qlkey("service_pass"), SMART_GET_REPLACE_IF_WRONG_TYPE);
+        struct string *version_code = sobj_get_str(p->config, qlkey("service_version_code"), RPL_TYPE);
+        struct string *pass = sobj_get_str(p->config, qlkey("service_pass"), RPL_TYPE);
 
-        struct smart_object *data = smart_object_alloc();
-        smart_object_set_string(data, qskey(&__key_version__), qskey(version_code));
-        smart_object_set_string(data, qskey(&__key_cmd__), qskey(&__cmd_location_register__));
-        smart_object_set_string(data, qskey(&__key_pass__),qskey(pass));
+        struct sobj *data = sobj_alloc();
+        sobj_set_str(data, qskey(&__key_version__), qskey(version_code));
+        sobj_set_str(data, qskey(&__key_cmd__), qskey(&__cmd_location_register__));
+        sobj_set_str(data, qskey(&__key_pass__),qskey(pass));
 
-        struct smart_object *latlng = smart_object_get_object(data, qskey(&__key_latlng__), SMART_GET_REPLACE_IF_WRONG_TYPE);
-        smart_object_set_double(latlng, qskey(&__key_lat__), satof(lat->ptr));
-        smart_object_set_double(latlng, qskey(&__key_lon__), satof(lon->ptr));
+        struct sobj *latlng = sobj_get_obj(data, qskey(&__key_latlng__), RPL_TYPE);
+        sobj_set_f64(latlng, qskey(&__key_lat__), satof(lat->ptr));
+        sobj_set_f64(latlng, qskey(&__key_lon__), satof(lon->ptr));
 
-        smart_object_set_string(data, qskey(&__key_ip__), qskey(ip));
-        smart_object_set_int(data, qskey(&__key_port__), atoi(port->ptr));
-        smart_object_set_string(data, qskey(&__key_location_name__), qskey(location_name));
-        smart_object_set_string(data, qskey(&__key_user_name__), qskey(user_name));
-        smart_object_set_string(data, qskey(&__key_user_pass__), qskey(user_pass));
-        smart_object_set_string(data, qskey(&__key_device_id__), qskey(device_id));
+        sobj_set_str(data, qskey(&__key_ip__), qskey(ip));
+        sobj_set_i32(data, qskey(&__key_port__), atoi(port->ptr));
+        sobj_set_str(data, qskey(&__key_location_name__), qskey(location_name));
+        sobj_set_str(data, qskey(&__key_user_name__), qskey(user_name));
+        sobj_set_str(data, qskey(&__key_user_pass__), qskey(user_pass));
+        sobj_set_str(data, qskey(&__key_device_id__), qskey(device_id));
         cs_request_alloc(local_requester, data, (cs_request_callback)checking_service_register_location_callback, p);
 
         string_free(device_id);
 }
 
-void checking_service_register_location_callback(struct checking_service *p, struct smart_object *recv)
+void checking_service_register_location_callback(struct checking_service *p, struct sobj *recv)
 {
-        u8 result = smart_object_get_bool(recv, qskey(&__key_result__), SMART_GET_REPLACE_IF_WRONG_TYPE);
-        struct string *message = smart_object_get_string(recv, qskey(&__key_message__), SMART_GET_REPLACE_IF_WRONG_TYPE);
+        u8 result = sobj_get_u8(recv, qskey(&__key_result__), RPL_TYPE);
+        struct string *message = sobj_get_str(recv, qskey(&__key_message__), RPL_TYPE);
         if(result) {
                 app_log( PRINT_CYN "%s\n\n" PRINT_RESET, message->ptr);
         } else {

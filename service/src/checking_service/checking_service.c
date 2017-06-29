@@ -31,9 +31,9 @@ static void __register_handler(struct cs_server *p, cs_server_handler_delegate d
         list_add_tail(&handler->head, &p->handlers);
 }
 
-static void __load_base_map_callback(void *p, struct smart_object *data)
+static void __load_base_map_callback(void *p, struct sobj *data)
 {
-        struct string *j = smart_object_to_json(data);
+        struct string *j = sobj_to_json(data);
         debug("load base map : %s\n",j->ptr);
         string_free(j);
 }
@@ -43,10 +43,10 @@ static void __load_base_map(struct checking_service *p, char *file)
         struct cs_server *c     = (struct cs_server *)
                 ((char *)p->server.next - offsetof(struct cs_server, user_head));
 
-        struct string *es_version_code = smart_object_get_string(c->config, qlkey("es_version_code"), SMART_GET_REPLACE_IF_WRONG_TYPE);
-        struct string *es_pass = smart_object_get_string(c->config, qlkey("es_pass"), SMART_GET_REPLACE_IF_WRONG_TYPE);
+        struct string *es_version_code = sobj_get_str(c->config, qlkey("es_version_code"), RPL_TYPE);
+        struct string *es_pass = sobj_get_str(c->config, qlkey("es_pass"), RPL_TYPE);
 
-        struct smart_object *request = cs_request_data_from_file(file, FILE_INNER, qskey(es_version_code), qskey(es_pass));
+        struct sobj *request = cs_request_data_from_file(file, FILE_INNER, qskey(es_version_code), qskey(es_pass));
         cs_request_alloc(p->es_server_requester, request, __load_base_map_callback, p);
 }
 
@@ -58,8 +58,8 @@ static void __load_es_server(struct checking_service *p)
 
                 p->es_server_requester  = cs_requester_alloc();
 
-                struct string *host     = smart_object_get_string(c->config, qlkey("es_host"), SMART_GET_REPLACE_IF_WRONG_TYPE);
-                u16 port = smart_object_get_short(c->config, qlkey("es_port"), SMART_GET_REPLACE_IF_WRONG_TYPE);
+                struct string *host     = sobj_get_str(c->config, qlkey("es_host"), RPL_TYPE);
+                u16 port = sobj_get_i16(c->config, qlkey("es_port"), RPL_TYPE);
 
                 cs_requester_connect(p->es_server_requester, host->ptr, port);
 
@@ -87,8 +87,8 @@ static void __load_supervisor(struct checking_service *p)
 
                 p->supervisor_requester  = cs_requester_alloc();
 
-                struct string *host     = smart_object_get_string(c->config, qlkey("supervisor_host"), SMART_GET_REPLACE_IF_WRONG_TYPE);
-                u16 port = smart_object_get_short(c->config, qlkey("supervisor_port"), SMART_GET_REPLACE_IF_WRONG_TYPE);
+                struct string *host     = sobj_get_str(c->config, qlkey("supervisor_host"), RPL_TYPE);
+                u16 port = sobj_get_i16(c->config, qlkey("supervisor_port"), RPL_TYPE);
 
                 cs_requester_connect(p->supervisor_requester, host->ptr, port);
         }
@@ -108,7 +108,7 @@ struct checking_service *checking_service_alloc(u8 local_only)
         pthread_mutex_init(&p->command_mutex, NULL);
         pthread_cond_init (&p->command_cond, NULL);
 
-        c->config                       = smart_object_from_json_file("res/config.json", FILE_INNER);
+        c->config                       = sobj_from_json_file("res/config.json", FILE_INNER);
         p->config                       = c->config;
 
         if(local_only) {
@@ -207,11 +207,11 @@ void checking_service_start(struct checking_service *p)
                         ((char *)p->server.next - offsetof(struct cs_server, user_head));
 
                 if(c->local_only) {
-                        u16 port                = smart_object_get_short(c->config, qlkey("service_local_port"), SMART_GET_REPLACE_IF_WRONG_TYPE);
+                        u16 port                = sobj_get_i16(c->config, qlkey("service_local_port"), RPL_TYPE);
 
                         cs_server_start(c, port);
                 } else {
-                        u16 port                = smart_object_get_short(c->config, qlkey("service_port"), SMART_GET_REPLACE_IF_WRONG_TYPE);
+                        u16 port                = sobj_get_i16(c->config, qlkey("service_port"), RPL_TYPE);
 
                         cs_server_start(c, port);
                 }

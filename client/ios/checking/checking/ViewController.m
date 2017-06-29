@@ -46,7 +46,7 @@ struct nview *__root;
     /*
      * register view controller allocator
      */
-    nexec_set_fnf(checking_client_nexec_alloc);
+    nexec_set_fnf(cl_nexec_alloc);
     
     parent = [[TestView alloc] init];
     [self.view addSubview:parent];

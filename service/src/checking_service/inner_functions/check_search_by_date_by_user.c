@@ -34,12 +34,12 @@
 
 #define BUFFER_LEN 1024
 
-void checking_service_check_search_by_date_by_user(struct checking_service *p, struct smart_object *in)
+void checking_service_check_search_by_date_by_user(struct checking_service *p, struct sobj *in)
 {
         char line[BUFFER_LEN];
 
         #define ADD_INFO(val, log, key) \
-        struct string *val = smart_object_get_string(in, qlkey(key), SMART_GET_REPLACE_IF_WRONG_TYPE); \
+        struct string *val = sobj_get_str(in, qlkey(key), RPL_TYPE); \
         if(val->len == 0) {       \
                 memset(line, 0, BUFFER_LEN);    \
                 app_log(log);   \
@@ -50,7 +50,7 @@ void checking_service_check_search_by_date_by_user(struct checking_service *p, s
         }
 
         #define ADD_PASS(val, log, key) \
-        struct string *val = smart_object_get_string(in, qlkey(key), SMART_GET_REPLACE_IF_WRONG_TYPE); \
+        struct string *val = sobj_get_str(in, qlkey(key), RPL_TYPE); \
         if(val->len == 0) {       \
                 memset(line, 0, BUFFER_LEN);    \
                 app_log(log);   \
@@ -70,42 +70,42 @@ void checking_service_check_search_by_date_by_user(struct checking_service *p, s
          */
         p->command_flag = 0;
 
-        struct string *version_code = smart_object_get_string(p->config, qlkey("service_version_code"), SMART_GET_REPLACE_IF_WRONG_TYPE);
-        struct string *pass = smart_object_get_string(p->config, qlkey("service_pass"), SMART_GET_REPLACE_IF_WRONG_TYPE);
+        struct string *version_code = sobj_get_str(p->config, qlkey("service_version_code"), RPL_TYPE);
+        struct string *pass = sobj_get_str(p->config, qlkey("service_pass"), RPL_TYPE);
 
-        struct smart_object *data = smart_object_alloc();
-        smart_object_set_string(data, qskey(&__key_version__), qskey(version_code));
-        smart_object_set_string(data, qskey(&__key_cmd__), qskey(&__cmd_check_search_by_date_by_user__));
-        smart_object_set_string(data, qskey(&__key_pass__),qskey(pass));
+        struct sobj *data = sobj_alloc();
+        sobj_set_str(data, qskey(&__key_version__), qskey(version_code));
+        sobj_set_str(data, qskey(&__key_cmd__), qskey(&__cmd_check_search_by_date_by_user__));
+        sobj_set_str(data, qskey(&__key_pass__),qskey(pass));
 
-        smart_object_set_string(data, qskey(&__key_user_name__), qskey(user_name));
-        smart_object_set_string(data, qskey(&__key_user_pass__), qskey(user_pass));
-        smart_object_set_string(data, qskey(&__key_from__), qskey(from));
-        smart_object_set_string(data, qskey(&__key_to__), qskey(to));
+        sobj_set_str(data, qskey(&__key_user_name__), qskey(user_name));
+        sobj_set_str(data, qskey(&__key_user_pass__), qskey(user_pass));
+        sobj_set_str(data, qskey(&__key_from__), qskey(from));
+        sobj_set_str(data, qskey(&__key_to__), qskey(to));
 
         cs_request_alloc(local_requester, data, (cs_request_callback)checking_service_check_search_by_date_by_user_callback, p);
 }
 
-void checking_service_check_search_by_date_by_user_callback(struct checking_service *p, struct smart_object *recv)
+void checking_service_check_search_by_date_by_user_callback(struct checking_service *p, struct sobj *recv)
 {
-        u8 result = smart_object_get_bool(recv, qskey(&__key_result__), SMART_GET_REPLACE_IF_WRONG_TYPE);
+        u8 result = sobj_get_u8(recv, qskey(&__key_result__), RPL_TYPE);
         if(result) {
-                struct smart_object *data = smart_object_get_object(recv, qskey(&__key_data__), SMART_GET_REPLACE_IF_WRONG_TYPE);
-                struct smart_array *checks = smart_object_get_array(data, qskey(&__key_checks__), SMART_GET_REPLACE_IF_WRONG_TYPE);
+                struct sobj *data = sobj_get_obj(recv, qskey(&__key_data__), RPL_TYPE);
+                struct sarray *checks = sobj_get_arr(data, qskey(&__key_checks__), RPL_TYPE);
                 if(checks->data->len == 0) {
                         app_log( PRINT_CYN "empty\n\n" PRINT_RESET);
                 } else {
                         int i;
                         for_i(i, checks->data->len) {
-                                struct smart_object *check = smart_array_get_object(checks, i, SMART_GET_REPLACE_IF_WRONG_TYPE);
-                                struct string *json = smart_object_to_json(check);
+                                struct sobj *check = sarray_get_obj(checks, i, RPL_TYPE);
+                                struct string *json = sobj_to_json(check);
                                 app_log( PRINT_CYN "%s\n" PRINT_RESET, json->ptr);
                                 string_free(json);
                         }
                         app_log("\n");
                 }
         } else {
-                struct string *message = smart_object_get_string(recv, qskey(&__key_message__), SMART_GET_REPLACE_IF_WRONG_TYPE);
+                struct string *message = sobj_get_str(recv, qskey(&__key_message__), RPL_TYPE);
                 app_log( PRINT_RED "%s\n\n" PRINT_RESET, message->ptr);
         }
 

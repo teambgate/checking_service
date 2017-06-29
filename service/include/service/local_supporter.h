@@ -29,7 +29,7 @@ void local_supporter_free(struct local_supporter *p);
 /*
  * request delegate
  */
-void local_supporter_process_get_code(struct cs_server *p, int fd, u32 mask, struct smart_object *obj);
+void local_supporter_process_get_code(struct cs_server *p, int fd, u32 mask, struct sobj *obj);
 
 #ifdef __cplusplus
 }

@@ -11,8 +11,7 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  */
-#include <checking_client/welcome_controller/welcome_controller.h>
-#include <checking_client/register_controller/register_controller.h>
+#include <checking_client/exec.h>
 #include <checking_client/controller_utils.h>
 #include <native_ui/view_controller.h>
 #include <native_ui/action.h>
@@ -32,44 +31,98 @@
 #include <common/key.h>
 #include <common/command.h>
 
-ADD_FUNCTION_LISTEN(struct clwc_exec_data);
+static void clwc_exec_on_linked(struct nexec *p);
+static void clwc_exec_on_removed(struct nexec *p);
+static void clwc_exec_touch_set_ip(struct nexec *p, struct nview *sender, u8 type);
+static void clwc_exec_touch_scan(struct nexec *p, struct nview *sender, u8 type);
+static void clwc_exec_touch_search_ip(struct nexec *p, struct nview *sender, u8 type);
+static void clwc_exec_touch_item(struct nexec *p, struct nview *sender, u8 type);
+static void clwc_exec_listen_loc_info(struct nexec *p, struct sobj *obj);
+static void clwc_exec_listen_scan(struct nexec *p, struct sobj *obj);
 
-ADD_CONTROLLER_DATA_FREE(struct clwc_exec_data, {
+enum {
+        WELCOME_SHOW_SEARCH_IP,
+        WELCOME_SHOW_SEARCH_AROUND,
+        WELCOME_SEARCHING_IP,
+        WELCOME_SEARCHING_AROUND
+};
 
-});
+struct exec_data {
+        u8                          state;
+        struct cl_listener          *lsr;
+        struct map                  *cmds;
+        u8                          searching_around;
+};
 
-
-ADD_CONTROLLER_DATA_ALLOC(struct clwc_exec_data, {
-        p->state                = WELCOME_SHOW_SEARCH_IP;
-        p->searching_around     = 0;
-        map_set(p->cmd_delegate, qskey(&__cmd_location_search_nearby__),
-                &(cl_ctrl_listen_delegate){clwc_exec_listen_scan});
-        map_set(p->cmd_delegate, qskey(&__cmd_service_get_location_info__),
-                &(cl_ctrl_listen_delegate){clwc_exec_listen_loc_info});
-});
-
-
-ADD_CONTROLLER_ALLOC(clwc_exec);
-
-void clwc_exec_on_linked(struct nexec *p)
+static void nexec_listen(struct nexec *p, struct sobj *obj)
 {
-        struct clwc_exec_data *data = (struct clwc_exec_data *)p->custom_data;
+        struct exec_data *data = (struct exec_data *)p->custom_data;
+        struct string *cmd = sobj_get_str(obj, qskey(&__key_cmd__), RPL_TYPE);
+        nexec_listenf *delegate = map_get_pointer(data->cmds, qskey(cmd));
 
-        struct nview *view = nexec_get_view(p);
-        struct nparser *parser = nview_get_parser(view);
-
-        REGISTER_TOUCH(parser, qlkey("set_ip"), clwc_exec_touch_set_ip, p, NULL)
-        REGISTER_TOUCH(parser, qlkey("search_ip"), clwc_exec_touch_search_ip, p, NULL)
-        REGISTER_TOUCH(parser, qlkey("search_around"), clwc_exec_touch_scan, p, NULL)
-        REGISTER_TOUCH(parser, qlkey("searched_item"), clwc_exec_touch_item, p, NULL)
-
-        cl_talker_add_context(cl_talker_get_instance(), data->response_context);
+        if(*delegate) {
+                (*delegate)(p, obj);
+        }
 }
 
-void clwc_exec_on_removed(struct nexec *p)
+static void exec_data_free(struct exec_data *p)
 {
-        struct clwc_exec_data *data = (struct clwc_exec_data *)p->custom_data;
-        cl_listener_clear(data->response_context);
+        cl_listener_free(p->lsr);
+        map_free(p->cmds);
+        sfree(p);
+}
+
+static struct exec_data *exec_data_alloc(struct nexec *controller)
+{
+        struct exec_data *p                     = smalloc(sizeof(struct exec_data), exec_data_free);
+        p->lsr                     = cl_listener_alloc();
+        p->lsr->ctx                = controller;
+        p->lsr->delegate           = nexec_listen;
+        p->cmds                         = map_alloc(sizeof(nexec_listenf));
+
+        p->state                = WELCOME_SHOW_SEARCH_IP;
+        p->searching_around     = 0;
+        map_set(p->cmds, qskey(&__cmd_location_search_nearby__),
+                &(nexec_listenf){clwc_exec_listen_scan});
+        map_set(p->cmds, qskey(&__cmd_service_get_location_info__),
+                &(nexec_listenf){clwc_exec_listen_loc_info});
+
+        return p;
+}
+
+struct nexec *clwc_exec_alloc()
+{
+        struct nexec *p                         = nexec_alloc();
+        p->on_linked                            = clwc_exec_on_linked;
+        p->on_removed                           = clwc_exec_on_removed;
+        p->custom_data                          = exec_data_alloc(p);
+        p->custom_data_free                     = exec_data_free;
+        return p;
+}
+
+static void clwc_exec_on_linked(struct nexec *p)
+{
+        struct exec_data *data = (struct exec_data *)p->custom_data;
+
+        struct nview *view = nexec_get_view(p);
+        struct nparser *pr = nview_get_parser(view);
+
+        struct ntouch *t = nparser_get_touch(pr, qlkey("set_ip"));
+        ntouch_set_f(t, clwc_exec_touch_set_ip, p, NULL);
+        t = nparser_get_touch(pr, qlkey("search_ip"));
+        ntouch_set_f(t, clwc_exec_touch_search_ip, p, NULL);
+        t = nparser_get_touch(pr, qlkey("search_around"));
+        ntouch_set_f(t, clwc_exec_touch_scan, p, NULL);
+        t = nparser_get_touch(pr, qlkey("searched_item"));
+        ntouch_set_f(t, clwc_exec_touch_item, p, NULL);
+
+        cl_talker_add_context(cl_talker_shared(), data->lsr);
+}
+
+static void clwc_exec_on_removed(struct nexec *p)
+{
+        struct exec_data *data = (struct exec_data *)p->custom_data;
+        cl_listener_clear(data->lsr);
 }
 
 static void __set_state(struct nexec *p, u8 state)
@@ -82,7 +135,7 @@ static void __set_state(struct nexec *p, u8 state)
         struct nview *search_box_view = nparser_get_hash_view(parser, qlkey("search_box_view"));
         struct nview *search_around_view = nparser_get_hash_view(parser, qlkey("search_around_view"));
 
-        struct clwc_exec_data *data = (struct clwc_exec_data *)p->custom_data;
+        struct exec_data *data = (struct exec_data *)p->custom_data;
         switch (state) {
                 case WELCOME_SHOW_SEARCH_IP:
                         nview_clear_all_actions(set_ip_button);
@@ -173,9 +226,9 @@ static void __set_state(struct nexec *p, u8 state)
 /*
  * touch delegates
  */
-void clwc_exec_touch_set_ip(struct nexec *p, struct nview *sender, u8 type)
+static void clwc_exec_touch_set_ip(struct nexec *p, struct nview *sender, u8 type)
 {
-        struct clwc_exec_data *data = (struct clwc_exec_data *)p->custom_data;
+        struct exec_data *data = (struct exec_data *)p->custom_data;
         switch(type) {
                 case NATIVE_UI_TOUCH_BEGAN:
                         nview_clear_all_actions(sender);
@@ -192,9 +245,9 @@ void clwc_exec_touch_set_ip(struct nexec *p, struct nview *sender, u8 type)
         }
 }
 
-void clwc_exec_touch_scan(struct nexec *p, struct nview *sender, u8 type)
+static void clwc_exec_touch_scan(struct nexec *p, struct nview *sender, u8 type)
 {
-        struct clwc_exec_data *data = (struct clwc_exec_data *)p->custom_data;
+        struct exec_data *data = (struct exec_data *)p->custom_data;
         switch(type) {
                 case NATIVE_UI_TOUCH_BEGAN:
                         nview_clear_all_actions(sender);
@@ -206,12 +259,16 @@ void clwc_exec_touch_scan(struct nexec *p, struct nview *sender, u8 type)
                         __set_state(p, WELCOME_SHOW_SEARCH_AROUND);
                         if( ! data->searching_around) {
                                 data->searching_around = 1;
-                                // cl_talker_search_around(cl_talker_get_instance(),
-                                //         (struct checking_client_request_search_around_param){
-                                //                 .lat = 21.0141,
-                                //                 .lon = 105.8499
-                                //         }
-                                // );
+
+                                struct sobj *o = sobj_alloc();
+                                sobj_set_str(o, qskey(&__key_cmd__), qskey(&__cmd_location_search_nearby__));
+
+                                struct sobj *ll = sobj_get_obj(o, qskey(&__key_latlng__), RPL_TYPE);
+                                sobj_set_f64(ll, qskey(&__key_lat__), 21.0141);
+                                sobj_set_f64(ll, qskey(&__key_lon__), 105.8499);
+
+                                cl_talker_send(cl_talker_shared(), sobj_clone(o), __dst_sup);
+                                sobj_free(o);
                         }
                         break;
                 case NATIVE_UI_TOUCH_CANCELLED:
@@ -222,31 +279,33 @@ void clwc_exec_touch_scan(struct nexec *p, struct nview *sender, u8 type)
 
 static void __get_location_info(struct nexec *p, char *host, size_t host_len, int port)
 {
-        // struct nview *view                = nexec_get_view(p);
-        // struct nparser *parser       = nview_get_parser(view);
-        // struct nview *search_box_view     = nparser_get_hash_view(parser, qlkey("search_box_view"));
-        // struct nparser *search_box_view_parser = nview_get_parser(search_box_view);
-        //
-        // struct npref *pref = npref_get(qlkey("pref/data.json"));
-        //
-        // smart_object_set_string(pref->data, qskey(&__key_ip__), host, host_len);
-        // smart_object_set_int(pref->data, qskey(&__key_port__), port);
-        // npref_save(pref);
-        //
-        // struct nview *prevent_touch = nparser_get_hash_view(parser, qlkey("prevent_touch"));
-        // nview_set_user_interaction_enabled(prevent_touch, 1);
-        //
-        // cl_talker_service_get_location_info(cl_talker_get_instance(),
-        //         (struct checking_client_request_service_get_location_info_param){
-        //                 .host = host,
-        //                 .port = port
-        //         }
-        // );
+        struct nview *view                = nexec_get_view(p);
+        struct nparser *parser       = nview_get_parser(view);
+        struct nview *search_box_view     = nparser_get_hash_view(parser, qlkey("search_box_view"));
+        struct nparser *search_box_view_parser = nview_get_parser(search_box_view);
+
+        struct npref *pref = npref_get(qlkey("pref/data.json"));
+
+        sobj_set_str(pref->data, qskey(&__key_ip__), host, host_len);
+        sobj_set_i32(pref->data, qskey(&__key_port__), port);
+        npref_save(pref);
+
+        struct nview *prevent_touch = nparser_get_hash_view(parser, qlkey("prevent_touch"));
+        nview_set_user_interaction_enabled(prevent_touch, 1);
+
+        struct sobj *o = sobj_alloc();
+        sobj_set_str(o, qskey(&__key_cmd__), qskey(&__cmd_service_get_location_info__));
+
+        struct cl_dst dst = __dst_srv;
+        dst.ip = host;
+        dst.port = port;
+
+        cl_talker_send(cl_talker_shared(), o, dst);
 }
 
-void clwc_exec_touch_search_ip(struct nexec *p, struct nview *sender, u8 type)
+static void clwc_exec_touch_search_ip(struct nexec *p, struct nview *sender, u8 type)
 {
-        struct clwc_exec_data *data = (struct clwc_exec_data *)p->custom_data;
+        struct exec_data *data = (struct exec_data *)p->custom_data;
         switch(type) {
                 case NATIVE_UI_TOUCH_ENDED:
                         goto find_ip;
@@ -275,7 +334,7 @@ find_ip:;
 end:;
 }
 
-void clwc_exec_touch_item(struct nexec *p, struct nview *sender, u8 type)
+static void clwc_exec_touch_item(struct nexec *p, struct nview *sender, u8 type)
 {
         switch (type) {
                 case NATIVE_UI_TOUCH_ENDED:
@@ -293,36 +352,59 @@ to_register:;
 /*
  * listen delegates
  */
-void clwc_exec_listen_loc_info(struct nexec *p, struct smart_object *obj)
+static void clwc_exec_listen_loc_info(struct nexec *p, struct sobj *obj)
 {
-        controller_get_view(view, p);
-        view_get_parser(parser, view);
-        parser_hash_view(search_box_view, parser, qlkey("search_box_view"));
-        view_get_parser(search_box_view_parser, search_box_view);
-        parser_hash_view(prevent_touch, parser, qlkey("prevent_touch"));
-        object_get_bool(result, obj, qskey(&__key_result__));
-        nview_set_user_interaction_enabled(prevent_touch, 0);
+        struct nview *v = nexec_get_view(p);
+        struct nparser *pr = nview_get_parser(v);
 
-        if(result) {
-                controller_parse(register_controller,
-                        .file = "res/layout/register/register.xml",
-                        .controller_parent = p->parent,
-                        .controller_dismiss = p,
-                        .view_parent = view->parent
+        struct nview *sbv = nparser_get_hash_view(pr, qlkey("search_box_view"));
+        struct nparser *sbv_pr = nview_get_parser(sbv);
+
+        struct nview *ptc = nparser_get_hash_view(pr, qlkey("prevent_touch"));
+        nview_set_user_interaction_enabled(ptc, 0);
+
+        u8 r = sobj_get_u8(obj, qskey(&__key_result__), RPL_TYPE);
+
+        if(r) {
+                struct nexec *exec = nexec_parse(
+                        (struct nexec_ppr) {
+                                .file = "res/layout/register/register.xml",
+                                .exec_p = p->parent,
+                                //.exec_d = p,
+                                .view_p = v->parent
+                        }
                 );
-                object_get_object(data, obj, qskey(&__key_data__));
-                object_get_string(location_name, data, qskey(&__key_location_name__));
-                register_controller_set_location_name(register_controller, qskey(location_name));
+
+                struct sobj *data = sobj_get_obj(obj, qskey(&__key_data__), RPL_TYPE);
+                struct string *ln = sobj_get_str(data, qskey(&__key_location_name__), RPL_TYPE);
+                clreg_exec_sname(exec, qskey(ln));
+
+                nview_request_layout(v);
+
+                struct nview *regv = nexec_get_view(exec);
+                nview_request_margin(regv, (union vec4){
+                        .left = regv->size.width
+                });
+
+                nview_clear_all_actions(regv);
+                nview_run_action(regv,
+                        naction_sequence(
+                                nview_margin_to(regv, (union vec4){
+                                        .left = 0
+                                }, 0.3, NATIVE_UI_EASE_CUBIC_OUT, 0),
+                                NULL
+                        ),
+                       NULL);
         } else {
                 nview_set_visible(
-                        parser_hash_view(search_box_view_parser, qlkey("notification")),
+                        nparser_get_hash_view(sbv, qlkey("notification")),
                         1);
         }
 }
 
-void clwc_exec_listen_scan(struct nexec *p, struct smart_object *obj)
+static void clwc_exec_listen_scan(struct nexec *p, struct sobj *obj)
 {
-        struct clwc_exec_data *data    = (struct clwc_exec_data *)p->custom_data;
+        struct exec_data *data    = (struct exec_data *)p->custom_data;
         data->searching_around                  = 0;
 
         struct nview *view                = nexec_get_view(p);
@@ -336,11 +418,11 @@ void clwc_exec_listen_scan(struct nexec *p, struct smart_object *obj)
 
         nview_remove_all_children(list);
 
-        struct smart_object *objdata            = smart_object_get_object(obj, qskey(&__key_data__), SMART_GET_REPLACE_IF_WRONG_TYPE);
-        struct smart_array *locations           = smart_object_get_array(objdata, qskey(&__key_locations__), SMART_GET_REPLACE_IF_WRONG_TYPE);
+        struct sobj *objdata            = sobj_get_obj(obj, qskey(&__key_data__), RPL_TYPE);
+        struct sarray *locations           = sobj_get_arr(objdata, qskey(&__key_locations__), RPL_TYPE);
         int i;
         for_i(i, locations->data->len) {
-                struct smart_object *location   = smart_array_get_object(locations, i, SMART_GET_REPLACE_IF_WRONG_TYPE);
+                struct sobj *location   = sarray_get_obj(locations, i, RPL_TYPE);
 
                 struct nparser *location_parser = nparser_alloc();
                 nparser_parse_template(location_parser, search_around_parser, qlkey("item"));
@@ -348,12 +430,12 @@ void clwc_exec_listen_scan(struct nexec *p, struct smart_object *obj)
                 struct nview *location_view = nparser_get_view(location_parser);
                 nview_add_child(list, location_view);
 
-                location_view->user_data        = smart_object_clone(location);
-                location_view->user_data_free   = smart_object_free;
+                location_view->user_data        = sobj_clone(location);
+                location_view->user_data_free   = sobj_free;
 
                 struct nview *location_text = nparser_get_hash_view(location_parser, qlkey("name"));
 
-                struct string *location_name    = smart_object_get_string(location, qskey(&__key_location_name__), SMART_GET_REPLACE_IF_WRONG_TYPE);
+                struct string *location_name    = sobj_get_str(location, qskey(&__key_location_name__), RPL_TYPE);
 
                 nview_set_text(location_text, qskey(location_name));
 

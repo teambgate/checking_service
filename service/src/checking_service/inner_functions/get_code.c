@@ -34,12 +34,12 @@
 
 #define BUFFER_LEN 1024
 
-void checking_service_get_code(struct checking_service *p, struct smart_object *in)
+void checking_service_get_code(struct checking_service *p, struct sobj *in)
 {
         char line[BUFFER_LEN];
 
         #define ADD_INFO(val, log, key) \
-        struct string *val = smart_object_get_string(in, qlkey(key), SMART_GET_REPLACE_IF_WRONG_TYPE); \
+        struct string *val = sobj_get_str(in, qlkey(key), RPL_TYPE); \
         if(val->len == 0) {       \
                 memset(line, 0, BUFFER_LEN);    \
                 app_log(log);   \
@@ -57,13 +57,13 @@ void checking_service_get_code(struct checking_service *p, struct smart_object *
          */
         p->command_flag = 0;
 
-        struct string *version_code = smart_object_get_string(p->config, qlkey("service_version_code"), SMART_GET_REPLACE_IF_WRONG_TYPE);
-        struct string *pass = smart_object_get_string(p->config, qlkey("service_pass"), SMART_GET_REPLACE_IF_WRONG_TYPE);
+        struct string *version_code = sobj_get_str(p->config, qlkey("service_version_code"), RPL_TYPE);
+        struct string *pass = sobj_get_str(p->config, qlkey("service_pass"), RPL_TYPE);
 
-        struct smart_object *data = smart_object_alloc();
-        smart_object_set_string(data, qskey(&__key_version__), qskey(version_code));
-        smart_object_set_string(data, qskey(&__key_cmd__), qskey(&__cmd_local_supporter_get_code__));
-        smart_object_set_string(data, qskey(&__key_pass__),qskey(pass));
+        struct sobj *data = sobj_alloc();
+        sobj_set_str(data, qskey(&__key_version__), qskey(version_code));
+        sobj_set_str(data, qskey(&__key_cmd__), qskey(&__cmd_local_supporter_get_code__));
+        sobj_set_str(data, qskey(&__key_pass__),qskey(pass));
 
         cs_request_alloc_with_param(local_requester, data,
                 (cs_request_callback)checking_service_get_code_callback, p,
@@ -74,9 +74,9 @@ void checking_service_get_code(struct checking_service *p, struct smart_object *
         );
 }
 
-void checking_service_get_code_callback(struct checking_service *p, struct smart_object *recv)
+void checking_service_get_code_callback(struct checking_service *p, struct sobj *recv)
 {
-        struct string *json = smart_object_to_json(recv);
+        struct string *json = sobj_to_json(recv);
         app_log( PRINT_CYN "%s\n\n" PRINT_RESET, json->ptr);
         string_free(json);
 

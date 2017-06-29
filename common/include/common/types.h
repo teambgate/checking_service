@@ -32,11 +32,11 @@ extern "C" {
 /*
  * cs requester
  */
-typedef void(*cs_request_callback)(void*, struct smart_object *);
+typedef void(*cs_request_callback)(void*, struct sobj *);
 
 struct cs_request {
         struct list_head        head;
-        struct smart_object     *data;
+        struct sobj     *data;
 
         struct string           *host;
         u16                     port;
@@ -45,7 +45,7 @@ struct cs_request {
 
 struct cs_response {
         int                     num;
-        struct smart_object     *data;
+        struct sobj     *data;
         struct string           *cmd;
         void                    *ctx;
         cs_request_callback     callback;
@@ -96,7 +96,7 @@ struct cs_requester {
  * cs tcp server
  */
 struct cs_server;
-typedef void(*cs_server_delegate)(struct cs_server *, int fd, u32 mask, struct smart_object *);
+typedef void(*cs_server_delegate)(struct cs_server *, int fd, u32 mask, struct sobj *);
 
 struct cs_client_buffer {
         struct string   *buff;
@@ -117,7 +117,7 @@ struct cs_server_callback_user_data {
         struct cs_server *p;
         int fd;
         u32 mask;
-        struct smart_object *obj;
+        struct sobj *obj;
 };
 
 enum {
@@ -143,7 +143,7 @@ struct cs_server {
         pthread_mutex_t                 client_data_mutex;
         struct map                      *clients_datas;
 
-        struct smart_object             *config;
+        struct sobj             *config;
 
         i32                             timeout;
         i32                             lifetime;

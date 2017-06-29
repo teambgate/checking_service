@@ -28,7 +28,7 @@ extern struct cs_requester *local_requester;
 struct checking_service {
         struct list_head        server;
 
-        struct smart_object     *config;
+        struct sobj     *config;
 
         struct cs_requester     *supervisor_requester;
         struct cs_requester     *es_server_requester;
@@ -40,7 +40,7 @@ struct checking_service {
         pthread_cond_t          command_cond;
 };
 
-extern struct smart_object      *__shared_ram_config__;
+extern struct sobj      *__shared_ram_config__;
 extern pthread_mutex_t          __shared_ram_config_mutex__;
 
 struct local_supporter {

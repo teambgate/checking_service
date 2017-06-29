@@ -81,19 +81,19 @@ void cs_server_handler_free(struct cs_server_handler *p)
 /*
  * callback data
  */
-struct cs_server_callback_user_data *cs_server_callback_user_data_alloc(struct cs_server *p, int fd, u32 mask, struct smart_object *obj)
+struct cs_server_callback_user_data *cs_server_callback_user_data_alloc(struct cs_server *p, int fd, u32 mask, struct sobj *obj)
 {
         struct cs_server_callback_user_data *cud = smalloc(sizeof(struct cs_server_callback_user_data), cs_server_callback_user_data_free);
         cud->p = p;
         cud->fd = fd;
         cud->mask = mask;
-        cud->obj = smart_object_clone(obj);
+        cud->obj = sobj_clone(obj);
         return cud;
 }
 
 void cs_server_callback_user_data_free(struct cs_server_callback_user_data *p)
 {
-        smart_object_free(p->obj);
+        sobj_free(p->obj);
         sfree(p);
 }
 
@@ -286,8 +286,8 @@ receive_full_packet:;
 send_client:;
         int counter = 0;
         debug("cs_server: receive: %s\n", cb->buff->ptr);
-        struct smart_object *obj = smart_object_from_json(cb->buff->ptr, cb->buff->len, &counter);
-        struct string *cmd = smart_object_get_string(obj, qskey(&__key_cmd__), SMART_GET_REPLACE_IF_WRONG_TYPE);
+        struct sobj *obj = sobj_from_json(cb->buff->ptr, cb->buff->len, &counter);
+        struct string *cmd = sobj_get_str(obj, qskey(&__key_cmd__), RPL_TYPE);
         cs_server_delegate *delegate = map_get_pointer(ws->delegates, qskey(cmd));
 
         int force_close = strcmp(cb->buff->ptr, "0") == 0 ? 1 : 0;
@@ -310,7 +310,7 @@ send_client:;
                         __cs_server_push_close(ws, fd);
                 }
         }
-        smart_object_free(obj);
+        sobj_free(obj);
 end:;
 }
 
@@ -616,7 +616,7 @@ void cs_server_free(struct cs_server *p)
         pthread_mutex_destroy(&p->client_data_mutex);
 
         if(p->config) {
-                smart_object_free(p->config);
+                sobj_free(p->config);
         }
 
         sfree(p);

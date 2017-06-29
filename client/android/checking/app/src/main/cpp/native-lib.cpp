@@ -57,9 +57,9 @@ extern "C" {
         ), NULL);
     }
 
-    static void callback(void *p, struct smart_object *data)
+    static void callback(void *p, struct sobj *data)
     {
-        struct string *j = smart_object_to_json(data);
+        struct string *j = sobj_to_json(data);
         debug("native ui : receive : %s\n",j->ptr);
         string_free(j);
     }
@@ -71,34 +71,34 @@ extern "C" {
         debug("native ui init requester : %d\n", ret);
 
         {
-            struct smart_object *obj = smart_object_from_json_file("res/request.json", FILE_INNER);
-            struct string *request = smart_object_get_string(obj, (void*)"request", sizeof("request") - 1, SMART_GET_REPLACE_IF_WRONG_TYPE);
-            struct string *path = smart_object_get_string(obj, (void*)"path", sizeof("path") - 1, SMART_GET_REPLACE_IF_WRONG_TYPE);
-            struct smart_object *objdata = smart_object_get_object(obj, (void*)"data", sizeof("data") - 1, SMART_GET_REPLACE_IF_WRONG_TYPE);
+            struct sobj *obj = sobj_from_json_file("res/request.json", FILE_INNER);
+            struct string *request = sobj_get_str(obj, (void*)"request", sizeof("request") - 1, RPL_TYPE);
+            struct string *path = sobj_get_str(obj, (void*)"path", sizeof("path") - 1, RPL_TYPE);
+            struct sobj *objdata = sobj_get_obj(obj, (void*)"data", sizeof("data") - 1, RPL_TYPE);
 
-            struct smart_object *data = smart_object_alloc();
-            smart_object_set_string(data, qskey(&__key_version__), qlkey("1"));
+            struct sobj *data = sobj_alloc();
+            sobj_set_str(data, qskey(&__key_version__), qlkey("1"));
 
             if(strcmp(request->ptr, "post") == 0) {
-                smart_object_set_string(data, qskey(&__key_cmd__), qskey(&__cmd_post__));
+                sobj_set_str(data, qskey(&__key_cmd__), qskey(&__cmd_post__));
             } else if(strcmp(request->ptr, "get") == 0) {
-                smart_object_set_string(data, qskey(&__key_cmd__), qskey(&__cmd_get__));
+                sobj_set_str(data, qskey(&__key_cmd__), qskey(&__cmd_get__));
             } else if(strcmp(request->ptr, "put") == 0) {
-                smart_object_set_string(data, qskey(&__key_cmd__), qskey(&__cmd_put__));
+                sobj_set_str(data, qskey(&__key_cmd__), qskey(&__cmd_put__));
             }
 
 
-            smart_object_set_string(data, qskey(&__key_pass__), qlkey("123456"));
+            sobj_set_str(data, qskey(&__key_pass__), qlkey("123456"));
 
-            smart_object_set_string(data, qskey(&__key_path__), qskey(path));
+            sobj_set_str(data, qskey(&__key_path__), qskey(path));
 
-            struct string *json = smart_object_to_json(objdata);
+            struct string *json = sobj_to_json(objdata);
             int counter = 0;
-            struct smart_object *d = smart_object_from_json(json->ptr, json->len, &counter);
+            struct sobj *d = sobj_from_json(json->ptr, json->len, &counter);
             string_free(json);
-            // struct smart_object *obj = smart_object_alloc();
-            // smart_object_set_string(obj, qskey(&__key_name__), qlkey("Johan"));
-            smart_object_set_object(data, qskey(&__key_data__), d);
+            // struct sobj *obj = sobj_alloc();
+            // sobj_set_str(obj, qskey(&__key_name__), qlkey("Johan"));
+            sobj_set_obj(data, qskey(&__key_data__), d);
             cs_request_alloc_with_param(p, data, callback, p, (struct cs_request_param){
                     .timeout = 20
             });
@@ -126,7 +126,7 @@ Java_com_example_apple_myapplication_MainActivity_initNativeJNI(
 /*
      * register view controller allocator
      */
-    nexec_set_fnf(checking_client_nexec_alloc);
+    nexec_set_fnf(cl_nexec_alloc);
 
     /*
      * create root

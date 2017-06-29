@@ -94,11 +94,8 @@ public class MainActivity extends AppCompatActivity {
     Runnable mStatusChecker = new Runnable() {
         @Override
         public void run() {
-            try {
-                if(resized) onLoopJNI();
-            } finally {
-                mHandler.postDelayed(mStatusChecker, mInterval);
-            }
+            if(resized) onLoopJNI();
+            mHandler.postDelayed(mStatusChecker, mInterval);
         }
     };
 

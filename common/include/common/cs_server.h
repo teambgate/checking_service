@@ -27,7 +27,7 @@ struct cs_server_handler *cs_server_handler_alloc(cs_server_handler_delegate del
 
 void cs_server_handler_free(struct cs_server_handler *p);
 
-struct cs_server_callback_user_data *cs_server_callback_user_data_alloc(struct cs_server *p, int fd, u32 mask, struct smart_object *obj);
+struct cs_server_callback_user_data *cs_server_callback_user_data_alloc(struct cs_server *p, int fd, u32 mask, struct sobj *obj);
 
 void cs_server_callback_user_data_free(struct cs_server_callback_user_data *p);
 

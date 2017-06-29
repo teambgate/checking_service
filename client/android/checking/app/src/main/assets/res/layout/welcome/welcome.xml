@@ -2,7 +2,7 @@
 <touch key="search_around"/>
 <touch key="search_ip"/>
 <touch key="searched_item"/>
-<controller name="clwc_exec"/>
+<controller name="welcome_controller"/>
 <view width="match_parent" height="match_parent" type="relative" align="center">
     <image src="res/images/paris_france_eiffel_tower_9662_750x1334.jpg" width="750" height="1334" width="match_parent" height="wrap_content" align="center"/>
     <view width="match_parent" height="match_parent" color="#ffffff" alpha="0.75" align="center"/>

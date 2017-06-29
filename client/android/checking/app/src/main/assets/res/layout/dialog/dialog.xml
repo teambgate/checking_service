@@ -2,7 +2,7 @@
 <controller name="dialog_controller"/>
 <view width="300" height="wrap_content" type="vertical" color="#ffffff" round="4">
     <label align="center" text_color="#000000" width="260" margin_top="10" margin_bottom="10" height="10" font="Arial"
-        font_size="16" text_align="center" multiline="true">Hiển thị thông báo Hiển thị thông báo Hiển thị thông báo Hiển thị thông báo Hiển thị thông báo Hiển thị thông báo Hiển thị thông báo Hiển thị thông báo Hiển thị thông báo Hiển thị thông báo Hiển thị thông báo Hiển thị thông báo Hiển thị thông báo </label>
+        font_size="16" text_align="center" multiline="true" hash="content">Hiển thị thông báo</label>
     <view width="match_parent" height="50" type="relative" align="center" touch="true" touch_delegate="exit">
         <view width="match_parent" height="0.5" color="#ECF0F1" align="top|center"/>
         <label align="center" text_color="#000000" width="match_parent" height="10" font="Arial"

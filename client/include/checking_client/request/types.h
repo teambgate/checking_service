@@ -20,7 +20,7 @@ extern "C" {
 
 #include <checking_client/types.h>
 
-typedef void(*cl_listener_delegate)(void *, struct smart_object *);
+typedef void(*cl_listener_delegate)(void *, struct sobj *);
 
 struct cl_listener {
         pthread_mutex_t         *lock;
@@ -31,7 +31,7 @@ struct cl_listener {
 
 struct cl_response {
         struct list_head        head;
-        struct smart_object     *data;
+        struct sobj     *data;
 };
 
 /*
@@ -60,7 +60,7 @@ extern struct cl_dst __dst_sup;
 
 struct cl_talker {
         struct cs_requester     *requester;
-        struct smart_object     *config;
+        struct sobj     *config;
 
         struct list_head        task;
         struct list_head        listeners;

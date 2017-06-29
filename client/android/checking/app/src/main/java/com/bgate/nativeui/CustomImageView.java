@@ -2,6 +2,7 @@ package com.bgate.nativeui;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.support.v4.view.ViewCompat;
 import android.view.MotionEvent;
 import android.widget.AbsoluteLayout;
 import android.widget.ImageView;
@@ -54,6 +55,7 @@ public class CustomImageView extends CustomSharedView {
         public InnerImageView(Context context) {
 
             super(context);
+//            ViewCompat.setLayerType(this, ViewCompat.LAYER_TYPE_HARDWARE, null);
         }
 
         @Override
@@ -62,21 +64,16 @@ public class CustomImageView extends CustomSharedView {
                 float d  = getContext().getResources().getDisplayMetrics().density;
                 switch (event.getAction()) {
                     case MotionEvent.ACTION_DOWN:
-                        if(__current_touch_native_ptr__ == 0) {
-                            __current_touch_native_ptr__ = native_ptr;
-                            CustomFunction.touchBeganJNI(__current_touch_native_ptr__, 0, event.getX() / d, event.getY() / d);
-                        }
+                        CustomFunction.touchBeganJNI(native_ptr, 0, event.getX() / d, event.getY() / d);
                         break;
                     case MotionEvent.ACTION_MOVE:
-                        CustomFunction.touchMovedJNI(__current_touch_native_ptr__, 0, event.getX() / d, event.getY() / d);
+                        CustomFunction.touchMovedJNI(native_ptr, 0, event.getX() / d, event.getY() / d);
                         break;
                     case MotionEvent.ACTION_UP:
-                        CustomFunction.touchEndedJNI(__current_touch_native_ptr__, 0, event.getX() / d, event.getY() / d);
-                        __current_touch_native_ptr__ = 0;
+                        CustomFunction.touchEndedJNI(native_ptr, 0, event.getX() / d, event.getY() / d);
                         break;
                     case MotionEvent.ACTION_CANCEL:
-                        CustomFunction.touchCancelledJNI(__current_touch_native_ptr__, 0, event.getX() / d, event.getY() / d);
-                        __current_touch_native_ptr__ = 0;
+                        CustomFunction.touchCancelledJNI(native_ptr, 0, event.getX() / d, event.getY() / d);
                         break;
                     default:
                         break;

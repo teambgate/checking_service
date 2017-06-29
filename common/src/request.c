@@ -42,72 +42,72 @@
 
 #define DEFAULT_TIMEOUT 10
 
-static struct smart_object *__build_request_data(struct smart_object *obj,
+static struct sobj *__build_request_data(struct sobj *obj,
         char *version, size_t version_len,
         char *pass, size_t pass_len)
 {
         /*
          * get map command, path, data
          */
-        struct string *request = smart_object_get_string(obj, qlkey("request"), SMART_GET_REPLACE_IF_WRONG_TYPE);
-        struct string *path = smart_object_get_string(obj, qlkey("path"), SMART_GET_REPLACE_IF_WRONG_TYPE);
-        struct smart_object *objdata = smart_object_get_object(obj, qlkey("data"), SMART_GET_REPLACE_IF_WRONG_TYPE);
+        struct string *request = sobj_get_str(obj, qlkey("request"), RPL_TYPE);
+        struct string *path = sobj_get_str(obj, qlkey("path"), RPL_TYPE);
+        struct sobj *objdata = sobj_get_obj(obj, qlkey("data"), RPL_TYPE);
         /*
          * create request
          */
-        struct smart_object *data = smart_object_alloc();
-        smart_object_set_string(data, qskey(&__key_version__), version, version_len);
+        struct sobj *data = sobj_alloc();
+        sobj_set_str(data, qskey(&__key_version__), version, version_len);
         if(strcmp(request->ptr, "post") == 0) {
-                smart_object_set_string(data, qskey(&__key_cmd__), qskey(&__cmd_post__));
+                sobj_set_str(data, qskey(&__key_cmd__), qskey(&__cmd_post__));
         } else if(strcmp(request->ptr, "get") == 0) {
-                smart_object_set_string(data, qskey(&__key_cmd__), qskey(&__cmd_get__));
+                sobj_set_str(data, qskey(&__key_cmd__), qskey(&__cmd_get__));
         } else if(strcmp(request->ptr, "put") == 0) {
-                smart_object_set_string(data, qskey(&__key_cmd__), qskey(&__cmd_put__));
+                sobj_set_str(data, qskey(&__key_cmd__), qskey(&__cmd_put__));
         } else if(strcmp(request->ptr, "delete") == 0) {
-                smart_object_set_string(data, qskey(&__key_cmd__), qskey(&__cmd_delete__));
+                sobj_set_str(data, qskey(&__key_cmd__), qskey(&__cmd_delete__));
         }
-        smart_object_set_string(data, qskey(&__key_pass__), pass, pass_len);
-        smart_object_set_string(data, qskey(&__key_path__), qskey(path));
+        sobj_set_str(data, qskey(&__key_pass__), pass, pass_len);
+        sobj_set_str(data, qskey(&__key_path__), qskey(path));
         /*
          * set data
          */
-        struct string *json = smart_object_to_json(objdata);
+        struct string *json = sobj_to_json(objdata);
         int counter = 0;
-        struct smart_object *d = smart_object_from_json(json->ptr, json->len, &counter);
+        struct sobj *d = sobj_from_json(json->ptr, json->len, &counter);
         string_free(json);
-        smart_object_set_object(data, qskey(&__key_data__), d);
+        sobj_set_obj(data, qskey(&__key_data__), d);
 
         return data;
 }
 
-struct smart_object *cs_request_data_from_string(char *content, size_t len,
+struct sobj *cs_request_data_from_string(char *content, size_t len,
         char *version, size_t version_len,
         char *pass, size_t pass_len)
 {
         int counter = 0;
-        struct smart_object *obj = smart_object_from_json(content, len, &counter);
+        struct sobj *obj = sobj_from_json(content, len, &counter);
 
-        struct smart_object *data = __build_request_data(obj, version, version_len,
+        struct sobj *data = __build_request_data(obj, version, version_len,
                 pass, pass_len);
 
-        smart_object_free(obj);
+        sobj_free(obj);
 
         return data;
 }
 
-struct smart_object *cs_request_data_from_file(char *file, int file_type,
+struct sobj *cs_request_data_from_file(char *file, int file_type,
         char *version, size_t version_len,
         char *pass, size_t pass_len)
 {
         /*
          * read map data
          */
-        struct smart_object *obj = smart_object_from_json_file(file, file_type);
+        struct sobj *obj = sobj_from_json_file(file, file_type);
 
-        struct smart_object *data = __build_request_data(obj, version, version_len,
+        struct sobj *data = __build_request_data(obj, version, version_len,
                 pass, pass_len);
 
-        smart_object_free(obj);
+        sobj_free(obj);
 
         return data;
 }
@@ -120,7 +120,7 @@ struct string *cs_request_string_from_file(char *file, int file_type)
 static void __cs_response_free(struct cs_response *p)
 {
         if(p->data) {
-                smart_object_free(p->data);
+                sobj_free(p->data);
         }
         sfree(p);
 }
@@ -137,7 +137,7 @@ static struct cs_response *__cs_response_alloc(cs_request_callback callback, voi
 /*
  * cs request
  */
-struct cs_request *cs_request_alloc(struct cs_requester *p, struct smart_object *data, cs_request_callback callback, void *ctx)
+struct cs_request *cs_request_alloc(struct cs_requester *p, struct sobj *data, cs_request_callback callback, void *ctx)
 {
         pthread_mutex_lock(&p->run_mutex);
 
@@ -149,13 +149,13 @@ struct cs_request *cs_request_alloc(struct cs_requester *p, struct smart_object 
 
         struct smart_number num;
         num._generic_integer    = p->total++;
-        smart_object_set(r->data, qskey(&__key_request_id__), SMART_LONG, qpkey(num));
+        sobj_set(r->data, qskey(&__key_request_id__), SMART_LONG, qpkey(num));
 
         list_add_tail(&r->head, &p->list);
 
         struct cs_response *res = __cs_response_alloc(callback, ctx);
         res->num = num._int;
-        struct string *cmd      = smart_object_get_string(data, qskey(&__key_cmd__), SMART_GET_REPLACE_IF_WRONG_TYPE);
+        struct string *cmd      = sobj_get_str(data, qskey(&__key_cmd__), RPL_TYPE);
         res->cmd = string_alloc_chars(qskey(cmd));
 
         pthread_mutex_lock(&p->wait_lock);
@@ -168,7 +168,7 @@ struct cs_request *cs_request_alloc(struct cs_requester *p, struct smart_object 
         return r;
 }
 
-struct cs_request *cs_request_alloc_with_host(struct cs_requester *p, struct smart_object *data,
+struct cs_request *cs_request_alloc_with_host(struct cs_requester *p, struct sobj *data,
         cs_request_callback callback, void *ctx, char *host, size_t host_len, u16 port)
 {
         pthread_mutex_lock(&p->run_mutex);
@@ -181,13 +181,13 @@ struct cs_request *cs_request_alloc_with_host(struct cs_requester *p, struct sma
 
         struct smart_number num;
         num._generic_integer    = p->total++;
-        smart_object_set(r->data, qskey(&__key_request_id__), SMART_LONG, qpkey(num));
+        sobj_set(r->data, qskey(&__key_request_id__), SMART_LONG, qpkey(num));
 
         list_add_tail(&r->head, &p->list);
 
         struct cs_response *res = __cs_response_alloc(callback, ctx);
         res->num = num._int;
-        struct string *cmd      = smart_object_get_string(data, qskey(&__key_cmd__), SMART_GET_REPLACE_IF_WRONG_TYPE);
+        struct string *cmd      = sobj_get_str(data, qskey(&__key_cmd__), RPL_TYPE);
         res->cmd = string_alloc_chars(qskey(cmd));
 
         pthread_mutex_lock(&p->wait_lock);
@@ -200,7 +200,7 @@ struct cs_request *cs_request_alloc_with_host(struct cs_requester *p, struct sma
         return r;
 }
 
-struct cs_request *cs_request_alloc_with_param(struct cs_requester *p, struct smart_object *data,
+struct cs_request *cs_request_alloc_with_param(struct cs_requester *p, struct sobj *data,
         cs_request_callback callback, void *ctx, struct cs_request_param param)
 {
         pthread_mutex_lock(&p->run_mutex);
@@ -215,13 +215,13 @@ struct cs_request *cs_request_alloc_with_param(struct cs_requester *p, struct sm
 
         struct smart_number num;
         num._generic_integer    = p->total++;
-        smart_object_set(r->data, qskey(&__key_request_id__), SMART_LONG, qpkey(num));
+        sobj_set(r->data, qskey(&__key_request_id__), SMART_LONG, qpkey(num));
 
         list_add_tail(&r->head, &p->list);
 
         struct cs_response *res = __cs_response_alloc(callback, ctx);
         res->num = num._int;
-        struct string *cmd      = smart_object_get_string(data, qskey(&__key_cmd__), SMART_GET_REPLACE_IF_WRONG_TYPE);
+        struct string *cmd      = sobj_get_str(data, qskey(&__key_cmd__), RPL_TYPE);
         res->cmd = string_alloc_chars(qskey(cmd));
 
         pthread_mutex_lock(&p->wait_lock);
@@ -237,7 +237,7 @@ struct cs_request *cs_request_alloc_with_param(struct cs_requester *p, struct sm
 void cs_request_free(struct cs_request *p)
 {
         list_del(&p->head);
-        if(p->data) smart_object_free(p->data);
+        if(p->data) sobj_free(p->data);
         string_free(p->host);
         sfree(p);
 }
@@ -275,19 +275,19 @@ static int __try_write(struct cs_requester *p, char *msg, size_t slen)
 
 static void __response_timeout_by_id(struct cs_requester *p, i64 rid)
 {
-        struct smart_object *data = smart_object_alloc();
-        smart_object_set_long(data, qskey(&__key_request_id__), rid);
-        smart_object_set_bool(data, qskey(&__key_result__), 0);
-        smart_object_set_string(data, qskey(&__key_message__), qlkey("timeout"));
-        smart_object_set_long(data, qskey(&__key_error__), ERROR_TIMEOUT);
+        struct sobj *data = sobj_alloc();
+        sobj_set_i64(data, qskey(&__key_request_id__), rid);
+        sobj_set_u8(data, qskey(&__key_result__), 0);
+        sobj_set_str(data, qskey(&__key_message__), qlkey("timeout"));
+        sobj_set_i64(data, qskey(&__key_error__), ERROR_TIMEOUT);
 
-        struct smart_data *id     = map_get(data->data, struct smart_data *, qskey(&__key_request_id__));
+        struct sdata *id     = map_get(data->data, struct sdata *, qskey(&__key_request_id__));
         pthread_mutex_lock(&p->wait_lock);
         struct cs_response *res = map_get(p->waits, struct cs_response *, qpkey(id->_number));
         if(res) {
                 map_remove_key(p->waits, qpkey(id->_number));
                 res->data       = data;
-                smart_object_set_string(data, qskey(&__key_cmd__), qskey(res->cmd));
+                sobj_set_str(data, qskey(&__key_cmd__), qskey(res->cmd));
         }
         pthread_mutex_unlock(&p->wait_lock);
         if(res) {
@@ -298,7 +298,7 @@ static void __response_timeout_by_id(struct cs_requester *p, i64 rid)
 
 static void __response_timeout(struct cs_requester *p, struct cs_request *r)
 {
-        __response_timeout_by_id(p, smart_object_get_long(r->data, qskey(&__key_request_id__), SMART_GET_REPLACE_IF_WRONG_TYPE));
+        __response_timeout_by_id(p, sobj_get_i64(r->data, qskey(&__key_request_id__), RPL_TYPE));
 }
 
 
@@ -338,8 +338,8 @@ get_head:;
         pthread_mutex_lock(&p->read_mutex);
         struct cs_request *r    = (struct cs_request *)
                 ((char *)head - offsetof(struct cs_request, head));
-        struct string *d        = smart_object_to_json(r->data);
-        p->current_request_id   = map_get(r->data->data, struct smart_data *, qskey(&__key_request_id__))->_number;
+        struct string *d        = sobj_to_json(r->data);
+        p->current_request_id   = map_get(r->data->data, struct sdata *, qskey(&__key_request_id__))->_number;
 
         while(!cs_requester_reconnect(p, r->host->ptr, r->host->len,
                         r->port, r->timeout <= 0 ? DEFAULT_TIMEOUT : r->timeout)) {
@@ -503,14 +503,14 @@ receive_full_packet:;
         msg_len -= amount;
 
         int counter     = 0;
-        struct smart_object *data = smart_object_from_json(p->buff->ptr, p->buff->len, &counter);
-        struct smart_data *id     = map_get(data->data, struct smart_data *, qskey(&__key_request_id__));
+        struct sobj *data = sobj_from_json(p->buff->ptr, p->buff->len, &counter);
+        struct sdata *id     = map_get(data->data, struct sdata *, qskey(&__key_request_id__));
         pthread_mutex_lock(&p->wait_lock);
         struct cs_response *res = map_get(p->waits, struct cs_response *, qpkey(id->_number));
         if(res) {
                 map_remove_key(p->waits, qpkey(id->_number));
                 res->data       = data;
-                smart_object_set_string(data, qskey(&__key_cmd__), qskey(res->cmd));
+                sobj_set_str(data, qskey(&__key_cmd__), qskey(res->cmd));
         }
         pthread_mutex_unlock(&p->wait_lock);
         if(res) {
