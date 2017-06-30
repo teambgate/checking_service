@@ -15,6 +15,7 @@ import android.view.WindowManager;
 import android.widget.AbsoluteLayout;
 import android.widget.TextView;
 
+import com.bgate.nativeui.CustomFunction;
 import com.bgate.nativeui.CustomView;
 
 public class MainActivity extends AppCompatActivity {
@@ -66,6 +67,7 @@ public class MainActivity extends AppCompatActivity {
                 float d   = getResources().getDisplayMetrics().density;
                 onResizeJNI((int)(root.getWidth() / d), (int)(root.getHeight() / d));
                 resized = true;
+                CustomFunction.resized = true;
             }
         });
     }

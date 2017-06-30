@@ -7,6 +7,7 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.support.v4.view.MotionEventCompat;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.view.ViewConfigurationCompat;
 import android.view.MotionEvent;
@@ -32,7 +33,6 @@ public class CustomSharedView extends AbsoluteLayout{
 
     private Path path = new Path();
     private RectF rect = new RectF();
-//    Paint paint = new Paint();
 
     public CustomSharedView(long ptr, Context context) {
         super(context);
@@ -47,7 +47,6 @@ public class CustomSharedView extends AbsoluteLayout{
         pos_x = 0;
         pos_y = 0;
         r1 = r2 = r3 = r4 = 0;
-        //ViewCompat.setLayerType(this, ViewCompat.LAYER_TYPE_HARDWARE, null);
     }
 
     protected void onChangeCanTouch()
@@ -110,24 +109,29 @@ public class CustomSharedView extends AbsoluteLayout{
     public boolean onTouchEvent(MotionEvent event) {
         boolean result = false;
         if(can_touch == 1) {
-            float d  = getContext().getResources().getDisplayMetrics().density;
+            AbsoluteLayout.LayoutParams params = (AbsoluteLayout.LayoutParams) getLayoutParams();
+            int[] location = new int[2];
+            getLocationOnScreen(location);
+            float screenX = event.getRawX();
+            float screenY = event.getRawY() - 25;
+            float viewX = screenX - location[0];
+            float viewY = screenY - location[1] + 25;
 
+            float d  = getContext().getResources().getDisplayMetrics().density;
             switch (event.getActionMasked()) {
                 case MotionEvent.ACTION_DOWN:
-                    result = CustomFunction.touchBeganJNI(native_ptr, 0, event.getX() / d, event.getY() / d) == 1;
+                    result = CustomFunction.touchBeganJNI(native_ptr, 0, viewX / d, viewY / d, screenX / d, screenY/d) == 1;
                     break;
                 case MotionEvent.ACTION_MOVE:
-                    CustomFunction.touchMovedJNI(native_ptr, 0,
-                            event.getX() / d,
-                            event.getY() / d);
+                    CustomFunction.touchMovedJNI(native_ptr, 0, viewX / d, viewY / d, screenX / d, screenY/d);
                     result = true;
                     break;
                 case MotionEvent.ACTION_UP:
-                    CustomFunction.touchEndedJNI(native_ptr, 0, event.getX() / d, event.getY() / d);
+                    CustomFunction.touchEndedJNI(native_ptr, 0, viewX / d, viewY / d, screenX / d, screenY/d);
                     result = true;
                     break;
                 case MotionEvent.ACTION_CANCEL:
-                    CustomFunction.touchCancelledJNI(native_ptr, 0, event.getX() / d, event.getY() / d);
+                    CustomFunction.touchCancelledJNI(native_ptr, 0,viewX / d, viewY / d, screenX / d, screenY/d);
                     result = true;
                     break;
                 default:

@@ -26,6 +26,8 @@ import java.util.HashMap;
 
 public class CustomFunction {
 
+    public static boolean resized = false;
+
     static HashMap<String, Bitmap> bitmap_cache = new HashMap<String, Bitmap>();
 
     public static void setBitmap(CustomImageView view, String path)
@@ -121,20 +123,12 @@ public class CustomFunction {
 
     public static void setPosition(CustomSharedView view, float x, float y)
     {
-//        float d                             = view.getContext().getResources().getDisplayMetrics().density;
-//        AbsoluteLayout.LayoutParams params = (AbsoluteLayout.LayoutParams) view.getLayoutParams();
-//        params.x = (int) (x * d - params.width / 2);
-//        params.y = (int) (y * d - params.height / 2);
-//
-//        view.requestLayout();
-
         float d                             = view.getContext().getResources().getDisplayMetrics().density;
         AbsoluteLayout.LayoutParams params = (AbsoluteLayout.LayoutParams) view.getLayoutParams();
         view.pos_x = (int) (x * d );
         view.pos_y = (int) (y * d );
         params.x = (int) (view.pos_x - params.width * view.anchor_x);
         params.y = (int) (view.pos_y - params.height * view.anchor_y);
-
         requestView(view);
     }
 
@@ -144,12 +138,18 @@ public class CustomFunction {
         width += 0.35 * d;
         height += 0.35 * d;
         AbsoluteLayout.LayoutParams params  = (AbsoluteLayout.LayoutParams) view.getLayoutParams();
-        params.width                        = (int)(width * d);
-        params.height                       = (int)(height * d);
-        params.x                            = (int)(view.pos_x - params.width * view.anchor_x);
-        params.y                            = (int)(view.pos_y - params.height * view.anchor_y);
-        view.onChangeSize(params.width, params.height);
-        requestView(view);
+        int w                      = (int)(width * d);
+        int h                       = (int)(height * d);
+        if(w != params.width || h != params.height) {
+            params.width                        = w;
+            params.height                       = h;
+            params.x                            = (int)(view.pos_x - params.width * view.anchor_x);
+            params.y                            = (int)(view.pos_y - params.height * view.anchor_y);
+            view.onChangeSize(params.width, params.height);
+            requestView(view);
+        } else {
+
+        }
     }
 
     public static void setRotation(CustomSharedView view, float rotateX, float rotateY, float rotateZ)
@@ -170,7 +170,6 @@ public class CustomFunction {
         AbsoluteLayout.LayoutParams params  = (AbsoluteLayout.LayoutParams) view.getLayoutParams();
         params.x                            = (int)(view.pos_x - params.width * view.anchor_x);
         params.y                            = (int)(view.pos_y - params.height * view.anchor_y);
-
         requestView(view);
     }
 
@@ -278,10 +277,10 @@ public class CustomFunction {
         view.dirty = true;
     }
 
-    public static native int touchBeganJNI(long ptr, int index, float x, float y);
-    public static native void touchMovedJNI(long ptr, int index, float x, float y);
-    public static native void touchEndedJNI(long ptr, int index, float x, float y);
-    public static native void touchCancelledJNI(long ptr, int index, float x, float y);
+    public static native int touchBeganJNI(long ptr, int index, float x, float y, float sx, float sy);
+    public static native void touchMovedJNI(long ptr, int index, float x, float y, float sx, float sy);
+    public static native void touchEndedJNI(long ptr, int index, float x, float y, float sx, float sy);
+    public static native void touchCancelledJNI(long ptr, int index, float x, float y, float sx, float sy);
     public static native void textDoneJNI(long ptr);
 
     public static native void viewResizeJNI(long ptr, float width, float height);

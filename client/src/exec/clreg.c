@@ -37,6 +37,8 @@ static void clreg_exec_touch_hover(struct nexec *p, struct nview *s, u8 t);
 
 struct exec_data {
         struct cl_listener      *lsr;
+        union vec2              d;
+        float                   x;
         struct map              *cmds;
 };
 
@@ -100,15 +102,35 @@ static void clreg_exec_on_removed(struct nexec *p)
 
 static void clreg_exec_touch_hover(struct nexec *p, struct nview *s, u8 t)
 {
+        struct exec_data *data = (struct exec_data *)p->custom_data;
+
         switch (t) {
+                case NATIVE_UI_TOUCH_BEGAN:
+                        data->x = 0;
+                        break;
                 case NATIVE_UI_TOUCH_MOVED:
                 case NATIVE_UI_TOUCH_ENDED:
                 {
+                        data->x += s->touch_offset.x;
+
+                        // if(fabsf(s->touch_offset.x) < 12 && fabsf(data->x) < 8) break;
+
                         struct nparser *pr = nview_get_parser(s);
                         struct nview *m = nparser_get_hash_view(pr, qlkey("content"));
                         nview_request_margin(m, (union vec4){
                                 .left = m->align->margin.left + s->touch_offset.x
                         });
+
+                        // nview_run_action(m,
+                        //         naction_sequence(
+                        //                 nview_margin_by(m, (union vec4){
+                        //                         .left = s->touch_offset.x
+                        //                 }, 0.05, NATIVE_UI_EASE_LINEAR, 0),
+                        //                 NULL
+                        //         ),
+                        //        NULL);
+                        //
+                        // data->x = 0;
                 }
                         break;
                 default:
