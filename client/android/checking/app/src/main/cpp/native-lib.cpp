@@ -149,6 +149,54 @@ Java_com_example_apple_myapplication_MainActivity_initNativeJNI(
     return root->ptr;
 }
 
+extern "C" {
+    static nview *__search_touch_view(struct nview *p, float sx, float sy)
+    {
+        struct nview *ret = NULL;
+        struct list_head *head;
+        list_back_each(head, &p->children) {
+            struct nview *c = (struct nview *)
+                    ((char *)head - offsetof(struct nview, head));
+
+            ret = __search_touch_view(c, sx, sy);
+            if(ret) break;
+        }
+        if(ret) return ret;
+
+        union vec2 tl = nview_get_screen_pos(p, (union vec2){0, 0});
+        union vec2 pt = vec2_sub((union vec2){sx, sy}, tl);
+
+        if(pt.x >= 0 && pt.x <= p->size.width
+           && pt.y >= 0 && pt.y <= p->size.height
+                && p->user_interaction_enabled) {
+            struct nview *v = p;
+            ret = p;
+            while(v) {
+                if( ! v->visible) {
+                    ret = NULL;
+                    break;
+                }
+                v = v->parent;
+            }
+        }
+
+        return ret;
+    }
+}
+
+extern "C"
+JNIEXPORT jobject JNICALL
+Java_com_bgate_nativeui_CustomSharedView_searchTouchViewJNI(
+        JNIEnv *env,
+        jobject /* this */,
+        float sx, float sy) {
+
+    struct nview *p = __search_touch_view(root, sx, sy);
+    if(p) return p->ptr;
+
+    return NULL;
+}
+
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_example_apple_myapplication_MainActivity_onResizeJNI(

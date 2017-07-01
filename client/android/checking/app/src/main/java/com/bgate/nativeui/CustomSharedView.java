@@ -23,6 +23,8 @@ import com.example.apple.myapplication.R;
 
 public class CustomSharedView extends AbsoluteLayout{
 
+    public View touch_view = null;
+    public boolean view_to_dispatch = false;
     public int  can_touch;
     public long native_ptr;
     public boolean clip;
@@ -105,25 +107,102 @@ public class CustomSharedView extends AbsoluteLayout{
         dirty = false;
     }
 
-    @Override
-    public boolean onTouchEvent(MotionEvent event) {
+    public static native Object searchTouchViewJNI(float sx, float sy);
+
+
+    public boolean view_touch_dispatch(MotionEvent event)
+    {
+        boolean result = true;
+
+        if(touch_view != null) {
+            touch_view.onTouchEvent(event);
+
+            switch (event.getActionMasked()) {
+                case MotionEvent.ACTION_UP:
+                case MotionEvent.ACTION_CANCEL:
+                    System.out.println("test dispatch null");
+                    touch_view = null;
+                    break;
+                default:
+                    break;
+            }
+
+        } else {
+            switch (event.getActionMasked()) {
+                case MotionEvent.ACTION_DOWN:
+                {
+                    float d  = getContext().getResources().getDisplayMetrics().density;
+                    float screenX = event.getRawX();
+                    float screenY = event.getRawY() - 25;
+                    CustomSharedView v = (CustomSharedView) searchTouchViewJNI(screenX / d, screenY / d);
+                    System.out.println("test dispatch size : " + getWidth() + ", " + getHeight());
+                    if(v != null) {
+                        if(v instanceof  CustomImageView) {
+                            System.out.println("test dispatch has image view");
+                            touch_view = ((CustomImageView)v).content;
+                        } else if(v instanceof  CustomLabel) {
+                            System.out.println("test dispatch has label view");
+                            touch_view = ((CustomLabel)v).content;
+                        } else if(v instanceof  CustomTextField) {
+                            System.out.println("test dispatch has textfield view");
+                            touch_view = ((CustomTextField)v).content;
+                            touch_view.requestFocus();
+                        } else if(v instanceof  CustomTextView) {
+                            System.out.println("test dispatch has textview view");
+                            touch_view = ((CustomTextView)v).content;
+                            touch_view.requestFocus();
+                        } else {
+                            System.out.println("test dispatch has view");
+                            touch_view = v;
+                        }
+
+                        touch_view.onTouchEvent(event);
+                    }
+                }
+                    break;
+                case MotionEvent.ACTION_MOVE:
+                    result = true;
+                    break;
+                case MotionEvent.ACTION_UP:
+                    touch_view = null;
+                    result = true;
+                    break;
+                case MotionEvent.ACTION_CANCEL:
+                    touch_view = null;
+                    result = true;
+                    break;
+                default:
+                    break;
+            }
+
+        }
+
+        return result;
+    }
+
+    public boolean view_touch_used(MotionEvent event)
+    {
         boolean result = false;
         if(can_touch == 1) {
             AbsoluteLayout.LayoutParams params = (AbsoluteLayout.LayoutParams) getLayoutParams();
-            int[] location = new int[2];
-            getLocationOnScreen(location);
+//            int[] location = new int[2];
+//            getLocationOnScreen(location);
             float screenX = event.getRawX();
             float screenY = event.getRawY() - 25;
-            float viewX = screenX - location[0];
-            float viewY = screenY - location[1] + 25;
+//            float viewX = screenX - location[0];
+//            float viewY = screenY - location[1] + 25;
+            float viewX = event.getX();
+            float viewY = event.getY();
 
             float d  = getContext().getResources().getDisplayMetrics().density;
             switch (event.getActionMasked()) {
                 case MotionEvent.ACTION_DOWN:
                     result = CustomFunction.touchBeganJNI(native_ptr, 0, viewX / d, viewY / d, screenX / d, screenY/d) == 1;
+                    System.out.println("test dispatch view " + result);
                     break;
                 case MotionEvent.ACTION_MOVE:
                     CustomFunction.touchMovedJNI(native_ptr, 0, viewX / d, viewY / d, screenX / d, screenY/d);
+                    System.out.println("test dispatch view " + viewX + ", " + viewY);
                     result = true;
                     break;
                 case MotionEvent.ACTION_UP:
@@ -139,5 +218,16 @@ public class CustomSharedView extends AbsoluteLayout{
             }
         }
         return result;
+    }
+
+
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        if(view_to_dispatch) {
+            return view_touch_dispatch(event);
+        } else {
+            return view_touch_used(event);
+        }
     }
 }

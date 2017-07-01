@@ -25,7 +25,7 @@ public class CustomLabel extends CustomSharedView {
         return p;
     }
 
-    private InnerLabel content;
+    public InnerLabel content;
 
     public CustomLabel(long ptr, Context context) {
         super(ptr, context);

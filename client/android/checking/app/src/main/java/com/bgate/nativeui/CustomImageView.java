@@ -20,7 +20,7 @@ public class CustomImageView extends CustomSharedView {
         return p;
     }
 
-    private InnerImageView       content;
+    public InnerImageView       content;
 
     public CustomImageView(long ptr, Context context) {
         super(ptr, context);

@@ -18,7 +18,7 @@ public class CustomTextView extends CustomSharedView {
         return p;
     }
 
-    private InnerEditText content;
+    public InnerEditText content;
 
     public CustomTextView(long ptr, Context context) {
         super(ptr, context);

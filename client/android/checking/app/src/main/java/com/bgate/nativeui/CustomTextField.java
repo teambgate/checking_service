@@ -24,7 +24,7 @@ public class CustomTextField extends CustomSharedView {
         return p;
     }
 
-    private InnerEditText content;
+    public InnerEditText content;
 
     public CustomTextField(long ptr, Context context) {
         super(ptr, context);
@@ -77,6 +77,7 @@ public class CustomTextField extends CustomSharedView {
             super(context);
            // ViewCompat.setLayerType(this, ViewCompat.LAYER_TYPE_HARDWARE, null);
             setImeOptions(EditorInfo.IME_ACTION_DONE);
+            setFocusableInTouchMode(true);
             setOnEditorActionListener(new OnEditorActionListener() {
                 @Override
                 public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {

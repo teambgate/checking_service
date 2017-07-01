@@ -12,6 +12,6 @@
 # GNU General Public License for more details.
 #
 mkdir -p build
-cmake -Bbuild -DOUT=build -H. -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Debug -DAPP_DEBUG=false -DAPP_LOG=true
+cmake -Bbuild -DOUT=build -H. -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Debug -DAPP_DEBUG=true -DAPP_LOG=true
 make -C build
 cp -rf res build

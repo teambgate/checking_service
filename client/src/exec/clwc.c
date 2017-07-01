@@ -313,24 +313,28 @@ static void clwc_exec_touch_search_ip(struct nexec *p, struct nview *sender, u8 
                         goto end;
         }
 find_ip:;
+        debug("native create touch search 1\n");
         controller_get_view(view, p);
         view_get_parser(parser, view);
         parser_hash_view(search_box_view, parser, qlkey("search_box_view"));
         struct nparser *search_box_view_parser = nview_get_parser(search_box_view);
-
+        debug("native create touch search 2\n");
         struct nview *box = nparser_get_hash_view(search_box_view_parser, qlkey("box"));
         struct nview *box_2 = nparser_get_hash_view(search_box_view_parser, qlkey("box_2"));
         struct string *host = nview_get_text(box);
         struct string *port = nview_get_text(box_2);
         string_trim(host);
         string_trim(port);
+        debug("native create touch search 3\n");
         int port_num = atoi(port->ptr);
         if(host->len && port_num > 0) {
+                debug("native create touch search 4\n");
                 nview_set_visible(nparser_get_hash_view(search_box_view_parser, qlkey("notification")), 0);
                 __get_location_info(p, host->ptr, host->len, port_num);
         }
         string_free(host);
         string_free(port);
+        debug("native create touch search 5\n");
 end:;
 }
 
@@ -366,6 +370,7 @@ static void clwc_exec_listen_loc_info(struct nexec *p, struct sobj *obj)
         u8 r = sobj_get_u8(obj, qskey(&__key_result__), RPL_TYPE);
 
         if(r) {
+                debug("native create reg 1\n");
                 struct nexec *exec = nexec_parse(
                         (struct nexec_ppr) {
                                 .file = "res/layout/register/register.xml",
@@ -378,14 +383,14 @@ static void clwc_exec_listen_loc_info(struct nexec *p, struct sobj *obj)
                 struct sobj *data = sobj_get_obj(obj, qskey(&__key_data__), RPL_TYPE);
                 struct string *ln = sobj_get_str(data, qskey(&__key_location_name__), RPL_TYPE);
                 clreg_exec_sname(exec, qskey(ln));
-
+                debug("native create reg 2\n");
                 nview_request_layout(v);
 
                 struct nview *regv = nexec_get_view(exec);
                 nview_request_margin(regv, (union vec4){
                         .left = regv->size.width
                 });
-
+                debug("native create reg 3\n");
                 nview_clear_all_actions(regv);
                 nview_run_action(regv,
                         naction_sequence(

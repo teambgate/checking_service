@@ -2,8 +2,8 @@
 <touch key="register"/>
 <touch key="hover"/>
 <controller name="register_controller"/>
-<view width="match_parent" height="match_parent" type="relative" align="center" clip="true" touch="true" touch_delegate="hover" hash="content">
-        <!-- <view width="match_parent" height="match_parent" type="relative" align="center" hash="content"> -->
+<view width="match_parent" height="match_parent" type="relative" align="center" clip="true" >
+         <view width="match_parent" height="match_parent" type="relative" align="center" touch="true" touch_delegate="hover" hash="content">
             <image src="res/images/paris_france_eiffel_tower_9662_750x1334.jpg" width="750" height="1334" scale="0.5" align="center"/>
             <view width="match_parent" height="match_parent" color="#ffffff" alpha="0.75" align="center"/>
             <view width="300" height="50" type="relative" align="top|center" margin_top="40" border="#d1d1d1" color="#ffffffe1" round="4">
@@ -35,5 +35,5 @@
                         height="10" font="Arial" font_size="16" text_align="center" multiline="false">Tiếp tục</label>
                 </view>
             </view>
-    <!-- </view> -->
+     </view>
 </view>

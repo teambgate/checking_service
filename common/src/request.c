@@ -359,9 +359,9 @@ get_head:;
         }
         p->valid = 1;
 
-        debug("start write\n");
+        debug("native ui start write\n");
         __try_write(p, qskey(d));
-
+        debug("native ui end write\n");
         /*
          * enable read
          */
@@ -422,7 +422,7 @@ process_request:;
 
         int msg_len;
         char *msg;
-        debug("start read\n");
+        debug("native ui start read\n");
         if(p->valid) {
                 nbytes = recv(p->listener, recvbuf, MAX_RECV_BUF_LEN, 0);
         } else {
@@ -501,7 +501,7 @@ receive_full_packet:;
         string_cat(p->buff, msg, amount);
         msg += amount;
         msg_len -= amount;
-
+        debug("native ui read : %s\n", p->buff->ptr);
         int counter     = 0;
         struct sobj *data = sobj_from_json(p->buff->ptr, p->buff->len, &counter);
         struct sdata *id     = map_get(data->data, struct sdata *, qskey(&__key_request_id__));
@@ -692,7 +692,7 @@ int cs_requester_reconnect(struct cs_requester *requester, char *host, size_t ho
                 }
 
         end_try_connect:;
-                debug("try listen 5\n");
+                debug("native ui try listen 5\n");
 
                 break;
         }
@@ -708,7 +708,7 @@ int cs_requester_reconnect(struct cs_requester *requester, char *host, size_t ho
         debug("requester client: connecting to %s\n", s);
 
         freeaddrinfo(servinfo);
-        debug("finish reconnect\n");
+        debug("native ui finish reconnect\n");
 
         return 1;
 }

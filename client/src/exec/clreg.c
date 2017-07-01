@@ -115,10 +115,10 @@ static void clreg_exec_touch_hover(struct nexec *p, struct nview *s, u8 t)
 
                         // if(fabsf(s->touch_offset.x) < 12 && fabsf(data->x) < 8) break;
 
-                        struct nparser *pr = nview_get_parser(s);
-                        struct nview *m = nparser_get_hash_view(pr, qlkey("content"));
-                        nview_request_margin(m, (union vec4){
-                                .left = m->align->margin.left + s->touch_offset.x
+                        // struct nparser *pr = nview_get_parser(s);
+                        // struct nview *m = nparser_get_hash_view(pr, qlkey("content"));
+                        nview_request_margin(s, (union vec4){
+                                .left = s->align->margin.left + s->touch_offset.x
                         });
 
                         // nview_run_action(m,

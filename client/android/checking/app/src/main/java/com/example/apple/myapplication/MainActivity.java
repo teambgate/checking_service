@@ -16,6 +16,7 @@ import android.widget.AbsoluteLayout;
 import android.widget.TextView;
 
 import com.bgate.nativeui.CustomFunction;
+import com.bgate.nativeui.CustomSharedView;
 import com.bgate.nativeui.CustomView;
 
 public class MainActivity extends AppCompatActivity {
@@ -28,6 +29,7 @@ public class MainActivity extends AppCompatActivity {
     private int mInterval = 16;
     private Handler mHandler;
     private boolean resized = false;
+    private CustomSharedView overlay;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,6 +58,18 @@ public class MainActivity extends AppCompatActivity {
                 0
         );
         layout.addView(root, params);
+
+        overlay = new CustomSharedView(0, this);
+        AbsoluteLayout.LayoutParams params2 = new AbsoluteLayout.LayoutParams(
+                AbsoluteLayout.LayoutParams.MATCH_PARENT,
+                AbsoluteLayout.LayoutParams.MATCH_PARENT,
+                0,
+                0
+        );
+        overlay.view_to_dispatch = true;
+        overlay.can_touch = 1;
+        layout.addView(overlay, params);
+
         layout.forceLayout();
 
         mHandler = new Handler(Looper.getMainLooper());
@@ -68,6 +82,7 @@ public class MainActivity extends AppCompatActivity {
                 onResizeJNI((int)(root.getWidth() / d), (int)(root.getHeight() / d));
                 resized = true;
                 CustomFunction.resized = true;
+                overlay.resetPivot();
             }
         });
     }
