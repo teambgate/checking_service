@@ -30,85 +30,21 @@
 #import <checking_client/controller_utils.h>
 
 extern "C" {
-zip *APKArchive;
-struct string *__local_directory__ = NULL;
+    zip *APKArchive;
+    struct string *__local_directory__ = NULL;
 
-JNIEnv  *__jni_env;
+    JNIEnv  *__jni_env;
+    JavaVM*         __jvm;
+    struct map *    __jni_env_map;
 
-JavaVM*         __jvm;
-struct map *    __jni_env_map;
+    jobject __activity;
 
-jobject __activity;
-
-static struct nview *root;
-}
-
-extern "C" {
-    static void __test_animation(struct nview *view)
-    {
-        union vec3 r;
-        r.x = 0;
-        r.y = 0;
-        r.z = 360;
-        nview_run_action(view, naction_sequence(
-//                nview_rotate_by(view, r, 5.0f, NATIVE_UI_EASE_QUARTIC_IN_OUT, 0),
-                nview_move_by(view, (union vec2){300, 0}, 5.0f, NATIVE_UI_EASE_QUADRATIC_IN_OUT, 0),
-                NULL
-        ), NULL);
-    }
-
-    static void callback(void *p, struct sobj *data)
-    {
-        struct string *j = sobj_to_json(data);
-        debug("native ui : receive : %s\n",j->ptr);
-        string_free(j);
-    }
-
-    static void test_search()
-    {
-        struct cs_requester *p  = cs_requester_alloc();
-        int ret = cs_requester_connect(p, "192.168.1.15", 9898);
-        debug("native ui init requester : %d\n", ret);
-
-        {
-            struct sobj *obj = sobj_from_json_file("res/request.json", FILE_INNER);
-            struct string *request = sobj_get_str(obj, (void*)"request", sizeof("request") - 1, RPL_TYPE);
-            struct string *path = sobj_get_str(obj, (void*)"path", sizeof("path") - 1, RPL_TYPE);
-            struct sobj *objdata = sobj_get_obj(obj, (void*)"data", sizeof("data") - 1, RPL_TYPE);
-
-            struct sobj *data = sobj_alloc();
-            sobj_set_str(data, qskey(&__key_version__), qlkey("1"));
-
-            if(strcmp(request->ptr, "post") == 0) {
-                sobj_set_str(data, qskey(&__key_cmd__), qskey(&__cmd_post__));
-            } else if(strcmp(request->ptr, "get") == 0) {
-                sobj_set_str(data, qskey(&__key_cmd__), qskey(&__cmd_get__));
-            } else if(strcmp(request->ptr, "put") == 0) {
-                sobj_set_str(data, qskey(&__key_cmd__), qskey(&__cmd_put__));
-            }
-
-
-            sobj_set_str(data, qskey(&__key_pass__), qlkey("123456"));
-
-            sobj_set_str(data, qskey(&__key_path__), qskey(path));
-
-            struct string *json = sobj_to_json(objdata);
-            int counter = 0;
-            struct sobj *d = sobj_from_json(json->ptr, json->len, &counter);
-            string_free(json);
-            // struct sobj *obj = sobj_alloc();
-            // sobj_set_str(obj, qskey(&__key_name__), qlkey("Johan"));
-            sobj_set_obj(data, qskey(&__key_data__), d);
-            cs_request_alloc_with_param(p, data, callback, p, (struct cs_request_param){
-                    .timeout = 20
-            });
-        }
-    }
+    static struct nview *root;
 }
 
 extern "C"
 JNIEXPORT jobject JNICALL
-Java_com_example_apple_myapplication_MainActivity_initNativeJNI(
+Java_com_bgate_nativeui_ActivityHelper_initNativeJNI(
         JNIEnv *env,
         jobject /* this */,
         jstring apkPath, jstring local_directory, jobject activity) {
@@ -121,8 +57,6 @@ Java_com_example_apple_myapplication_MainActivity_initNativeJNI(
     __local_directory__ = string_alloc_chars((char*)tmp, strlen(tmp));
 
     __activity = __jni_env->NewGlobalRef(activity);
-
-    //native_ui_test();
 /*
      * register view controller allocator
      */
@@ -143,8 +77,6 @@ Java_com_example_apple_myapplication_MainActivity_initNativeJNI(
             ((char *)parser->view.next - offsetof(struct nview, parser));
 
     nview_add_child(root, view);
-
-   // test_search();
 
     return root->ptr;
 }
@@ -199,7 +131,7 @@ Java_com_bgate_nativeui_CustomSharedView_searchTouchViewJNI(
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_example_apple_myapplication_MainActivity_onResizeJNI(
+Java_com_bgate_nativeui_ActivityHelper_onResizeJNI(
         JNIEnv *env,
         jobject /* this */,
         int width, int height) {
@@ -210,7 +142,7 @@ Java_com_example_apple_myapplication_MainActivity_onResizeJNI(
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_example_apple_myapplication_MainActivity_onLoopJNI(
+Java_com_bgate_nativeui_ActivityHelper_onLoopJNI(
         JNIEnv *env,
         jobject /* this */) {
     nmanager_update(nmanager_shared(), 1.0f / 60);

@@ -436,7 +436,9 @@ check_bytes:;
                 pthread_mutex_lock(&p->read_mutex);
 
                 if(received_data == 0) {
+                        debug("native ui timeout 1\n");
                         __response_timeout_by_id(p, p->current_request_id._long);
+                        debug("native ui timeout 2\n");
                 }
 
                 shutdown(p->listener, SHUT_RDWR);
@@ -447,6 +449,7 @@ check_bytes:;
 
                 pthread_cond_signal(&p->write_cond);
                 if(p->listener < 0) {
+                        debug("client read wait!\n");
                         pthread_cond_wait(&p->read_cond, &p->read_mutex);
                         if((*read_valid) == 0) {
                                 pthread_mutex_unlock(&p->read_mutex);
@@ -454,6 +457,7 @@ check_bytes:;
                         }
                 }
                 pthread_mutex_unlock(&p->read_mutex);
+                debug("client read check!\n");
                 goto check_life_time;
         }
 

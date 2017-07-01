@@ -36,6 +36,9 @@ public class CustomSharedView extends AbsoluteLayout{
     private Path path = new Path();
     private RectF rect = new RectF();
 
+    float wt_x, wt_y;
+    float ot_x, ot_y;
+
     public CustomSharedView(long ptr, Context context) {
         super(context);
 
@@ -120,7 +123,6 @@ public class CustomSharedView extends AbsoluteLayout{
             switch (event.getActionMasked()) {
                 case MotionEvent.ACTION_UP:
                 case MotionEvent.ACTION_CANCEL:
-                    System.out.println("test dispatch null");
                     touch_view = null;
                     break;
                 default:
@@ -135,24 +137,18 @@ public class CustomSharedView extends AbsoluteLayout{
                     float screenX = event.getRawX();
                     float screenY = event.getRawY() - 25;
                     CustomSharedView v = (CustomSharedView) searchTouchViewJNI(screenX / d, screenY / d);
-                    System.out.println("test dispatch size : " + getWidth() + ", " + getHeight());
                     if(v != null) {
                         if(v instanceof  CustomImageView) {
-                            System.out.println("test dispatch has image view");
                             touch_view = ((CustomImageView)v).content;
                         } else if(v instanceof  CustomLabel) {
-                            System.out.println("test dispatch has label view");
                             touch_view = ((CustomLabel)v).content;
                         } else if(v instanceof  CustomTextField) {
-                            System.out.println("test dispatch has textfield view");
                             touch_view = ((CustomTextField)v).content;
                             touch_view.requestFocus();
                         } else if(v instanceof  CustomTextView) {
-                            System.out.println("test dispatch has textview view");
                             touch_view = ((CustomTextView)v).content;
                             touch_view.requestFocus();
                         } else {
-                            System.out.println("test dispatch has view");
                             touch_view = v;
                         }
 
@@ -184,32 +180,35 @@ public class CustomSharedView extends AbsoluteLayout{
     {
         boolean result = false;
         if(can_touch == 1) {
-            AbsoluteLayout.LayoutParams params = (AbsoluteLayout.LayoutParams) getLayoutParams();
-//            int[] location = new int[2];
-//            getLocationOnScreen(location);
             float screenX = event.getRawX();
-            float screenY = event.getRawY() - 25;
-//            float viewX = screenX - location[0];
-//            float viewY = screenY - location[1] + 25;
+            float screenY = event.getRawY();
             float viewX = event.getX();
             float viewY = event.getY();
 
             float d  = getContext().getResources().getDisplayMetrics().density;
             switch (event.getActionMasked()) {
                 case MotionEvent.ACTION_DOWN:
+                    wt_x = screenX;
+                    wt_y = screenY;
+                    ot_x = viewX;
+                    ot_y = viewY;
                     result = CustomFunction.touchBeganJNI(native_ptr, 0, viewX / d, viewY / d, screenX / d, screenY/d) == 1;
-                    System.out.println("test dispatch view " + result);
                     break;
                 case MotionEvent.ACTION_MOVE:
+                    viewX = ot_x + screenX - wt_x;
+                    viewY = ot_y + screenY - wt_y;
                     CustomFunction.touchMovedJNI(native_ptr, 0, viewX / d, viewY / d, screenX / d, screenY/d);
-                    System.out.println("test dispatch view " + viewX + ", " + viewY);
                     result = true;
                     break;
                 case MotionEvent.ACTION_UP:
+                    viewX = ot_x + screenX - wt_x;
+                    viewY = ot_y + screenY - wt_y;
                     CustomFunction.touchEndedJNI(native_ptr, 0, viewX / d, viewY / d, screenX / d, screenY/d);
                     result = true;
                     break;
                 case MotionEvent.ACTION_CANCEL:
+                    viewX = ot_x + screenX - wt_x;
+                    viewY = ot_y + screenY - wt_y;
                     CustomFunction.touchCancelledJNI(native_ptr, 0,viewX / d, viewY / d, screenX / d, screenY/d);
                     result = true;
                     break;

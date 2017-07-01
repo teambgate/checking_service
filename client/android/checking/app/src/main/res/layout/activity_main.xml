@@ -9,11 +9,4 @@
     android:id="@+id/root"
     android:fitsSystemWindows="true">
 
-    <!--<TextView-->
-        <!--android:id="@+id/sample_text"-->
-        <!--android:layout_width="200dp"-->
-        <!--android:layout_height="200dp"-->
-        <!--android:text="Hello World!"-->
-        <!--android:layout_marginLeft="100dp"/>-->
-
 </AbsoluteLayout>

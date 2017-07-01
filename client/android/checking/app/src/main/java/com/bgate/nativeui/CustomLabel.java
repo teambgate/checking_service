@@ -131,31 +131,45 @@ public class CustomLabel extends CustomSharedView {
 
         @Override
         public boolean onTouchEvent(MotionEvent event) {
+            boolean result = false;
             if(can_touch == 1) {
                 float screenX = event.getRawX();
                 float screenY = event.getRawY();
+                float viewX = event.getX();
+                float viewY = event.getY();
 
                 float d  = getContext().getResources().getDisplayMetrics().density;
-                switch (event.getAction()) {
+                switch (event.getActionMasked()) {
                     case MotionEvent.ACTION_DOWN:
-                        CustomFunction.touchBeganJNI(native_ptr, 0, event.getX() / d, event.getY() / d, screenX / d, screenY / d);
+                        wt_x = screenX;
+                        wt_y = screenY;
+                        ot_x = viewX;
+                        ot_y = viewY;
+                        result = CustomFunction.touchBeganJNI(native_ptr, 0, viewX / d, viewY / d, screenX / d, screenY/d) == 1;
                         break;
                     case MotionEvent.ACTION_MOVE:
-                        CustomFunction.touchMovedJNI(native_ptr, 0, event.getX() / d, event.getY() / d, screenX / d, screenY / d);
+                        viewX = ot_x + screenX - wt_x;
+                        viewY = ot_y + screenY - wt_y;
+                        CustomFunction.touchMovedJNI(native_ptr, 0, viewX / d, viewY / d, screenX / d, screenY/d);
+                        result = true;
                         break;
                     case MotionEvent.ACTION_UP:
-                        CustomFunction.touchEndedJNI(native_ptr, 0, event.getX() / d, event.getY() / d, screenX / d, screenY / d);
+                        viewX = ot_x + screenX - wt_x;
+                        viewY = ot_y + screenY - wt_y;
+                        CustomFunction.touchEndedJNI(native_ptr, 0, viewX / d, viewY / d, screenX / d, screenY/d);
+                        result = true;
                         break;
                     case MotionEvent.ACTION_CANCEL:
-                        CustomFunction.touchCancelledJNI(native_ptr, 0, event.getX() / d, event.getY() / d, screenX / d, screenY / d);
+                        viewX = ot_x + screenX - wt_x;
+                        viewY = ot_y + screenY - wt_y;
+                        CustomFunction.touchCancelledJNI(native_ptr, 0,viewX / d, viewY / d, screenX / d, screenY/d);
+                        result = true;
                         break;
                     default:
                         break;
                 }
-                return true;
-            } else {
-                return false;
             }
+            return result;
         }
 
         @Override

@@ -63,19 +63,19 @@ static void __load_es_server(struct checking_service *p)
 
                 cs_requester_connect(p->es_server_requester, host->ptr, port);
 
-                // __load_base_map(p, "res/checking_service/index.json");
-                // __load_base_map(p, "res/checking_service/check/map.json");
-                // __load_base_map(p, "res/checking_service/device/map.json");
-                // __load_base_map(p, "res/checking_service/dish/map.json");
-                // __load_base_map(p, "res/checking_service/meal/map.json");
-                // __load_base_map(p, "res/checking_service/permission_add_employee/map.json");
-                // __load_base_map(p, "res/checking_service/permission_clear_checkout/map.json");
-                // __load_base_map(p, "res/checking_service/permission_add_work_time/map.json");
-                // __load_base_map(p, "res/checking_service/report/map.json");
-                // __load_base_map(p, "res/checking_service/report_to/map.json");
-                // __load_base_map(p, "res/checking_service/work_time/map.json");
-                // __load_base_map(p, "res/checking_service/user/map.json");
-                // __load_base_map(p, "res/checking_service/blocked_device/map.json");
+                __load_base_map(p, "res/checking_service/index.json");
+                __load_base_map(p, "res/checking_service/check/map.json");
+                __load_base_map(p, "res/checking_service/device/map.json");
+                __load_base_map(p, "res/checking_service/dish/map.json");
+                __load_base_map(p, "res/checking_service/meal/map.json");
+                __load_base_map(p, "res/checking_service/permission_add_employee/map.json");
+                __load_base_map(p, "res/checking_service/permission_clear_checkout/map.json");
+                __load_base_map(p, "res/checking_service/permission_add_work_time/map.json");
+                __load_base_map(p, "res/checking_service/report/map.json");
+                __load_base_map(p, "res/checking_service/report_to/map.json");
+                __load_base_map(p, "res/checking_service/work_time/map.json");
+                __load_base_map(p, "res/checking_service/user/map.json");
+                __load_base_map(p, "res/checking_service/blocked_device/map.json");
         }
 }
 

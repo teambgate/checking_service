@@ -368,9 +368,7 @@ static void clwc_exec_listen_loc_info(struct nexec *p, struct sobj *obj)
         nview_set_user_interaction_enabled(ptc, 0);
 
         u8 r = sobj_get_u8(obj, qskey(&__key_result__), RPL_TYPE);
-
         if(r) {
-                debug("native create reg 1\n");
                 struct nexec *exec = nexec_parse(
                         (struct nexec_ppr) {
                                 .file = "res/layout/register/register.xml",
@@ -402,7 +400,7 @@ static void clwc_exec_listen_loc_info(struct nexec *p, struct sobj *obj)
                        NULL);
         } else {
                 nview_set_visible(
-                        nparser_get_hash_view(sbv, qlkey("notification")),
+                        nparser_get_hash_view(sbv_pr, qlkey("notification")),
                         1);
         }
 }
